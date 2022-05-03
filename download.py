@@ -11,8 +11,8 @@ from os import path, stat, remove, makedirs
 from re import sub, search
 from typing import List
 
-from aiohttp import ClientSession
 from aiofile import async_open
+from aiohttp import ClientSession
 
 from defs import Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, __NM_DEBUG__, \
     SITE_BASE, QUALITY_STARTS, QUALITY_ENDS, QUALITIES
@@ -95,7 +95,7 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, s: C
         if file_size > 0:
             Log('%s already exists. Skipped.' % filename)
             await try_unregister_from_queue(idi)
-            return False
+            return True
 
     if not path.exists(dest_base):
         try:
@@ -116,6 +116,8 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, s: C
         try:
             r = None
             async with s.request('GET', link, timeout=7200) as r:
+                if r.status == 404:
+                    retries += CONNECT_RETRIES_ITEM
                 if r.content_type and r.content_type.find('text') != -1:
                     Log(('File not found at %s!' % link))
                     raise FileNotFoundError(link)
@@ -130,7 +132,6 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, s: C
                 file_size = stat(dest).st_size
                 if expected_size and file_size != expected_size:
                     Log('Error: file size mismatch for %s: %d / %d' % (filename, file_size, expected_size))
-                    await try_unregister_from_queue(idi)
                     raise IOError
                 break
         except (KeyboardInterrupt,):
