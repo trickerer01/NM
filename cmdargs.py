@@ -6,12 +6,13 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-import os.path as path
 from argparse import ArgumentParser, Namespace, ArgumentError
+from os import path
 from re import match as re_match
 from typing import Optional, List
 
 from defs import SLASH_CHAR, Log, NON_SEARCH_SYMBOLS, HELP_PATH, HELP_PAGES, HELP_STOP_ID, HELP_SEARCH, QUALITIES, HELP_QUALITY
+
 
 parser = None  # type: Optional[ArgumentParser]
 

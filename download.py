@@ -14,8 +14,11 @@ from typing import List
 from aiofile import async_open
 from aiohttp import ClientSession
 
-from defs import Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, __NM_DEBUG__, \
-    SITE_BASE, QUALITY_STARTS, QUALITY_ENDS, QUALITIES
+from defs import (
+    Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, __NM_DEBUG__, SITE_BASE, QUALITY_STARTS, QUALITY_ENDS, QUALITIES,
+    SLASH_CHAR
+)
+
 
 downloads_queue = []  # type: List[int]
 failed_items = []  # type: List[int]
@@ -35,9 +38,9 @@ def is_in_queue(idi: int) -> bool:
 
 def normalize_filename(filename: str, dest_base: str) -> str:
     filename = sub(REPLACE_SYMBOLS, '_', filename)
-    dest = dest_base.replace('\\', '/')
-    if dest[-1] != '/':
-        dest += '/'
+    dest = dest_base.replace('\\', SLASH_CHAR)
+    if dest[-1] != SLASH_CHAR:
+        dest += SLASH_CHAR
     dest += filename
     return dest
 
@@ -78,7 +81,7 @@ async def download_id(idi: int, my_title: str, dest_base: str, quality: str, ses
 
     for i in range(QUALITIES.index(quality), len(QUALITIES)):
         link = SITE_BASE + '/media/videos/' + QUALITY_STARTS[i] + str(idi) + QUALITY_ENDS[i] + '.mp4'
-        filename = 'nm_' + str(idi) + ('_' + my_title if my_title != '' else '') + '_FULL_' + QUALITIES[i] + '_pydw.mp4'
+        filename = 'nm_' + str(idi) + ('_' + my_title if my_title != '' else '') + '_' + QUALITIES[i] + '_pydw.mp4'
         if await download_file(idi, filename, dest_base, link, session):
             return
 
@@ -117,6 +120,7 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, s: C
             r = None
             async with s.request('GET', link, timeout=7200) as r:
                 if r.status == 404:
+                    Log(('Got 404 for %d...!' % idi))
                     retries += CONNECT_RETRIES_ITEM
                 if r.content_type and r.content_type.find('text') != -1:
                     Log(('File not found at %s!' % link))

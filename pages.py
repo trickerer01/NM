@@ -9,14 +9,15 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from asyncio import run as run_async, as_completed, sleep
 from re import search as re_search, compile as re_compile
 from sys import argv
-from typing import List, Any
+from typing import List, Any, Tuple
 
 from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_pages
-from defs import Log, SITE_BASE, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH_CHAR
+from defs import Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH_CHAR
 from download import download_id, is_queue_empty, failed_items
 from fetch_html import fetch_html
+
 
 PAGE_ENTRY_RE = re_compile(r'^/video/(\d{3,6})/[^/]+$')
 
@@ -27,9 +28,8 @@ class VideoEntryBase:
 
 
 class VideoEntryFull(VideoEntryBase):
-    def __init__(self, m_id: int, m_href: str, m_title: str):
+    def __init__(self, m_id: int, m_title: str):
         super().__init__(m_id)
-        self.my_href = m_href or ''
         self.my_title = m_title or ''
 
     def __str__(self):
@@ -40,7 +40,7 @@ def extract_id(aref: Any) -> int:
     return int(re_search(PAGE_ENTRY_RE, str(aref.get('href'))).group(1))
 
 
-def get_minmax_ids(entry_list: List[VideoEntryBase]) -> (int, int):
+def get_minmax_ids(entry_list: List[VideoEntryBase]) -> Tuple[int, int]:
     minid = 0
     maxid = 0
     for entry in entry_list:
@@ -103,9 +103,8 @@ async def main() -> None:
                 Log('skipping %d < %d' % (cur_id, stop_id))
                 continue
             href_rel = str(aref.get('href'))
-            my_href = SITE_BASE + href_rel
             my_title = href_rel[href_rel.rfind(SLASH_CHAR) + 1:] if href_rel else ''
-            vid_entries.append(VideoEntryFull(cur_id, my_href, my_title))
+            vid_entries.append(VideoEntryFull(cur_id, my_title))
 
     if len(vid_entries) == 0:
         Log('\nNo videos found. Aborted.')

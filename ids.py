@@ -7,26 +7,13 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 from asyncio import run as run_async, sleep, as_completed
-from re import search
 from sys import argv
-from typing import Any
 
 from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_ids
 from defs import Log, MAX_VIDEOS_QUEUE_SIZE, DEFAULT_HEADERS
 from download import download_id, failed_items
-
-
-def extract_id(aref: Any) -> int:
-    return int(search(r'videos/(\d+)/', str(aref.get('href'))).group(1))
-
-
-def get_minmax_ids(arefs: list) -> (list, int, int):
-    ids = []
-    for aref in arefs:
-        ids.append(extract_id(aref))
-    return (ids, min(ids), max(ids))
 
 
 async def main() -> None:
