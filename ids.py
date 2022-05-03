@@ -1,0 +1,76 @@
+# coding=UTF-8
+"""
+Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
+"""
+#########################################
+#
+#
+
+from asyncio import run as run_async, sleep, as_completed
+from re import search
+from sys import argv
+from typing import Any
+
+from aiohttp import ClientSession, TCPConnector
+
+from cmdargs import prepare_arglist_ids
+from defs import Log, MAX_VIDEOS_QUEUE_SIZE, DEFAULT_HEADERS
+from download import download_id, failed_items
+
+
+def extract_id(aref: Any) -> int:
+    return int(search(r'videos/(\d+)/', str(aref.get('href'))).group(1))
+
+
+def get_minmax_ids(arefs: list) -> (list, int, int):
+    ids = []
+    for aref in arefs:
+        ids.append(extract_id(aref))
+    return (ids, min(ids), max(ids))
+
+
+async def main() -> None:
+    try:
+        arglist = prepare_arglist_ids(argv[1:])
+    except Exception:
+        Log('\nUnable to parse cmdline. Exiting...')
+        return
+
+    try:
+        dest_base = arglist.path
+        start_id = arglist.start
+        end_id = arglist.end
+        quality = arglist.max_quality
+
+        if start_id > end_id:
+            Log(('\nError: start (%d) > end (%d)' % (start_id, end_id)))
+            raise ValueError
+    except Exception:
+        Log('\nError reading parsed arglist!')
+        return
+
+    my_title = ''
+    async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
+        s.headers.update(DEFAULT_HEADERS)
+        for cv in as_completed([download_id(idi, my_title, dest_base, quality, s) for idi in range(start_id, end_id + 1)]):
+            await cv
+
+    if len(failed_items) > 0:
+        Log('Failed items:')
+        for fi in failed_items:
+            Log(' ', str(fi))
+
+
+async def run_main():
+    await main()
+    await sleep(0.25)
+
+
+if __name__ == '__main__':
+    run_async(run_main())
+    # Log('Searching by ID is disabled, reason: Buggy, videos are not properly sorted by id, meking binary search mostly useless')
+    exit(0)
+
+#
+#
+#########################################

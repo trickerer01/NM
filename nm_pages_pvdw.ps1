@@ -6,12 +6,12 @@
 
 $SYNTAX_ = "Syntax: #start_page #num_pages [#stop_id] [#quality=360p] [#search_string]"
 
-$MYWORKDIR = $MYWORKDIR_DWNLD
-$MYWORKDIR = $MYWORKDIR -replace "\\", '/'
+$MYWORKDIR = "./"
+$SCRIPT_PATH = "pages.py"
 
 $par1 = New-Object System.Collections.ArrayList
 
-$par1.Add("E:\PythonProjects\4nm\nm.py") > $null
+$par1.Add($SCRIPT_PATH) > $null
 $par1.Add("-path") > $null
 $par1.Add($MYWORKDIR) > $null
 

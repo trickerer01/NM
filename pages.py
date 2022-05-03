@@ -13,11 +13,10 @@ from typing import List, Any
 
 from aiohttp import ClientSession, TCPConnector
 
-from cmdargs import prepare_arglist
+from cmdargs import prepare_arglist_pages
 from defs import Log, SITE_BASE, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH_CHAR
 from download import download_id, is_queue_empty, failed_items
 from fetch_html import fetch_html
-
 
 PAGE_ENTRY_RE = re_compile(r'^/video/(\d{3,6})/[^/]+$')
 
@@ -57,7 +56,7 @@ def get_minmax_ids(entry_list: List[VideoEntryBase]) -> (int, int):
 
 async def main() -> None:
     try:
-        arglist = prepare_arglist(argv[1:])
+        arglist = prepare_arglist_pages(argv[1:])
     except Exception:
         Log('\nUnable to parse cmdline. Exiting...')
         return

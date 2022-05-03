@@ -13,7 +13,6 @@ from typing import Optional, List
 
 from defs import SLASH_CHAR, Log, NON_SEARCH_SYMBOLS, HELP_PATH, HELP_PAGES, HELP_STOP_ID, HELP_SEARCH, QUALITIES, HELP_QUALITY
 
-
 parser = None  # type: Optional[ArgumentParser]
 
 
@@ -83,7 +82,32 @@ def validate_parsed(args) -> Namespace:
     return parsed
 
 
-def prepare_arglist(args: List[str]) -> Namespace:
+def prepare_arglist_ids(args: List[str]) -> Namespace:
+    global parser
+
+    parser = ArgumentParser()
+
+    parser.add_argument('-start', metavar='#number', required=True, help='Start Id', type=valid_positive_nonzero_int)
+    arggr_ids = parser.add_mutually_exclusive_group()
+    arggr_ids.add_argument('-count', metavar='#number', default=1, help='Ids count to process', type=valid_positive_nonzero_int)
+    arggr_ids.add_argument('-end', metavar='#number', default=1, help='End video id', type=valid_positive_nonzero_int)
+    parser.add_argument('-path', default=path.abspath(path.curdir), help=HELP_PATH, type=valid_path)
+    parser.add_argument('-max_quality', default=QUALITIES[3], help=HELP_QUALITY, choices=QUALITIES)
+
+    def finalize_ex_groups(parsed: Namespace) -> Namespace:
+        if parsed.end < parsed.start + parsed.count - 1:
+            parsed.end = parsed.start + parsed.count - 1
+        parsed.count = None
+
+        return parsed
+
+    try:
+        return finalize_ex_groups(validate_parsed(args))
+    except (ArgumentError, TypeError, Exception):
+        raise
+
+
+def prepare_arglist_pages(args: List[str]) -> Namespace:
     global parser
 
     parser = ArgumentParser()

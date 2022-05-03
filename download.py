@@ -78,7 +78,7 @@ async def download_id(idi: int, my_title: str, dest_base: str, quality: str, ses
 
     for i in range(QUALITIES.index(quality), len(QUALITIES)):
         link = SITE_BASE + '/media/videos/' + QUALITY_STARTS[i] + str(idi) + QUALITY_ENDS[i] + '.mp4'
-        filename = 'nm_' + str(idi) + '_' + my_title + '_FULL_' + QUALITIES[i] + '_pydw.mp4'
+        filename = 'nm_' + str(idi) + ('_' + my_title if my_title != '' else '') + '_FULL_' + QUALITIES[i] + '_pydw.mp4'
         if await download_file(idi, filename, dest_base, link, session):
             return
 
