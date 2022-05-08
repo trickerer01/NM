@@ -122,6 +122,7 @@ async def main() -> None:
         Log('pages: queue is not empty at exit!')
 
     if len(failed_items) > 0:
+        failed_items.sort()
         Log('Failed items:')
         for fi in failed_items:
             Log(' ', str(fi))
@@ -129,7 +130,7 @@ async def main() -> None:
 
 async def run_main():
     await main()
-    await sleep(0.25)
+    await sleep(0.5)
 
 
 if __name__ == '__main__':

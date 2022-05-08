@@ -24,9 +24,11 @@ REPLACE_SYMBOLS = r'[^\da-zA-Z._\-\[\] ]'
 NON_SEARCH_SYMBOLS = r'[^\da-zA-Z._\-\[\]]'
 SLASH_CHAR = '/'
 
-QUALITIES = ['1080p', '720p', '480p', '360p', 'SD']
-QUALITY_STARTS = ['h264/', 'h264/', 'h264/', 'h264/', 'h264/']
-QUALITY_ENDS = ['_1080p', '_720p', '_480p', '_360p', '_SD']
+QUALITIES = ['1080p', '720p', 'hi', '480p', '360p', 'SD', 'low']
+QUALITY_STARTS = ['h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/']
+QUALITY_ENDS = ['_1080p', '_720p', '_hi', '_480p', '_360p', '_SD', '_low']
+
+DEFAULT_QUALITY = QUALITIES[4]
 
 ACTION_STORE_TRUE = 'store_true'
 ACTION_STORE_FALSE = 'store_false'
@@ -35,7 +37,7 @@ HELP_PAGES = 'Pages count to process. Required'
 HELP_STOP_ID = 'If you want to download only videos above or equal to this id'
 HELP_PATH = 'Download destination. Default is current folder'
 HELP_SEARCH = 'If you want to only traverse pages matching some search query'
-HELP_QUALITY = 'Video quality. Default is \'' + QUALITIES[3] + '\''
+HELP_QUALITY = 'Video quality. Default is \'' + DEFAULT_QUALITY + '\''
 
 CONNECT_RETRIES_PAGE = 15
 CONNECT_RETRIES_ITEM = 15

@@ -15,7 +15,7 @@ from aiofile import async_open
 from aiohttp import ClientSession
 
 from defs import (
-    Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, __NM_DEBUG__, SITE_BASE, QUALITY_STARTS, QUALITY_ENDS, QUALITIES,
+    Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, __NM_DEBUG__, SITE_BASE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
     SLASH_CHAR
 )
 
@@ -79,6 +79,28 @@ async def download_id(idi: int, my_title: str, dest_base: str, quality: str, ses
     while not await try_register_in_queue(idi):
         await sleep(0.1)
 
+    # qlist = [QUALITIES.copy(), QUALITY_STARTS.copy(), QUALITY_ENDS.copy()]
+    #
+    # for i in range(len(qlist)):
+    #     qlist[i].reverse()
+    #
+    # index = qlist[0].index(quality)
+    #
+    # for i, q in enumerate(qlist):
+    #     qv = q[index]
+    #     q.remove(qv)
+    #     qlist[i] = [qv] + q
+    #
+    # qs = qlist[0]
+    # qss = qlist[1]
+    # qes = qlist[2]
+    #
+    # for i in range(qs.index(quality), len(qs)):
+    #     link = SITE_BASE + '/media/videos/' + qss[i] + str(idi) + qes[i] + '.mp4'
+    #     filename = 'nm_' + str(idi) + ('_' + my_title if my_title != '' else '') + '_' + qs[i] + '_pydw.mp4'
+    #     if await download_file(idi, filename, dest_base, link, session):
+    #         return
+
     for i in range(QUALITIES.index(quality), len(QUALITIES)):
         link = SITE_BASE + '/media/videos/' + QUALITY_STARTS[i] + str(idi) + QUALITY_ENDS[i] + '.mp4'
         filename = 'nm_' + str(idi) + ('_' + my_title if my_title != '' else '') + '_' + QUALITIES[i] + '_pydw.mp4'
@@ -121,7 +143,7 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, s: C
             async with s.request('GET', link, timeout=7200) as r:
                 if r.status == 404:
                     Log(('Got 404 for %d...!' % idi))
-                    retries += CONNECT_RETRIES_ITEM
+                    retries = CONNECT_RETRIES_ITEM
                 if r.content_type and r.content_type.find('text') != -1:
                     Log(('File not found at %s!' % link))
                     raise FileNotFoundError(link)
