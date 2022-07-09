@@ -14,6 +14,7 @@ from aiohttp import ClientSession, TCPConnector
 from cmdargs import prepare_arglist_ids
 from defs import Log, MAX_VIDEOS_QUEUE_SIZE, DEFAULT_HEADERS
 from download import download_id, failed_items
+from fetch_html import set_proxy
 
 
 async def main() -> None:
@@ -28,6 +29,7 @@ async def main() -> None:
         start_id = arglist.start
         end_id = arglist.end
         quality = arglist.max_quality
+        set_proxy(arglist.proxy)
 
         if start_id > end_id:
             Log(('\nError: start (%d) > end (%d)' % (start_id, end_id)))

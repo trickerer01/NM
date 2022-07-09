@@ -16,7 +16,7 @@ from aiohttp import ClientSession, TCPConnector
 from cmdargs import prepare_arglist_pages
 from defs import Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH_CHAR
 from download import download_id, is_queue_empty, failed_items
-from fetch_html import fetch_html
+from fetch_html import fetch_html, set_proxy
 
 
 PAGE_ENTRY_RE = re_compile(r'^/video/(\d{3,6})/[^/]+$')
@@ -68,6 +68,7 @@ async def main() -> None:
         stop_id = arglist.stop_id
         search_str = arglist.search
         quality = arglist.max_quality
+        set_proxy(arglist.proxy)
     except Exception:
         Log('\nError reading parsed arglist!')
         return
