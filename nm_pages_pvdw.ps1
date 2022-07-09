@@ -22,6 +22,7 @@ $num_pages = [Int32]($args[1])
 $stop_id = [Int32]($args[2])
 $quality = [String]($args[3])
 $search_str = [String]($args[4])
+$proxy = [String]($args[5])
 
 if ($start_page -lt 1 -or $start_page -gt 100000)
 { write($SYNTAX_); return }
@@ -48,6 +49,11 @@ if ($search_str -ne "")
 {
     $par1.Add("-search") > $null
     $par1.Add($search_str) > $null
+}
+if ($proxy -ne "")
+{
+    $par1.Add("-proxy") > $null
+    $par1.Add($proxy) > $null
 }
 
 write("processing pages " + $start_page + "-" + ($start_page + $num_pages - 1) + "...")
