@@ -4,7 +4,7 @@
 
 . "config.ps1"
 
-$SYNTAX_ = "Syntax: #[nm_]START #[COUNT | [nm_]END] #[quality]"
+$SYNTAX_ = "Syntax: #[nm_]START #[COUNT | [nm_]END] #[quality] [#proxy]"
 
 $MYWORKDIR = "./"
 $SCRIPT_PATH = "ids.py"

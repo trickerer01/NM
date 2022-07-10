@@ -29,7 +29,7 @@ async def main() -> None:
         start_id = arglist.start
         end_id = arglist.end
         quality = arglist.max_quality
-        set_proxy(arglist.proxy)
+        set_proxy(arglist.proxy if hasattr(arglist, 'proxy') else None)
 
         if start_id > end_id:
             Log(('\nError: start (%d) > end (%d)' % (start_id, end_id)))

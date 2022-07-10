@@ -4,7 +4,7 @@
 
 . "config.ps1"
 
-$SYNTAX_ = "Syntax: #start_page #num_pages [#stop_id] [#quality=360p] [#search_string]"
+$SYNTAX_ = "Syntax: #start_page #num_pages [#stop_id] [#quality=360p] [#search_string] [#proxy]"
 
 $MYWORKDIR = "./"
 $SCRIPT_PATH = "pages.py"
