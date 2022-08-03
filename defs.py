@@ -35,13 +35,14 @@ ACTION_STORE_FALSE = 'store_false'
 
 HELP_PAGES = 'Pages count to process. Required'
 HELP_STOP_ID = 'If you want to download only videos above or equal to this id'
+HELP_BEGIN_ID = 'If you want to download only videos above or equal to this id'
 HELP_PATH = 'Download destination. Default is current folder'
 HELP_SEARCH = 'If you want to only traverse pages matching some search query'
 HELP_QUALITY = 'Video quality. Default is \'' + DEFAULT_QUALITY + '\''
 HELP_ARG_PROXY = 'Proxy to use in format: a.d.d.r:port'
 
-CONNECT_RETRIES_PAGE = 15
-CONNECT_RETRIES_ITEM = 15
+CONNECT_RETRIES_PAGE = 5
+CONNECT_RETRIES_ITEM = 10
 
 MAX_VIDEOS_QUEUE_SIZE = 4
 

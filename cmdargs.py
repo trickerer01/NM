@@ -13,7 +13,7 @@ from typing import Optional, List
 
 from defs import (
     SLASH_CHAR, Log, NON_SEARCH_SYMBOLS, HELP_PATH, HELP_PAGES, HELP_STOP_ID, HELP_SEARCH, QUALITIES, DEFAULT_QUALITY, HELP_QUALITY,
-    HELP_ARG_PROXY
+    HELP_ARG_PROXY, HELP_BEGIN_ID
 )
 
 parser = None  # type: Optional[ArgumentParser]
@@ -123,6 +123,11 @@ def valid_proxy(prox: str) -> str:
     return newval
 
 
+def add_common_args(parser_or_group: ArgumentParser) -> None:
+    parser_or_group.add_argument('-path', default=path.abspath(path.curdir), help=HELP_PATH, type=valid_path)
+    parser_or_group.add_argument('-proxy', metavar='#type://a.d.d.r:port', help=HELP_ARG_PROXY, type=valid_proxy)
+
+
 def prepare_arglist_ids(args: List[str]) -> Namespace:
     global parser
 
@@ -132,9 +137,9 @@ def prepare_arglist_ids(args: List[str]) -> Namespace:
     arggr_ids = parser.add_mutually_exclusive_group()
     arggr_ids.add_argument('-count', metavar='#number', default=1, help='Ids count to process', type=valid_positive_nonzero_int)
     arggr_ids.add_argument('-end', metavar='#number', default=1, help='End video id', type=valid_positive_nonzero_int)
-    parser.add_argument('-path', default=path.abspath(path.curdir), help=HELP_PATH, type=valid_path)
     parser.add_argument('-max_quality', default=DEFAULT_QUALITY, help=HELP_QUALITY, choices=QUALITIES)
-    parser.add_argument('-proxy', metavar='type://#a.d.d.r:port', help=HELP_ARG_PROXY, type=valid_proxy)
+
+    add_common_args(parser)
 
     def finalize_ex_groups(parsed: Namespace) -> Namespace:
         if parsed.end < parsed.start + parsed.count - 1:
@@ -157,9 +162,11 @@ def prepare_arglist_pages(args: List[str]) -> Namespace:
     parser.add_argument('-start', metavar='#number', default=1, help='Start page number. Default is \'1\'', type=valid_positive_nonzero_int)
     parser.add_argument('-pages', metavar='#number', required=True, help=HELP_PAGES, type=valid_positive_nonzero_int)
     parser.add_argument('-stop_id', metavar='#number', default=1, help=HELP_STOP_ID, type=valid_positive_nonzero_int)
+    parser.add_argument('-begin_id', metavar='#number', default=1000000000, help=HELP_BEGIN_ID, type=valid_positive_nonzero_int)
     parser.add_argument('-search', metavar='#string', default='', help=HELP_SEARCH, type=valid_search_string)
-    parser.add_argument('-path', default=path.abspath(path.curdir), help=HELP_PATH, type=valid_path)
     parser.add_argument('-max_quality', default=DEFAULT_QUALITY, help=HELP_QUALITY, choices=QUALITIES)
+
+    add_common_args(parser)
 
     try:
         return validate_parsed(args)

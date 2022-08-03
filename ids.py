@@ -40,7 +40,7 @@ async def main() -> None:
 
     my_title = ''
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
-        s.headers.update(DEFAULT_HEADERS)
+        s.headers.update(DEFAULT_HEADERS.copy())
         for cv in as_completed([download_id(idi, my_title, dest_base, quality, s) for idi in range(start_id, end_id + 1)]):
             await cv
 

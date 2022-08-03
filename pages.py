@@ -66,6 +66,7 @@ async def main() -> None:
         start_page = arglist.start
         pages_count = arglist.pages
         stop_id = arglist.stop_id
+        begin_id = arglist.begin_id
         search_str = arglist.search
         quality = arglist.max_quality
         set_proxy(arglist.proxy if hasattr(arglist, 'proxy') else None)
@@ -76,16 +77,19 @@ async def main() -> None:
     vid_entries = []
     maxpage = 0
 
-    for pi in range(start_page, start_page + pages_count):
-        if maxpage and pi > maxpage:
+    pi = start_page
+    while pi < start_page + pages_count:
+        if pi > maxpage > 0:
             Log('reached parsed max page, page scan completed')
             break
         Log(('page %d...%s' % (pi, ' (this is the last page!)' if maxpage and pi == maxpage else '')))
 
         a_html = await fetch_html(SITE_PAGE_REQUEST_BASE % (search_str, pi))
         if not a_html:
-            Log('cannot get html for page %d', pi)
+            Log('cannot get html for page %d' % pi)
             continue
+
+        pi += 1
 
         if maxpage == 0:
             lis = a_html.find_all('li', class_='hidden-xs')
@@ -103,6 +107,9 @@ async def main() -> None:
             if cur_id < stop_id:
                 Log('skipping %d < %d' % (cur_id, stop_id))
                 continue
+            if cur_id > begin_id:
+                Log('skipping %d > %d' % (cur_id, begin_id))
+                continue
             href_rel = str(aref.get('href'))
             my_title = href_rel[href_rel.rfind(SLASH_CHAR) + 1:] if href_rel else ''
             vid_entries.append(VideoEntryFull(cur_id, my_title))
@@ -115,7 +122,7 @@ async def main() -> None:
     Log('\nOk! %d videos found, bound %d to %d. Working...\n' % (len(vid_entries), minid, maxid))
     vid_entries = list(reversed(vid_entries))
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
-        s.headers.update(DEFAULT_HEADERS)
+        s.headers.update(DEFAULT_HEADERS.copy())
         for cv in as_completed([download_id(v.my_id, v.my_title, dest_base, quality, s) for v in vid_entries]):
             await cv
 
