@@ -23,17 +23,18 @@ PAGE_ENTRY_RE = re_compile(r'^/video/(\d{3,6})/[^/]+$')
 
 
 class VideoEntryBase:
-    def __init__(self, m_id: int):
+    def __init__(self, m_id: int) -> None:
         self.my_id = m_id or 0
 
 
 class VideoEntryFull(VideoEntryBase):
-    def __init__(self, m_id: int, m_title: str):
+    def __init__(self, m_id: int, m_title: str, my_rating: str) -> None:
         super().__init__(m_id)
         self.my_title = m_title or ''
+        self.my_rating = my_rating or ''
 
-    def __str__(self):
-        return str(self.my_id) + ': ' + str(self.my_title)
+    def __str__(self) -> str:
+        return f'{self.my_id:d}: {self.my_title}'
 
 
 def extract_id(aref: Any) -> int:
@@ -82,11 +83,11 @@ async def main() -> None:
         if pi > maxpage > 0:
             Log('reached parsed max page, page scan completed')
             break
-        Log(('page %d...%s' % (pi, ' (this is the last page!)' if maxpage and pi == maxpage else '')))
+        Log(f'page {pi:d}...{" (this is the last page!)" if 0 < maxpage == pi else ""}')
 
         a_html = await fetch_html(SITE_PAGE_REQUEST_BASE % (search_str, pi))
         if not a_html:
-            Log('cannot get html for page %d' % pi)
+            Log(f'cannot get html for page {pi:d}')
             continue
 
         pi += 1
@@ -102,28 +103,31 @@ async def main() -> None:
                     pass
 
         arefs = a_html.find_all('a', href=PAGE_ENTRY_RE)
-        for aref in arefs:
-            cur_id = extract_id(aref)
+        rrefs = a_html.find_all('b', text=re_compile(r'^\d{1,3}%$'))
+        assert len(arefs) == len(rrefs)
+        for refpair in zip(arefs, rrefs):
+            cur_id = extract_id(refpair[0])
             if cur_id < stop_id:
-                Log('skipping %d < %d' % (cur_id, stop_id))
+                Log(f'skipping {cur_id:d} < {stop_id:d}')
                 continue
             if cur_id > begin_id:
-                Log('skipping %d > %d' % (cur_id, begin_id))
+                Log(f'skipping {cur_id:d} > {begin_id:d}')
                 continue
-            href_rel = str(aref.get('href'))
-            my_title = href_rel[href_rel.rfind(SLASH_CHAR) + 1:] if href_rel else ''
-            vid_entries.append(VideoEntryFull(cur_id, my_title))
+            href_rel = str(refpair[0].get('href'))
+            my_title = href_rel[href_rel.rfind(SLASH_CHAR) + 1:] if href_rel != '' else ''
+            my_rating = f'{str(refpair[1].text)[:-1]}pct'
+            vid_entries.append(VideoEntryFull(cur_id, my_title, my_rating))
 
     if len(vid_entries) == 0:
         Log('\nNo videos found. Aborted.')
         return
 
     minid, maxid = get_minmax_ids(vid_entries)
-    Log('\nOk! %d videos found, bound %d to %d. Working...\n' % (len(vid_entries), minid, maxid))
+    Log(f'\nOk! {len(vid_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
     vid_entries = list(reversed(vid_entries))
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
         s.headers.update(DEFAULT_HEADERS.copy())
-        for cv in as_completed([download_id(v.my_id, v.my_title, dest_base, quality, s) for v in vid_entries]):
+        for cv in as_completed([download_id(v.my_id, v.my_title, v.my_rating, dest_base, quality, s) for v in vid_entries]):
             await cv
 
     if not is_queue_empty():
@@ -136,7 +140,7 @@ async def main() -> None:
             Log(' ', str(fi))
 
 
-async def run_main():
+async def run_main() -> None:
     await main()
     await sleep(0.5)
 

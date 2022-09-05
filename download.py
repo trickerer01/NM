@@ -76,7 +76,7 @@ async def try_unregister_from_queue(idi: int) -> None:
             Log('try_unregister_from_queue: ', idi, 'was not in queue')
 
 
-async def download_id(idi: int, my_title: str, dest_base: str, quality: str, session: ClientSession) -> None:
+async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, quality: str, session: ClientSession) -> None:
     while not await try_register_in_queue(idi):
         await sleep(0.1)
 
@@ -103,8 +103,9 @@ async def download_id(idi: int, my_title: str, dest_base: str, quality: str, ses
     #         return
 
     for i in range(QUALITIES.index(quality), len(QUALITIES)):
-        link = SITE_BASE + '/media/videos/' + QUALITY_STARTS[i] + str(idi) + QUALITY_ENDS[i] + '.mp4'
-        filename = 'nm_' + str(idi) + ('_' + my_title if my_title != '' else '') + '_' + QUALITIES[i] + '_pydw.mp4'
+        link = f'{SITE_BASE}/media/videos/{QUALITY_STARTS[i]}{idi:d}{QUALITY_ENDS[i]}.mp4'
+        filename = f'nm_{idi:d}{f"_rating({my_rating})" if my_rating != "" else ""}{f"_{my_title}" if my_title != "" else ""}' \
+                   f'_{QUALITIES[i]}_pydw.mp4'
         if await download_file(idi, filename, dest_base, link, session):
             return
 
@@ -119,7 +120,7 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, s: C
     if path.exists(dest):
         file_size = stat(dest).st_size
         if file_size > 0:
-            Log('%s already exists. Skipped.' % filename)
+            Log(f'{filename} already exists. Skipped.')
             await try_unregister_from_queue(idi)
             return True
 
@@ -143,14 +144,14 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, s: C
             r = None
             async with s.request('GET', link, timeout=7200, proxy=get_proxy()) as r:
                 if r.status == 404:
-                    Log(('Got 404 for %d...!' % idi))
+                    Log(f'Got 404 for {idi:d}...!')
                     retries = CONNECT_RETRIES_ITEM
                 if r.content_type and r.content_type.find('text') != -1:
-                    Log(('File not found at %s!' % link))
+                    Log(f'File not found at {link}!')
                     raise FileNotFoundError(link)
 
                 expected_size = r.content_length
-                Log('Saving %.2f Mb to %s' % ((r.content_length / (1024.0 * 1024.0)) if r.content_length else 0.0, filename))
+                Log(f'Saving {(r.content_length / (1024.0 * 1024.0)) if r.content_length else 0.0:.2f} Mb to {filename}')
 
                 async with async_open(dest, 'wb') as outf:
                     async for chunk in r.content.iter_chunked(2**20):
@@ -158,7 +159,7 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, s: C
 
                 file_size = stat(dest).st_size
                 if expected_size and file_size != expected_size:
-                    Log('Error: file size mismatch for %s: %d / %d' % (filename, file_size, expected_size))
+                    Log(f'Error: file size mismatch for {filename}: {file_size:d} / {expected_size:d}')
                     raise IOError
                 break
         except (KeyboardInterrupt,):
@@ -167,7 +168,7 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, s: C
             import sys
             print(sys.exc_info()[0], sys.exc_info()[1])
             retries += 1
-            Log('%s: error #%d...' % (filename, retries))
+            Log(f'{filename}: error #{retries:d}...')
             if r:
                 r.close()
             if path.exists(dest):

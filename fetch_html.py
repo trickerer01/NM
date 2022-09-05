@@ -26,7 +26,7 @@ def get_proxy() -> str:
     return proxy
 
 
-async def fetch_html(url: str, tries=None) -> (BeautifulSoup, None):
+async def fetch_html(url: str, tries=None) -> Optional[BeautifulSoup]:
     # very basic, minimum validation
     tries = tries or CONNECT_RETRIES_PAGE
 
@@ -49,7 +49,7 @@ async def fetch_html(url: str, tries=None) -> (BeautifulSoup, None):
                 continue
 
     if retries >= tries:
-        errmsg = 'Unable to connect. Aborting %s' % url
+        errmsg = f'Unable to connect. Aborting {url}'
         Log(errmsg, True)
     elif r is None:
         Log('ERROR: Failed to receive any data', True)

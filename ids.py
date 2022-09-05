@@ -32,7 +32,7 @@ async def main() -> None:
         set_proxy(arglist.proxy if hasattr(arglist, 'proxy') else None)
 
         if start_id > end_id:
-            Log(('\nError: start (%d) > end (%d)' % (start_id, end_id)))
+            Log(f'\nError: start ({start_id:d}) > end ({end_id:d})')
             raise ValueError
     except Exception:
         Log('\nError reading parsed arglist!')
@@ -41,7 +41,7 @@ async def main() -> None:
     my_title = ''
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
         s.headers.update(DEFAULT_HEADERS.copy())
-        for cv in as_completed([download_id(idi, my_title, dest_base, quality, s) for idi in range(start_id, end_id + 1)]):
+        for cv in as_completed([download_id(idi, my_title, 'unk', dest_base, quality, s) for idi in range(start_id, end_id + 1)]):
             await cv
 
     if len(failed_items) > 0:
@@ -51,7 +51,7 @@ async def main() -> None:
             Log(' ', str(fi))
 
 
-async def run_main():
+async def run_main() -> None:
     await main()
     await sleep(0.5)
 
