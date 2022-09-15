@@ -12,7 +12,7 @@ from re import match as re_match, sub as re_sub
 from typing import Optional, List
 
 from defs import (
-    SLASH_CHAR, Log, NON_SEARCH_SYMBOLS, HELP_PATH, HELP_PAGES, HELP_STOP_ID, HELP_SEARCH, QUALITIES, DEFAULT_QUALITY, HELP_QUALITY,
+    SLASH, Log, NON_SEARCH_SYMBOLS, HELP_PATH, HELP_PAGES, HELP_STOP_ID, HELP_SEARCH, QUALITIES, DEFAULT_QUALITY, HELP_QUALITY,
     HELP_ARG_PROXY, HELP_BEGIN_ID
 )
 
@@ -48,11 +48,11 @@ def valid_positive_nonzero_int(val: str) -> int:
 
 def valid_path(pathstr: str) -> str:
     try:
-        newpath = path.abspath(unquote(pathstr)).replace('\\', SLASH_CHAR)
-        if not path.exists(newpath[:(newpath.find(SLASH_CHAR) + 1)]):
+        newpath = path.abspath(unquote(pathstr)).replace('\\', SLASH)
+        if not path.exists(newpath[:(newpath.find(SLASH) + 1)]):
             raise ValueError
-        if newpath[-1] != SLASH_CHAR:
-            newpath += SLASH_CHAR
+        if newpath[-1] != SLASH:
+            newpath += SLASH
     except Exception:
         raise ArgumentError
 

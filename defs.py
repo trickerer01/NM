@@ -16,13 +16,15 @@ SITE_BASE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
 # Params required: (str, int). Ex. SITE_PAGE_REQUEST_BASE % ('', 1)
 SITE_PAGE_REQUEST_BASE = b64decode(
     'aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcz9vPW1yJnNlYXJjaF9xdWVyeT0lcyZwYWdlPSVk').decode()
+# Params required: (int). Ex. SITE_ITEM_REQUEST_BASE % (69999)
+SITE_ITEM_REQUEST_BASE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdmlkZW8vJWQv').decode()
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux i686; rv:68.9) Gecko/20100101 Goanna/4.8 Firefox/68.9'
 DEFAULT_HEADERS = {'User-Agent': USER_AGENT}
 
-REPLACE_SYMBOLS = r'[^\da-zA-Z._+\-\(\)\[\] ]+?'
-NON_SEARCH_SYMBOLS = r'[^\da-zA-Z._+\-\[\]]'
-SLASH_CHAR = '/'
+REPLACE_SYMBOLS = r'[^\da-zA-Z._+%\-\(\)\[\] ]+?'
+NON_SEARCH_SYMBOLS = r'[^\da-zA-Z._\-\[\]]'
+SLASH = '/'
 
 QUALITIES = ['1080p', '720p', 'hi', '480p', '360p', 'SD', 'low']
 QUALITY_STARTS = ['h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/']

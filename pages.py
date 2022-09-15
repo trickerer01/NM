@@ -14,12 +14,12 @@ from typing import List, Any, Tuple
 from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_pages
-from defs import Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH_CHAR
+from defs import Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH
 from download import download_id, is_queue_empty, failed_items
 from fetch_html import fetch_html, set_proxy
 
 
-PAGE_ENTRY_RE = re_compile(r'^/video/(\d{3,6})/[^/]+$')
+PAGE_ENTRY_RE = re_compile(r'^/video/(\d+)/[^/]+?$')
 
 
 class VideoEntryBase:
@@ -103,7 +103,7 @@ async def main() -> None:
                     pass
 
         arefs = a_html.find_all('a', href=PAGE_ENTRY_RE)
-        rrefs = a_html.find_all('b', text=re_compile(r'^\d{1,3}%$'))
+        rrefs = a_html.find_all('b', string=re_compile(r'^(?:\d{1,3}%|-)$'))
         assert len(arefs) == len(rrefs)
         for refpair in zip(arefs, rrefs):
             cur_id = extract_id(refpair[0])
@@ -114,8 +114,8 @@ async def main() -> None:
                 Log(f'skipping {cur_id:d} > {begin_id:d}')
                 continue
             href_rel = str(refpair[0].get('href'))
-            my_title = href_rel[href_rel.rfind(SLASH_CHAR) + 1:] if href_rel != '' else ''
-            my_rating = f'{str(refpair[1].text)[:-1]}pct'
+            my_title = href_rel[href_rel.rfind(SLASH) + 1:] if href_rel != '' else ''
+            my_rating = str(refpair[1].text)
             vid_entries.append(VideoEntryFull(cur_id, my_title, my_rating))
 
     if len(vid_entries) == 0:

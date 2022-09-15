@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 from asyncio import sleep
 from os import path, stat, remove, makedirs
-from re import sub, search
+from re import sub, search, compile as re_compile
 from typing import List
 
 from aiofile import async_open
@@ -16,10 +16,9 @@ from aiohttp import ClientSession
 
 from defs import (
     Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, __NM_DEBUG__, SITE_BASE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
-    SLASH_CHAR
+    SLASH, SITE_ITEM_REQUEST_BASE
 )
-from fetch_html import get_proxy
-
+from fetch_html import get_proxy, fetch_html
 
 downloads_queue = []  # type: List[int]
 failed_items = []  # type: List[int]
@@ -39,9 +38,9 @@ def is_in_queue(idi: int) -> bool:
 
 def normalize_filename(filename: str, dest_base: str) -> str:
     filename = sub(REPLACE_SYMBOLS, '_', filename)
-    dest = dest_base.replace('\\', SLASH_CHAR)
-    if dest[-1] != SLASH_CHAR:
-        dest += SLASH_CHAR
+    dest = dest_base.replace('\\', SLASH)
+    if dest[-1] != SLASH:
+        dest += SLASH
     dest += filename
     return dest
 
@@ -56,12 +55,12 @@ def extract_ext(href: str) -> str:
 async def try_register_in_queue(idi: int) -> bool:
     if is_in_queue(idi):
         if __NM_DEBUG__:
-            Log('try_register_in_queue: ', idi, ' is already in queue')
+            Log(f'try_register_in_queue: {idi:d} is already in queue')
         return True
     elif not is_queue_full():
         downloads_queue.append(idi)
         if __NM_DEBUG__:
-            Log('try_register_in_queue: ', idi, ' added to queue')
+            Log(f'try_register_in_queue: {idi:d} added to queue')
         return True
     return False
 
@@ -70,15 +69,31 @@ async def try_unregister_from_queue(idi: int) -> None:
     try:
         downloads_queue.remove(idi)
         if __NM_DEBUG__:
-            Log('try_unregister_from_queue: ', idi, ' removed from queue')
+            Log(f'try_unregister_from_queue: {idi:d} removed from queue')
     except (ValueError,):
         if __NM_DEBUG__:
-            Log('try_unregister_from_queue: ', idi, 'was not in queue')
+            Log(f'try_unregister_from_queue: {idi:d} was not in queue')
 
 
 async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, quality: str, session: ClientSession) -> None:
     while not await try_register_in_queue(idi):
         await sleep(0.1)
+
+    likes = ''
+    i_html = await fetch_html(SITE_ITEM_REQUEST_BASE % idi)
+    if i_html:
+        if i_html.find('legend', string='Error'):
+            Log(f'Warning: Got error 404 for id {idi:d}, likes will not be extracted...')
+        elif i_html.find('div', class_='text-danger', string=re_compile(r'^This is a private video\..+?$')):
+            Log(f'Warning: Got private video error for id {idi:d}, likes will not be extracted...')
+        else:
+            try:
+                dislikes_int = int(i_html.find('span', id='video_dislikes').text)
+                likes_int = int(i_html.find('span', id='video_likes').text)
+                likes_int -= dislikes_int
+                likes = f'{"+" if likes_int > 0 else ""}{likes_int:d}'
+            except Exception:
+                pass
 
     # qlist = [QUALITIES.copy(), QUALITY_STARTS.copy(), QUALITY_ENDS.copy()]
     #
@@ -102,10 +117,11 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     #     if await download_file(idi, filename, dest_base, link, session):
     #         return
 
+    my_score = likes if len(likes) > 0 else my_rating if len(my_rating) > 1 else 'unk'
+
     for i in range(QUALITIES.index(quality), len(QUALITIES)):
         link = f'{SITE_BASE}/media/videos/{QUALITY_STARTS[i]}{idi:d}{QUALITY_ENDS[i]}.mp4'
-        filename = f'nm_{idi:d}{f"_rating({my_rating})" if my_rating != "" else ""}{f"_{my_title}" if my_title != "" else ""}' \
-                   f'_{QUALITIES[i]}_pydw.mp4'
+        filename = f'nm_{idi:d}_score({my_score}){f"_{my_title}" if my_title != "" else ""}_{QUALITIES[i]}_pydw.mp4'
         if await download_file(idi, filename, dest_base, link, session):
             return
 
