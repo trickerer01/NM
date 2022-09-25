@@ -104,8 +104,9 @@ async def main() -> None:
 
         arefs = a_html.find_all('a', href=PAGE_ENTRY_RE)
         rrefs = a_html.find_all('b', string=re_compile(r'^(?:\d{1,3}%|-)$'))
-        assert len(arefs) == len(rrefs)
-        for refpair in zip(arefs, rrefs):
+        trefs = a_html.find_all('span', class_='video-title title-truncate m-t-5')
+        assert len(arefs) == len(rrefs) == len(trefs)
+        for refpair in zip(arefs, rrefs, trefs):
             cur_id = extract_id(refpair[0])
             if cur_id < stop_id:
                 Log(f'skipping {cur_id:d} < {stop_id:d}')
@@ -114,7 +115,8 @@ async def main() -> None:
                 Log(f'skipping {cur_id:d} > {begin_id:d}')
                 continue
             href_rel = str(refpair[0].get('href'))
-            my_title = href_rel[href_rel.rfind(SLASH) + 1:] if href_rel != '' else ''
+            tref = refpair[2].text
+            my_title = tref if tref != '' else href_rel[href_rel.rfind(SLASH) + 1:] if href_rel != '' else ''
             my_rating = str(refpair[1].text)
             vid_entries.append(VideoEntryFull(cur_id, my_title, my_rating))
 

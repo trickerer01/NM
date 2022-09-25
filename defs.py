@@ -22,7 +22,7 @@ SITE_ITEM_REQUEST_BASE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20v
 USER_AGENT = 'Mozilla/5.0 (X11; Linux i686; rv:68.9) Gecko/20100101 Goanna/4.8 Firefox/68.9'
 DEFAULT_HEADERS = {'User-Agent': USER_AGENT}
 
-REPLACE_SYMBOLS = r'[^\da-zA-Z._+%\-\(\)\[\] ]+?'
+REPLACE_SYMBOLS = r'[^\da-zA-Z.,_+%\-()\[\] ]+?'
 NON_SEARCH_SYMBOLS = r'[^\da-zA-Z._\-\[\]]'
 SLASH = '/'
 
