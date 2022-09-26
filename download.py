@@ -15,10 +15,11 @@ from aiofile import async_open
 from aiohttp import ClientSession
 
 from defs import (
-    Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, __NM_DEBUG__, SITE_BASE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
-    SLASH, SITE_ITEM_REQUEST_BASE
+    __NM_DEBUG__, Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, SITE_BASE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
+    SLASH, SITE_ITEM_REQUEST_BASE, TAGS_CONCAT_CHAR
 )
 from fetch_html import get_proxy, fetch_html
+from tagger import filtered_tags, unite_separated_tags
 
 downloads_queue = []  # type: List[int]
 failed_items = []  # type: List[int]
@@ -81,25 +82,29 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     while not await try_register_in_queue(idi):
         await sleep(0.1)
 
-    keywords = ''
+    my_tags = 'no_tags'
     likes = ''
     i_html = await fetch_html(SITE_ITEM_REQUEST_BASE % idi)
     if i_html:
         if i_html.find('legend', string='Error'):
-            Log(f'Warning: Got error 404 for id {idi:d}, likes/keywords/extra_title will not be extracted...')
+            Log(f'Warning: Got error 404 for id {idi:d}, likes/tags/extra_title will not be extracted...')
         elif i_html.find('div', class_='text-danger', string=re_compile(r'^This is a private video\..+?$')):
-            Log(f'Warning: Got private video error for id {idi:d}, likes/keywords/extra_title will not be extracted...')
+            Log(f'Warning: Got private video error for id {idi:d}, likes/tags/extra_title will not be extracted...')
         else:
             try:
                 my_title = i_html.find('meta', attrs={'name': 'description'}).get('content')
             except Exception:
                 Log(f'Warning: could not find description section for id {idi:d}...')
             try:
-                keywords = i_html.find('meta', attrs={'name': 'keywords'}).get('content')
-                if keywords == '':
-                    keywords = 'no_keywords'
+                keywords = str(i_html.find('meta', attrs={'name': 'keywords'}).get('content'))
+                keywords = keywords.replace(', ', TAGS_CONCAT_CHAR)
+                keywords = unite_separated_tags(keywords)
+                tags_str = filtered_tags([tag.lower().replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)])
+                # tags_str = filtered_tags(list(sorted(set(tag.lower().replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)))))
+                if tags_str != '':
+                    my_tags = tags_str
             except Exception:
-                Log(f'Warning: could not find keywords section for id {idi:d}...')
+                Log(f'Warning: could not find keywords section for id {idi:d}, no tags extracted...')
             try:
                 dislikes_int = int(i_html.find('span', id='video_dislikes').text)
                 likes_int = int(i_html.find('span', id='video_likes').text)
@@ -134,12 +139,12 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     fname_part1 = f'nm_{idi:d}_score({my_score}){f"_{my_title}" if my_title != "" else ""}'
     fname_part2 = 'pydw.mp4'
     extra_len = 5 + 3 + 2  # 3 underscores + 2 brackets + len(1080p) - max len of all qualities
-    while len(keywords) > 240 - (len(dest_base) + len(fname_part1) + len(fname_part2) + extra_len):
-        keywords = keywords[:max(0, keywords.rfind(', '))]
+    while len(my_tags) > 240 - (len(dest_base) + len(fname_part1) + len(fname_part2) + extra_len):
+        my_tags = my_tags[:max(0, my_tags.rfind(TAGS_CONCAT_CHAR))]
 
     for i in range(QUALITIES.index(quality), len(QUALITIES)):
         link = f'{SITE_BASE}/media/videos/{QUALITY_STARTS[i]}{idi:d}{QUALITY_ENDS[i]}.mp4'
-        filename = f'{fname_part1}_({keywords})_{QUALITIES[i]}_{fname_part2}'
+        filename = f'{fname_part1}_({my_tags})_{QUALITIES[i]}_{fname_part2}'
         if await download_file(idi, filename, dest_base, link, session):
             return
 

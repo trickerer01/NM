@@ -50,6 +50,8 @@ MAX_VIDEOS_QUEUE_SIZE = 4
 
 Log = print
 
+TAGS_CONCAT_CHAR = ','
+
 #
 #
 #########################################
