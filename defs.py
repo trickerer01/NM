@@ -55,6 +55,13 @@ Log = print
 
 TAGS_CONCAT_CHAR = ','
 
+
+class DownloadResult:
+    DOWNLOAD_SUCCESS = 0
+    DOWNLOAD_FAIL_NOT_FOUND = 1
+    DOWNLOAD_FAIL_RETRIES = 2
+    DOWNLOAD_FAIL_ALREADY_EXISTS = 3
+
 #
 #
 #########################################
