@@ -7,8 +7,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 from asyncio import sleep
-from os import path, stat, remove, makedirs
-from re import sub, search, compile as re_compile
+from os import path, stat, remove, makedirs, listdir
+from re import sub, search, compile, match, compile as re_compile
 from typing import List
 
 from aiofile import async_open
@@ -22,6 +22,8 @@ from fetch_html import get_proxy, fetch_html
 
 downloads_queue = []  # type: List[int]
 failed_items = []  # type: List[int]
+
+re_nmfile = compile(fr'^nm_([^_]+)_.*?({"|".join(q for q in QUALITIES)})_py.+?$')
 
 
 def is_queue_empty() -> bool:
@@ -149,18 +151,27 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, s: C
     file_size = 0
     retries = 0
 
-    if path.exists(dest):
-        file_size = stat(dest).st_size
-        if file_size > 0:
-            Log(f'{filename} already exists. Skipped.')
-            await try_unregister_from_queue(idi)
-            return True
-
     if not path.exists(dest_base):
         try:
             makedirs(dest_base)
         except Exception:
             raise IOError('ERROR: Unable to create subfolder!')
+    else:
+        # to check if file already exists we only take into account id and quality
+        nm_match = match(re_nmfile, filename)
+        nm_id = nm_match.group(1)
+        nm_quality = nm_match.group(2)
+        for fname in listdir(dest_base):
+            try:
+                f_match = match(re_nmfile, fname)
+                f_id = f_match.group(1)
+                f_quality = f_match.group(2)
+                if nm_id == f_id and nm_quality == f_quality:
+                    Log(f'{filename} (or similar) already exists. Skipped.')
+                    await try_unregister_from_queue(idi)
+                    return True
+            except Exception:
+                continue
 
     while not await try_register_in_queue(idi):
         await sleep(0.1)
