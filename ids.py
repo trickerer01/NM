@@ -29,6 +29,7 @@ async def main() -> None:
         start_id = arglist.start
         end_id = arglist.end
         quality = arglist.max_quality
+        excluded_tags = arglist.excluded_tags
         set_proxy(arglist.proxy if hasattr(arglist, 'proxy') else None)
 
         if start_id > end_id:
@@ -40,7 +41,7 @@ async def main() -> None:
 
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
         s.headers.update(DEFAULT_HEADERS.copy())
-        for cv in as_completed([download_id(idi, '', 'unk', dest_base, quality, s) for idi in range(start_id, end_id + 1)]):
+        for cv in as_completed([download_id(idi, '', 'unk', dest_base, quality, excluded_tags, s) for idi in range(start_id, end_id + 1)]):
             await cv
 
     if len(failed_items) > 0:

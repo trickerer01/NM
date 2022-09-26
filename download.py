@@ -78,7 +78,8 @@ async def try_unregister_from_queue(idi: int) -> None:
             Log(f'try_unregister_from_queue: {idi:d} was not in queue')
 
 
-async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, quality: str, session: ClientSession) -> None:
+async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, quality: str,
+                      excluded_tags: List[str], session: ClientSession) -> None:
     while not await try_register_in_queue(idi):
         await sleep(0.1)
 
@@ -97,9 +98,14 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
                 Log(f'Warning: could not find description section for id {idi:d}...')
             try:
                 keywords = str(i_html.find('meta', attrs={'name': 'keywords'}).get('content'))
-                keywords = keywords.replace(', ', TAGS_CONCAT_CHAR)
-                keywords = unite_separated_tags(keywords)
-                tags_str = filtered_tags([tag.lower().replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)])
+                keywords = unite_separated_tags(keywords.replace(', ', TAGS_CONCAT_CHAR).lower())
+                tags_raw = [tag for tag in keywords.split(TAGS_CONCAT_CHAR)]
+                if len(excluded_tags) > 0:
+                    for exctag in excluded_tags:
+                        if exctag in tags_raw:
+                            Log(f'Video \'nm_{idi:d}.mp4\' contains excluded tag \'{exctag}\'. Skipped!')
+                            return await try_unregister_from_queue(idi)
+                tags_str = filtered_tags(tags_raw)
                 # tags_str = filtered_tags(list(sorted(set(tag.lower().replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)))))
                 if tags_str != '':
                     my_tags = tags_str

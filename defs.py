@@ -42,6 +42,9 @@ HELP_PATH = 'Download destination. Default is current folder'
 HELP_SEARCH = 'If you want to only traverse pages matching some search query'
 HELP_QUALITY = f'Video quality. Default is \'{DEFAULT_QUALITY}\''
 HELP_ARG_PROXY = 'Proxy to use in format: a.d.d.r:port'
+HELP_ARG_EXCLUDE_TAGS = (
+    'All remaining \'-args\' count as tags to exclude. Videos containing any of those tags will be skipped. Case insensitive'
+)
 
 CONNECT_RETRIES_PAGE = 5
 CONNECT_RETRIES_ITEM = 10
