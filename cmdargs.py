@@ -15,6 +15,7 @@ from defs import (
     SLASH, Log, NON_SEARCH_SYMBOLS, HELP_PATH, HELP_PAGES, HELP_STOP_ID, HELP_SEARCH, QUALITIES, DEFAULT_QUALITY, HELP_QUALITY,
     HELP_ARG_PROXY, HELP_BEGIN_ID, HELP_ARG_EXCLUDE_TAGS
 )
+from tagger import validate_or_group
 
 parser = None  # type: Optional[ArgumentParser]
 
@@ -78,12 +79,15 @@ def validate_parsed(args) -> Namespace:
         if len(unks) > 0:
             for tag in unks:
                 try:
-                    assert tag[0] == '-'
-                    # validate_tag(tag[1:])
+                    assert tag[0] in ['-', '+', '(']
+                    if tag[0] == '(':
+                        validate_or_group(tag)
+                    # elif is_non_wtag(tag[1:]):
+                    #     validate_tag(tag[1:])
                 except Exception:
                     error_to_print = f'\nInvalid tag: \'{tag}\'\n'
                     raise
-            parsed.excluded_tags += [tag[1:].lower() for tag in unks]
+            parsed.extra_tags += [tag.lower() for tag in unks]
         # Log('parsed:', parsed)
     except (ArgumentError, TypeError, Exception):
         # Log('\n', e)
@@ -133,20 +137,23 @@ def valid_proxy(prox: str) -> str:
     return newval
 
 
-def minus_tag(tag: str) -> str:
+def extra_tag(tag: str) -> str:
     try:
-        assert tag[0] == '-'
-        # validate_tag(tag[1:])
+        assert tag[0] in ['-', '+', '(']
+        if tag[0] == '(':
+            validate_or_group(tag)
+        # elif is_non_wtag(tag[1:]):
+        #     validate_tag(tag[1:])
     except Exception:
         raise ArgumentError
 
-    return tag[1:].lower()
+    return tag.lower()
 
 
 def add_common_args(parser_or_group: ArgumentParser) -> None:
     parser_or_group.add_argument('-path', default=path.abspath(path.curdir), help=HELP_PATH, type=valid_path)
     parser_or_group.add_argument('-proxy', metavar='#type://a.d.d.r:port', help=HELP_ARG_PROXY, type=valid_proxy)
-    parser_or_group.add_argument(dest='excluded_tags', nargs=ZERO_OR_MORE, help=HELP_ARG_EXCLUDE_TAGS, type=minus_tag)
+    parser_or_group.add_argument(dest='extra_tags', nargs=ZERO_OR_MORE, help=HELP_ARG_EXCLUDE_TAGS, type=extra_tag)
 
 
 def prepare_arglist_ids(args: List[str]) -> Namespace:

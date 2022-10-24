@@ -70,7 +70,7 @@ async def main() -> None:
         begin_id = arglist.begin_id
         search_str = arglist.search
         quality = arglist.max_quality
-        excluded_tags = arglist.excluded_tags
+        extra_tags = arglist.extra_tags
         set_proxy(arglist.proxy if hasattr(arglist, 'proxy') else None)
     except Exception:
         Log('\nError reading parsed arglist!')
@@ -130,7 +130,7 @@ async def main() -> None:
     vid_entries = list(reversed(vid_entries))
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
         s.headers.update(DEFAULT_HEADERS.copy())
-        for cv in as_completed([download_id(v.my_id, v.my_title, v.my_rating, dest_base, quality, excluded_tags, s) for v in vid_entries]):
+        for cv in as_completed([download_id(v.my_id, v.my_title, v.my_rating, dest_base, quality, extra_tags, s) for v in vid_entries]):
             await cv
 
     if not is_queue_empty():

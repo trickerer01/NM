@@ -19,7 +19,7 @@ from defs import (
     SLASH, SITE_ITEM_REQUEST_BASE, TAGS_CONCAT_CHAR, DownloadResult
 )
 from fetch_html import get_proxy, fetch_html
-from tagger import filtered_tags, unite_separated_tags, get_matching_tag
+from tagger import filtered_tags, unite_separated_tags, get_matching_tag, get_group_matching_tag
 
 downloads_queue = []  # type: List[int]
 failed_items = []  # type: List[int]
@@ -79,7 +79,7 @@ async def try_unregister_from_queue(idi: int) -> None:
 
 
 async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, quality: str,
-                      excluded_tags: List[str], session: ClientSession) -> None:
+                      extra_tags: List[str], session: ClientSession) -> None:
     while not await try_register_in_queue(idi):
         await sleep(0.1)
 
@@ -99,16 +99,25 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
             try:
                 keywords = str(i_html.find('meta', attrs={'name': 'keywords'}).get('content'))
                 keywords = unite_separated_tags(keywords.replace(', ', TAGS_CONCAT_CHAR).lower())
-                tags_raw = [tag for tag in keywords.split(TAGS_CONCAT_CHAR)]
-                tags_str = filtered_tags(tags_raw)
-                tags_usc = tags_str.lower().split(TAGS_CONCAT_CHAR)
-                if len(excluded_tags) > 0:
-                    for exctag in excluded_tags:
-                        mtag = get_matching_tag(exctag, tags_usc)
-                        if mtag:
-                            Log(f'Video \'nm_{idi:d}.mp4\' contains excluded tag \'{mtag}\'. Skipped!')
+                tags_raw = [tag.replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)]
+                if len(extra_tags) > 0:
+                    for extag in extra_tags:
+                        suc = True
+                        if extag[0] == '(':
+                            if get_group_matching_tag(extag, tags_raw) is None:
+                                suc = False
+                                Log(f'Video \'nm_{idi:d}.mp4\' misses required tag matching \'{extag}\'. Skipped!')
+                        else:
+                            mtag = get_matching_tag(extag[1:], tags_raw)
+                            if mtag is not None and extag[0] == '-':
+                                suc = False
+                                Log(f'Video \'nm_{idi:d}.mp4\' contains excluded tag \'{mtag}\'. Skipped!')
+                            elif mtag is None and extag[0] == '+':
+                                suc = False
+                                Log(f'Video \'nm_{idi:d}.mp4\' misses required tag matching \'{extag[1:]}\'. Skipped!')
+                        if suc is False:
                             return await try_unregister_from_queue(idi)
-                # tags_str = filtered_tags(list(sorted(set(tag.lower().replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)))))
+                tags_str = filtered_tags(tags_raw)
                 if tags_str != '':
                     my_tags = tags_str
             except Exception:
