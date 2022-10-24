@@ -7,7 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 from re import compile as re_compile, fullmatch as re_fullmatch, match as re_match, sub as re_sub
-from typing import List, Dict, Optional
+from typing import List, Optional
 
 from defs import TAGS_CONCAT_CHAR, Log
 
@@ -70,18 +70,24 @@ re_tags_to_exclude = re_compile(
 )
 
 RAW_TAGS_REPLACEMENTS = {
-    re_compile(r'([^,]+),([oi][fnr]),([^,]+)'): r'\1 \2 \3',
-    re_compile(r'(three|four|five|\d+?),(some)'): r'\1\2',
+    re_compile(r'(strap),(on)'): r'\1\2',
+    re_compile(r'([^,]+),([oi][fnr]|with),([^,]+)'): r'\1 \2 \3',
+    re_compile(r'(three|f(?:o(?:re|ur)|ive)|\d+?),(some)'): r'\1\2',
+    re_compile(r'([^,]+),(job)'): r'\1\2',
     re_compile(r'(ada),(wong)'): r'\1 \2',
     re_compile(r'(all),(fours?)'): r'\1 \2',
+    re_compile(r'(all),(the),(way),(thr(?:ough|u))'): r'\1 \2 \3 \4',
     re_compile(r'(apex),(legends?)'): r'\1 \2',
     re_compile(r'(belly),(bulge)'): r'\1 \2',
     re_compile(r'(cassie),(cage)'): r'\1 \2',
     re_compile(r'(claire),(redfield)'): r'\1 \2',
     re_compile(r'(c[ou]m+?ing),(soon)'): r'\1 \2',
+    re_compile(r'(blood|d(?:ark|row)|high|night|void),(el(?:f|ves?))'): r'\1 \2',
+    re_compile(r'(dat),(ass)'): r'\1 \2',
     re_compile(r'(dogg?y),(style)'): r'\1 \2',
     re_compile(r'(dragon),(ballz?)'): r'\1\2',
     re_compile(r'(final),(fantasy)(?:,(x[^,]{2}))?'): r'\1 \2 \3',
+    re_compile(r'(first),(try|work)'): r'\1 \2',
     re_compile(r'(genshin),(impact)'): r'\1 \2',
     re_compile(r'(gang),((?:bang|rape))'): r'\1\2',
     re_compile(r'(grand),(cupido)'): r'\1\2',
@@ -90,10 +96,17 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(horse),(cock)'): r'\1\2',
     re_compile(r'(jaina),(proudmoore)'): r'\1 \2',
     re_compile(r'(jill),(valentine)'): r'\1 \2',
+    re_compile(r'(lady),([^,]+)'): r'\1 \2',
     re_compile(r'(lara),(croft)'): r'\1 \2',
     re_compile(r'(marie),(rose)'): r'\1 \2',
+    re_compile(r'(mia),(winters?)'): r'\1 \2',
+    re_compile(r'(monster),(girls?)'): r'\1 \2',
     re_compile(r'(mortal),([ck]ombat)'): r'\1 \2',
+    re_compile(r'(my),(little),(pony)'): r'\1 \2 \3',
+    re_compile(r'(nier),(automata)'): r'\1 \2',
+    re_compile(r'(no),([^,]+)'): r'\1 \2',
     re_compile(r'(resident),(evil)'): r'\1 \2',
+    re_compile(r'(salvatore),(moreau)'): r'\1 \2',
     re_compile(r'(samus),(aran)'): r'\1 \2',
     re_compile(r'(second),(life)'): r'\1 \2',
     re_compile(r'(soft),(core)'): r'\1\2',
@@ -102,13 +115,12 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(tifa),(lockhart)'): r'\1 \2',
     re_compile(r'(tina),(armstrong)'): r'\1 \2',
     re_compile(r'(triss),(merigold)'): r'\1 \2',
+    re_compile(r'(yorra),((?:comm?and|\d+)[^,]+)'): r'\1 \2',
 }
 
 TAG_ALIASES = {
-    'pmv': 'PMV',
-    'hmv': 'HMV',
-    'sfmpmv': 'PMV',
-    'sfmhmv': 'HMV',
+    'sfmpmv': 'pmv',
+    'sfmhmv': 'hmv',
     'analsex': 'anal',
     'apexlegend': 'apex_legends',
     'apexlegends': 'apex_legends',
@@ -238,8 +250,9 @@ def filtered_tags(tags_list: List[str]) -> str:
     if len(tags_list) == 0:
         return ''
 
-    tag_chars = '!abcdefghijklmnopqrstuvwxyz'
-    tags_dict = {c: [] for c in tag_chars}  # type: Dict[str, List[str]]
+    # tag_chars = '!abcdefghijklmnopqrstuvwxyz'
+    # tags_dict = {c: [] for c in tag_chars}  # type: Dict[str, List[str]]
+    tags_list_final = []  # type: List[str]
 
     for tag in tags_list:
         tag = re_sub(re_replace_symbols, '_', tag)
@@ -255,30 +268,30 @@ def filtered_tags(tags_list: List[str]) -> str:
 
         tag = trim_undersores(tag)
 
-        tag_char = tag[0] if tag[0] in tag_chars[1:] else tag_chars[0]
+        # tag_char = tag[0] if tag[0] in tag_chars[1:] else tag_chars[0]
         do_add = True
-        if len(tags_dict[tag_char]) > 0:
+        if len(tags_list_final) > 0:
             # try and see
             # 1) if this tag can be consumed by existing tags
             # 2) if this tag can consume existing tags
-            for i in reversed(range(len(tags_dict[tag_char]))):
-                t = re_sub(re_numbered_or_counted_tag, r'\1', tags_dict[tag_char][i].lower())
+            for i in reversed(range(len(tags_list_final))):
+                t = re_sub(re_numbered_or_counted_tag, r'\1', tags_list_final[i].lower())
                 if len(t) >= len(tag) and (tag in t):
                     do_add = False
                     break
             if do_add:
-                for i in reversed(range(len(tags_dict[tag_char]))):
-                    t = re_sub(re_numbered_or_counted_tag, r'\1', tags_dict[tag_char][i].lower())
+                for i in reversed(range(len(tags_list_final))):
+                    t = re_sub(re_numbered_or_counted_tag, r'\1', tags_list_final[i].lower())
                     if len(tag) >= len(t) and (t in tag):
-                        del tags_dict[tag_char][i]
+                        del tags_list_final[i]
         if do_add:
             for i, c in enumerate(tag):  # type: int, str
                 if (i == 0 or tag[i - 1] == '_') and c.isalpha():
                     tag = f'{tag[:i]}{c.upper()}{tag[i + 1:]}'
-            tags_dict[tag_char].append(tag)
+            tags_list_final.append(tag)
 
-    tags_list_final = []
-    [tags_list_final.extend(tag_list) for tag_list in tags_dict.values() if len(tag_list) != 0]
+    # tags_list_final = []
+    # [tags_list_final.extend(tag_list) for tag_list in tags_dict.values() if len(tag_list) != 0]
 
     return trim_undersores(TAGS_CONCAT_CHAR.join(tags_list_final))
 

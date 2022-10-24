@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 from asyncio import sleep
 from os import path, stat, remove, makedirs, listdir
-from re import sub, search, compile, match, compile as re_compile
+from re import sub, search, match, compile as re_compile
 from typing import List
 
 from aiofile import async_open
@@ -24,7 +24,8 @@ from tagger import filtered_tags, unite_separated_tags, get_matching_tag, get_gr
 downloads_queue = []  # type: List[int]
 failed_items = []  # type: List[int]
 
-re_nmfile = compile(fr'^nm_([^_]+)_.*?({"|".join(q for q in QUALITIES)})_py.+?$')
+re_nmfile = re_compile(fr'^nm_([^_]+)_.*?({"|".join(q for q in QUALITIES)})_py.+?$')
+re_pdanger = re_compile(r'^This is a private video\..*?$')
 
 
 def is_queue_empty() -> bool:
@@ -87,9 +88,9 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     likes = ''
     i_html = await fetch_html(SITE_ITEM_REQUEST_BASE % idi)
     if i_html:
-        if i_html.find('legend', string='Error'):
+        if any('Error' in [d.string, d.text] for d in i_html.find_all('legend')):
             Log(f'Warning: Got error 404 for id {idi:d}, likes/tags/extra_title will not be extracted...')
-        elif i_html.find('div', class_='text-danger', string=re_compile(r'^This is a private video\..+?$')):
+        elif any(re_pdanger.match(d.text) for d in i_html.find_all('div', class_='text-danger')):
             Log(f'Warning: Got private video error for id {idi:d}, likes/tags/extra_title will not be extracted...')
         else:
             try:
