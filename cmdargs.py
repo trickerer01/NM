@@ -152,7 +152,8 @@ def add_common_args(parser_or_group: ArgumentParser) -> None:
 def prepare_arglist_ids(args: List[str]) -> Namespace:
     global parser
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(add_help=False)
+    parser.add_argument('--help', action='help')
 
     parser.add_argument('-start', metavar='#number', required=True, help='Start Id', type=valid_positive_nonzero_int)
     arggr_ids = parser.add_mutually_exclusive_group()

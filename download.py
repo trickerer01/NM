@@ -19,7 +19,7 @@ from defs import (
     SLASH, SITE_ITEM_REQUEST_BASE, TAGS_CONCAT_CHAR, DownloadResult
 )
 from fetch_html import get_proxy, fetch_html
-from tagger import filtered_tags, unite_separated_tags
+from tagger import filtered_tags, unite_separated_tags, get_matching_tag
 
 downloads_queue = []  # type: List[int]
 failed_items = []  # type: List[int]
@@ -100,12 +100,14 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
                 keywords = str(i_html.find('meta', attrs={'name': 'keywords'}).get('content'))
                 keywords = unite_separated_tags(keywords.replace(', ', TAGS_CONCAT_CHAR).lower())
                 tags_raw = [tag for tag in keywords.split(TAGS_CONCAT_CHAR)]
+                tags_str = filtered_tags(tags_raw)
+                tags_usc = tags_str.lower().split(TAGS_CONCAT_CHAR)
                 if len(excluded_tags) > 0:
                     for exctag in excluded_tags:
-                        if exctag in tags_raw:
-                            Log(f'Video \'nm_{idi:d}.mp4\' contains excluded tag \'{exctag}\'. Skipped!')
+                        mtag = get_matching_tag(exctag, tags_usc)
+                        if mtag:
+                            Log(f'Video \'nm_{idi:d}.mp4\' contains excluded tag \'{mtag}\'. Skipped!')
                             return await try_unregister_from_queue(idi)
-                tags_str = filtered_tags(tags_raw)
                 # tags_str = filtered_tags(list(sorted(set(tag.lower().replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)))))
                 if tags_str != '':
                     my_tags = tags_str

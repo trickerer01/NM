@@ -6,8 +6,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-from re import compile as re_compile, match as re_match, sub as re_sub
-from typing import List, Dict
+from re import compile as re_compile, fullmatch as re_fullmatch, match as re_match, sub as re_sub
+from typing import List, Dict, Optional
 
 from defs import TAGS_CONCAT_CHAR, Log
 
@@ -72,6 +72,7 @@ re_tags_to_exclude = re_compile(
 RAW_TAGS_REPLACEMENTS = {
     re_compile(r'([^,]+),([oi][fnr]),([^,]+)'): r'\1 \2 \3',
     re_compile(r'(three|four|five|\d+?),(some)'): r'\1\2',
+    re_compile(r'(ada),(wong)'): r'\1 \2',
     re_compile(r'(all),(fours?)'): r'\1 \2',
     re_compile(r'(apex),(legends?)'): r'\1 \2',
     re_compile(r'(belly),(bulge)'): r'\1 \2',
@@ -178,6 +179,21 @@ TAG_ALIASES = {
     'worldofwarcraft': 'world_of_warcraft',
     'whore': 'slut',
 }
+
+
+def get_matching_tag(wtag: str, mtags: List[str]) -> Optional[str]:
+    if re_fullmatch(r'^[^?*]*[?*].*?$', wtag):
+        escaped_tag = (
+            wtag.replace('.', '\\.').replace('[', '\\[').replace(']', '\\]').replace('(', '\\(').replace(')', '\\)').replace('-', '\\-')
+            .replace('*', '.*').replace('?', '.')
+        )
+        pat = re_compile(rf'^{escaped_tag}$')
+        for htag in mtags:
+            if re_fullmatch(pat, htag):
+                return htag
+        return None
+    else:
+        return wtag if wtag in mtags else None
 
 
 def trim_undersores(base_str: str) -> str:
