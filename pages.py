@@ -70,13 +70,15 @@ async def main() -> None:
         begin_id = arglist.begin_id
         search_str = arglist.search
         quality = arglist.max_quality
-        extra_tags = arglist.extra_tags
+        pp = arglist.priv_video_policy
+        up = arglist.unli_video_policy
+        ex_tags = arglist.extra_tags
         set_proxy(arglist.proxy if hasattr(arglist, 'proxy') else None)
     except Exception:
         Log('\nError reading parsed arglist!')
         return
 
-    vid_entries = []
+    v_entries = []
     maxpage = 0
 
     pi = start_page
@@ -119,18 +121,18 @@ async def main() -> None:
             tref = refpair[2].text
             my_title = tref if tref != '' else href_rel[href_rel.rfind(SLASH) + 1:] if href_rel != '' else ''
             my_rating = str(refpair[1].text)
-            vid_entries.append(VideoEntryFull(cur_id, my_title, my_rating))
+            v_entries.append(VideoEntryFull(cur_id, my_title, my_rating))
 
-    if len(vid_entries) == 0:
+    if len(v_entries) == 0:
         Log('\nNo videos found. Aborted.')
         return
 
-    minid, maxid = get_minmax_ids(vid_entries)
-    Log(f'\nOk! {len(vid_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
-    vid_entries = list(reversed(vid_entries))
+    minid, maxid = get_minmax_ids(v_entries)
+    Log(f'\nOk! {len(v_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
+    v_entries = list(reversed(v_entries))
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
         s.headers.update(DEFAULT_HEADERS.copy())
-        for cv in as_completed([download_id(v.my_id, v.my_title, v.my_rating, dest_base, quality, extra_tags, s) for v in vid_entries]):
+        for cv in as_completed([download_id(v.my_id, v.my_title, v.my_rating, dest_base, quality, ex_tags, pp, up, s) for v in v_entries]):
             await cv
 
     if not is_queue_empty():
