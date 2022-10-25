@@ -33,9 +33,16 @@ QUALITY_ENDS = ['_1080p', '_720p', '_hi', '_480p', '_360p', '_SD', '_low']
 DEFAULT_QUALITY = QUALITIES[4]
 
 # private videos download policy
-DOWNLOAD_DEFAULT = 'default'
-DOWNLOAD_ALWAYS = 'always'
-UVIDEO_POLICIES = [DOWNLOAD_DEFAULT, DOWNLOAD_ALWAYS]
+DOWNLOAD_POLICY_NOFILTERS = 'nofilters'
+DOWNLOAD_POLICY_ALWAYS = 'always'
+UVIDEO_POLICIES = [DOWNLOAD_POLICY_NOFILTERS, DOWNLOAD_POLICY_ALWAYS]
+DOWNLOAD_POLICY_DEFAULT = DOWNLOAD_POLICY_NOFILTERS
+
+# download (file creation) mode
+DOWNLOAD_MODE_FULL = 'full'
+DOWNLOAD_MODE_TOUCH = 'touch'
+DOWNLOAD_MODES = [DOWNLOAD_MODE_FULL, DOWNLOAD_MODE_TOUCH]
+DOWNLOAD_MODE_DEFAULT = DOWNLOAD_MODE_FULL
 
 ACTION_STORE_TRUE = 'store_true'
 ACTION_STORE_FALSE = 'store_false'
@@ -50,6 +57,7 @@ HELP_ARG_PROXY = 'Proxy to use in format: a.d.d.r:port'
 HELP_ARG_UVPOLICY = (
     'Unlisted videos download policy. By default these videos are ignored if you use extra +tags/-tags. Use \'always\' to override'
 )
+HELP_ARG_DMMODE = 'Download (file creation) mode'
 HELP_ARG_EXCLUDE_TAGS = (
     'All remaining \'-args\' count as tags to exclude. Videos containing any of those tags will be skipped. Case insensitive'
 )

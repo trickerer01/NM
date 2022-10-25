@@ -16,7 +16,7 @@ from aiohttp import ClientSession
 
 from defs import (
     __NM_DEBUG__, Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, SITE_BASE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
-    SLASH, SITE_ITEM_REQUEST_BASE, TAGS_CONCAT_CHAR, DownloadResult, DOWNLOAD_ALWAYS
+    SLASH, SITE_ITEM_REQUEST_BASE, TAGS_CONCAT_CHAR, DownloadResult, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH
 )
 from fetch_html import get_proxy, fetch_html
 from tagger import filtered_tags, unite_separated_tags, get_matching_tag, get_group_matching_tag
@@ -80,7 +80,7 @@ async def try_unregister_from_queue(idi: int) -> None:
 
 
 async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, quality: str,
-                      extra_tags: List[str], unlisted_policy: str, session: ClientSession) -> None:
+                      extra_tags: List[str], unlisted_policy: str, download_mode: str, session: ClientSession) -> None:
     while not await try_register_in_queue(idi):
         await sleep(0.1)
 
@@ -99,7 +99,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
         #         is_private = True
         #         break
         if any('Error' in [d.string, d.text] for d in i_html.find_all('legend')):
-            if len(extra_tags) > 0 and unlisted_policy != DOWNLOAD_ALWAYS:
+            if len(extra_tags) > 0 and unlisted_policy != DOWNLOAD_POLICY_ALWAYS:
                 Log(f'Got error 404 for id {idi:d} (may be unlisted), skipping due to private videos download policy...')
                 return await try_unregister_from_queue(idi)
             Log(f'Warning: Got error 404 for id {idi:d} (may be unlisted), likes/tags/extra_title will not be extracted...')
@@ -179,7 +179,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     for i in range(QUALITIES.index(quality), len(QUALITIES)):
         link = f'{SITE_BASE}/media/videos/{QUALITY_STARTS[i]}{idi:d}{QUALITY_ENDS[i]}.mp4'
         filename = f'{fname_part1}_({my_tags})_{QUALITIES[i]}_{fname_part2}'
-        res = await download_file(idi, filename, dest_base, link, session)
+        res = await download_file(idi, filename, dest_base, link, download_mode, session)
         if res not in [DownloadResult.DOWNLOAD_SUCCESS, DownloadResult.DOWNLOAD_FAIL_ALREADY_EXISTS]:
             ret_vals.append(res)
         else:
@@ -191,7 +191,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
             break
 
 
-async def download_file(idi: int, filename: str, dest_base: str, link: str, s: ClientSession) -> int:
+async def download_file(idi: int, filename: str, dest_base: str, link: str, download_mode: str, s: ClientSession) -> int:
     dest = normalize_filename(filename, dest_base)
     file_size = 0
     retries = 0
@@ -230,6 +230,12 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, s: C
     # Log('Retrieving %s...' % filename_short)
     while (not (path.exists(dest) and file_size > 0)) and retries < CONNECT_RETRIES_ITEM:
         try:
+            if download_mode == DOWNLOAD_MODE_TOUCH:
+                Log(f'Saving<touch> {0.0:.2f} Mb to {filename}')
+                with open(dest, 'wb'):
+                    pass
+                break
+
             r = None
             async with s.request('GET', link, timeout=7200, proxy=get_proxy()) as r:
                 if r.status == 404:
