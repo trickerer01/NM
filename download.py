@@ -108,44 +108,44 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
                 Log(f'Got private video error for id {idi:d}, skipping due to private videos download policy...')
                 return await try_unregister_from_queue(idi)
             Log(f'Warning: Got private video error for id {idi:d}, likes/tags/extra_title will not be extracted...')
-        else:
-            try:
-                my_title = i_html.find('meta', attrs={'name': 'description'}).get('content')
-            except Exception:
-                Log(f'Warning: could not find description section for id {idi:d}...')
-            try:
-                keywords = str(i_html.find('meta', attrs={'name': 'keywords'}).get('content'))
-                keywords = unite_separated_tags(keywords.replace(', ', TAGS_CONCAT_CHAR).lower())
-                tags_raw = [tag.replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)]
-                if len(extra_tags) > 0:
-                    for extag in extra_tags:
-                        suc = True
-                        if extag[0] == '(':
-                            if get_group_matching_tag(extag, tags_raw) is None:
-                                suc = False
-                                Log(f'Video \'nm_{idi:d}.mp4\' misses required tag matching \'{extag}\'. Skipped!')
-                        else:
-                            mtag = get_matching_tag(extag[1:], tags_raw)
-                            if mtag is not None and extag[0] == '-':
-                                suc = False
-                                Log(f'Video \'nm_{idi:d}.mp4\' contains excluded tag \'{mtag}\'. Skipped!')
-                            elif mtag is None and extag[0] == '+':
-                                suc = False
-                                Log(f'Video \'nm_{idi:d}.mp4\' misses required tag matching \'{extag[1:]}\'. Skipped!')
-                        if suc is False:
-                            return await try_unregister_from_queue(idi)
-                tags_str = filtered_tags(tags_raw)
-                if tags_str != '':
-                    my_tags = tags_str
-            except Exception:
-                Log(f'Warning: could not find keywords section for id {idi:d}, no tags extracted...')
-            try:
-                dislikes_int = int(i_html.find('span', id='video_dislikes').text)
-                likes_int = int(i_html.find('span', id='video_likes').text)
-                likes_int -= dislikes_int
-                likes = f'{"+" if likes_int > 0 else ""}{likes_int:d}'
-            except Exception:
-                pass
+
+        try:
+            my_title = i_html.find('meta', attrs={'name': 'description'}).get('content')
+        except Exception:
+            Log(f'Warning: could not find description section for id {idi:d}...')
+        try:
+            keywords = str(i_html.find('meta', attrs={'name': 'keywords'}).get('content'))
+            keywords = unite_separated_tags(keywords.replace(', ', TAGS_CONCAT_CHAR).lower())
+            tags_raw = [tag.replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)]
+            if len(extra_tags) > 0:
+                for extag in extra_tags:
+                    suc = True
+                    if extag[0] == '(':
+                        if get_group_matching_tag(extag, tags_raw) is None:
+                            suc = False
+                            Log(f'Video \'nm_{idi:d}.mp4\' misses required tag matching \'{extag}\'. Skipped!')
+                    else:
+                        mtag = get_matching_tag(extag[1:], tags_raw)
+                        if mtag is not None and extag[0] == '-':
+                            suc = False
+                            Log(f'Video \'nm_{idi:d}.mp4\' contains excluded tag \'{mtag}\'. Skipped!')
+                        elif mtag is None and extag[0] == '+':
+                            suc = False
+                            Log(f'Video \'nm_{idi:d}.mp4\' misses required tag matching \'{extag[1:]}\'. Skipped!')
+                    if suc is False:
+                        return await try_unregister_from_queue(idi)
+            tags_str = filtered_tags(tags_raw)
+            if tags_str != '':
+                my_tags = tags_str
+        except Exception:
+            Log(f'Warning: could not find keywords section for id {idi:d}, no tags extracted...')
+        try:
+            dislikes_int = int(i_html.find('span', id='video_dislikes').text)
+            likes_int = int(i_html.find('span', id='video_likes').text)
+            likes_int -= dislikes_int
+            likes = f'{"+" if likes_int > 0 else ""}{likes_int:d}'
+        except Exception:
+            pass
 
     # qlist = [QUALITIES.copy(), QUALITY_STARTS.copy(), QUALITY_ENDS.copy()]
     #
