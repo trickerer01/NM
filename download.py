@@ -80,7 +80,7 @@ async def try_unregister_from_queue(idi: int) -> None:
 
 
 async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, quality: str,
-                      extra_tags: List[str], private_policy: str, unlisted_policy: str, session: ClientSession) -> None:
+                      extra_tags: List[str], unlisted_policy: str, session: ClientSession) -> None:
     while not await try_register_in_queue(idi):
         await sleep(0.1)
 
@@ -100,14 +100,11 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
         #         break
         if any('Error' in [d.string, d.text] for d in i_html.find_all('legend')):
             if len(extra_tags) > 0 and unlisted_policy != DOWNLOAD_ALWAYS:
-                Log(f'Got error 404 for id {idi:d}, skipping due to private videos download policy...')
+                Log(f'Got error 404 for id {idi:d} (may be unlisted), skipping due to private videos download policy...')
                 return await try_unregister_from_queue(idi)
-            Log(f'Warning: Got error 404 for id {idi:d}, likes/tags/extra_title will not be extracted...')
+            Log(f'Warning: Got error 404 for id {idi:d} (may be unlisted), likes/tags/extra_title will not be extracted...')
         elif any(re_pdanger.match(d.text) for d in i_html.find_all('div', class_='text-danger')):
-            if len(extra_tags) > 0 and private_policy != DOWNLOAD_ALWAYS:
-                Log(f'Got private video error for id {idi:d}, skipping due to private videos download policy...')
-                return await try_unregister_from_queue(idi)
-            Log(f'Warning: Got private video error for id {idi:d}, likes/tags/extra_title will not be extracted...')
+            Log(f'Warning: Got private video error for id {idi:d}, likes/extra_title will not be extracted...')
 
         try:
             my_title = i_html.find('meta', attrs={'name': 'description'}).get('content')

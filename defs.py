@@ -35,7 +35,6 @@ DEFAULT_QUALITY = QUALITIES[4]
 # private videos download policy
 DOWNLOAD_DEFAULT = 'default'
 DOWNLOAD_ALWAYS = 'always'
-PVIDEO_POLICIES = [DOWNLOAD_DEFAULT, DOWNLOAD_ALWAYS]
 UVIDEO_POLICIES = [DOWNLOAD_DEFAULT, DOWNLOAD_ALWAYS]
 
 ACTION_STORE_TRUE = 'store_true'
@@ -48,9 +47,6 @@ HELP_PATH = 'Download destination. Default is current folder'
 HELP_SEARCH = 'If you want to only traverse pages matching some search query'
 HELP_QUALITY = f'Video quality. Default is \'{DEFAULT_QUALITY}\''
 HELP_ARG_PROXY = 'Proxy to use in format: a.d.d.r:port'
-HELP_ARG_PVPOLICY = (
-    'Private videos download policy. By default these videos are ignored if you use extra +tags/-tags. Use \'always\' to override'
-)
 HELP_ARG_UVPOLICY = (
     'Unlisted videos download policy. By default these videos are ignored if you use extra +tags/-tags. Use \'always\' to override'
 )

@@ -70,7 +70,6 @@ async def main() -> None:
         begin_id = arglist.begin_id
         search_str = arglist.search
         quality = arglist.max_quality
-        pp = arglist.priv_video_policy
         up = arglist.unli_video_policy
         ex_tags = arglist.extra_tags
         set_proxy(arglist.proxy if hasattr(arglist, 'proxy') else None)
@@ -132,7 +131,7 @@ async def main() -> None:
     v_entries = list(reversed(v_entries))
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
         s.headers.update(DEFAULT_HEADERS.copy())
-        for cv in as_completed([download_id(v.my_id, v.my_title, v.my_rating, dest_base, quality, ex_tags, pp, up, s) for v in v_entries]):
+        for cv in as_completed([download_id(v.my_id, v.my_title, v.my_rating, dest_base, quality, ex_tags, up, s) for v in v_entries]):
             await cv
 
     if not is_queue_empty():

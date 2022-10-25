@@ -13,8 +13,7 @@ from typing import Optional, List
 
 from defs import (
     SLASH, Log, NON_SEARCH_SYMBOLS, HELP_PATH, HELP_PAGES, HELP_STOP_ID, HELP_SEARCH, QUALITIES, DEFAULT_QUALITY, HELP_QUALITY,
-    HELP_ARG_PROXY, HELP_BEGIN_ID, HELP_ARG_EXCLUDE_TAGS, PVIDEO_POLICIES, DOWNLOAD_DEFAULT, HELP_ARG_PVPOLICY, UVIDEO_POLICIES,
-    HELP_ARG_UVPOLICY
+    HELP_ARG_PROXY, HELP_BEGIN_ID, HELP_ARG_EXCLUDE_TAGS, DOWNLOAD_DEFAULT, UVIDEO_POLICIES, HELP_ARG_UVPOLICY
 )
 from tagger import validate_or_group
 
@@ -154,7 +153,6 @@ def extra_tag(tag: str) -> str:
 def add_common_args(parser_or_group: ArgumentParser) -> None:
     parser_or_group.add_argument('-path', default=path.abspath(path.curdir), help=HELP_PATH, type=valid_path)
     parser_or_group.add_argument('-proxy', metavar='#type://a.d.d.r:port', help=HELP_ARG_PROXY, type=valid_proxy)
-    parser_or_group.add_argument('-pvp', '--priv-video-policy', default=DOWNLOAD_DEFAULT, help=HELP_ARG_PVPOLICY, choices=PVIDEO_POLICIES)
     parser_or_group.add_argument('-uvp', '--unli-video-policy', default=DOWNLOAD_DEFAULT, help=HELP_ARG_UVPOLICY, choices=UVIDEO_POLICIES)
     parser_or_group.add_argument(dest='extra_tags', nargs=ZERO_OR_MORE, help=HELP_ARG_EXCLUDE_TAGS, type=extra_tag)
 
