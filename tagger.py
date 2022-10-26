@@ -32,7 +32,7 @@ re_tags_to_process = re_compile(
 re_tags_to_exclude = re_compile(
     r'^(?:'
     r'a(?:l(?:iv.+?|l(?:_.+?|ian.+?)?)|mazons?|n(?:gl.+?|im.+?)|poca.*?|reol.*?|sian.*?|udio.*?)|'  # a
-    r'b(?:a(?:be.*?|ck.*?|ll.*?|re.*?|th.*?)|e(?:hind|lly)|i(?:g.+?|kin.+?)|l(?:end.*?|o(?:nd.*?|w[^j].*?)|ue.*?)|'  # b
+    r'b(?:a(?:be.*?|ck.*?|ll.*?|re.*?|th.*?)|e(?:hind|lly)|i(?:g(?:[^j].+?)?|kin.+?)|l(?:end.*?|o(?:nd.*?|w[^j].*?)|ue.*?)|'  # b
     r'o(?:d[iy].*?|ob.*?|ss.*?|ttom.*?|unc.+?)|r(?:e(?:ast.*?|ed.*?)|o[tw].*?|unet.+?)|u(?:kk.*?|lg.+?|st.*?|tt.*?))|'  # b
     r'c(?:a(?:ge.*?|ni.+?|p(?:i?tai?n|tur.+?)|rt.*?|v[ei].*?)|elebr.+?|h(?:a(?:mbers?|ract.+?|t.*?)|eat.*?|ub.+?)|ity|'  # c
     r'l(?:ap.*?|im.+?|o(?:n.+?|th.*?|wn.*?))|o(?:ck.*?|lor.*?|m[ip].+?|n[dv].+?|w.+?)|r(?:e[as].+?|ing.*?|oss.*?)|'  # c
@@ -193,9 +193,12 @@ TAG_ALIASES = {
 }
 
 
+def is_valid_or_group(orgr: str) -> bool:
+    return len(orgr) >= len('(.~.)') and orgr[0] == '(' and orgr[-1] == ')' and orgr.find('~') != -1 and len(orgr[1:-1].split('~', 1)) == 2
+
+
 def validate_or_group(orgr: str) -> None:
-    assert len(orgr) >= len('(.~.)')
-    assert orgr[0] == '(' and orgr[-1] == ')' and orgr.find('~') != -1
+    assert is_valid_or_group(orgr)
 
 
 def get_matching_tag(wtag: str, mtags: List[str]) -> Optional[str]:
@@ -219,6 +222,20 @@ def get_group_matching_tag(orgr: str, mtags: List[str]) -> Optional[str]:
         mtag = get_matching_tag(tag, mtags)
         if mtag:
             return mtag
+    return None
+
+
+def is_valid_id_or_group(orgr: str) -> bool:
+    if is_valid_or_group(orgr):
+        return all(re_fullmatch(r'^id=\d+?$', tag) for tag in orgr[1:-1].split('~'))
+    return False
+
+
+def try_parse_id_or_group(ex_tags: List[str]) -> Optional[List[int]]:
+    if len(ex_tags) == 1:
+        orgr = ex_tags[0]
+        if is_valid_id_or_group(orgr):
+            return [int(tag.replace('id=', '')) for tag in orgr[1:-1].split('~')]
     return None
 
 

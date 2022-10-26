@@ -13,8 +13,8 @@ from typing import Optional, List
 
 from defs import (
     SLASH, Log, NON_SEARCH_SYMBOLS, HELP_PATH, HELP_PAGES, HELP_STOP_ID, HELP_SEARCH, QUALITIES, DEFAULT_QUALITY, HELP_QUALITY,
-    HELP_ARG_PROXY, HELP_BEGIN_ID, HELP_ARG_EXCLUDE_TAGS, HELP_ARG_UVPOLICY, UVIDEO_POLICIES, DOWNLOAD_POLICY_DEFAULT,  DOWNLOAD_MODES,
-    DOWNLOAD_MODE_DEFAULT, HELP_ARG_DMMODE
+    HELP_ARG_PROXY, HELP_BEGIN_ID, HELP_ARG_EXCLUDE_TAGS, HELP_ARG_UVPOLICY, UVIDEO_POLICIES, DOWNLOAD_POLICY_DEFAULT, DOWNLOAD_MODES,
+    DOWNLOAD_MODE_DEFAULT, HELP_ARG_DMMODE, ACTION_STORE_TRUE
 )
 from tagger import validate_or_group
 
@@ -168,7 +168,9 @@ def prepare_arglist_ids(args: List[str]) -> Namespace:
     parser = ArgumentParser(add_help=False)
     parser.add_argument('--help', action='help')
 
-    parser.add_argument('-start', metavar='#number', required=True, help='Start Id', type=valid_positive_nonzero_int)
+    arggr_start_or_seq = parser.add_mutually_exclusive_group(required=True)
+    arggr_start_or_seq.add_argument('-start', metavar='#number', help='Start Id', type=valid_positive_nonzero_int)
+    arggr_start_or_seq.add_argument('-seq', '--use-id-sequence', action=ACTION_STORE_TRUE, help='Use id sequence instead (in tags)')
     arggr_ids = parser.add_mutually_exclusive_group()
     arggr_ids.add_argument('-count', metavar='#number', default=1, help='Ids count to process', type=valid_positive_nonzero_int)
     arggr_ids.add_argument('-end', metavar='#number', default=1, help='End video id', type=valid_positive_nonzero_int)
@@ -177,7 +179,9 @@ def prepare_arglist_ids(args: List[str]) -> Namespace:
     add_common_args(parser)
 
     def finalize_ex_groups(parsed: Namespace) -> Namespace:
-        if parsed.end < parsed.start + parsed.count - 1:
+        if parsed.use_id_sequence:
+            parsed.start = parsed.end = None
+        elif parsed.end < parsed.start + parsed.count - 1:
             parsed.end = parsed.start + parsed.count - 1
         parsed.count = None
 

@@ -15,6 +15,7 @@ from cmdargs import prepare_arglist_ids
 from defs import Log, MAX_VIDEOS_QUEUE_SIZE, DEFAULT_HEADERS
 from download import download_id, failed_items
 from fetch_html import set_proxy
+from tagger import try_parse_id_or_group
 
 
 async def main() -> None:
@@ -34,17 +35,28 @@ async def main() -> None:
         ex_tags = arglist.extra_tags
         set_proxy(arglist.proxy if hasattr(arglist, 'proxy') else None)
 
-        if start_id > end_id:
-            Log(f'\nError: start ({start_id:d}) > end ({end_id:d})')
-            raise ValueError
-        end_id += 1
+        if arglist.use_id_sequence:
+            id_sequence = try_parse_id_or_group(ex_tags)
+            if id_sequence is None:
+                Log(f'\nInvalid ID \'or\' group \'{ex_tags[0] if len(ex_tags) > 0 else ""}\'!')
+                raise ValueError
+        else:
+            id_sequence = None
+            if start_id > end_id:
+                Log(f'\nError: start ({start_id:d}) > end ({end_id:d})')
+                raise ValueError
     except Exception:
         Log('\nError reading parsed arglist!')
         return
 
+    if id_sequence is None:
+        id_sequence = list(range(start_id, end_id + 1))
+    else:
+        ex_tags = []
+
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
         s.headers.update(DEFAULT_HEADERS.copy())
-        for cv in as_completed([download_id(idi, '', 'unk', dest_base, quality, ex_tags, up, dm, s) for idi in range(start_id, end_id)]):
+        for cv in as_completed([download_id(idi, '', 'unk', dest_base, quality, ex_tags, up, dm, s) for idi in id_sequence]):
             await cv
 
     if len(failed_items) > 0:
