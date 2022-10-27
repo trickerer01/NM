@@ -7,7 +7,7 @@
 $SYNTAX_ = "Syntax: #[nm_]START #[COUNT | [nm_]END] #[quality] [#proxy]"
 
 $MYWORKDIR = "./"
-$SCRIPT_PATH = "ids.py"
+$SCRIPT_PATH = "src/ids.py"
 
 $par1 = New-Object System.Collections.ArrayList
 

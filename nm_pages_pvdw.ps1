@@ -7,7 +7,7 @@
 $SYNTAX_ = "Syntax: #start_page #num_pages [#stop_id] [#quality=360p] [#search_string] [#proxy]"
 
 $MYWORKDIR = "./"
-$SCRIPT_PATH = "pages.py"
+$SCRIPT_PATH = "src/pages.py"
 
 $par1 = New-Object System.Collections.ArrayList
 

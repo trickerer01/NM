@@ -193,6 +193,10 @@ TAG_ALIASES = {
 }
 
 
+def is_non_wtag(tag: str) -> bool:
+    return not re_fullmatch(r'^[^?*]*[?*].*?$', tag)
+
+
 def is_valid_or_group(orgr: str) -> bool:
     return len(orgr) >= len('(.~.)') and orgr[0] == '(' and orgr[-1] == ')' and orgr.find('~') != -1 and len(orgr[1:-1].split('~', 1)) == 2
 
@@ -202,7 +206,7 @@ def validate_or_group(orgr: str) -> None:
 
 
 def get_matching_tag(wtag: str, mtags: List[str]) -> Optional[str]:
-    if re_fullmatch(r'^[^?*]*[?*].*?$', wtag):
+    if not is_non_wtag(wtag):
         escaped_tag = (
             wtag.replace('.', '\\.').replace('[', '\\[').replace(']', '\\]').replace('(', '\\(').replace(')', '\\)').replace('-', '\\-')
             .replace('*', '.*').replace('?', '.')
