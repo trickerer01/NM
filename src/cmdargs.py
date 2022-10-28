@@ -16,7 +16,7 @@ from defs import (
     HELP_ARG_PROXY, HELP_BEGIN_ID, HELP_ARG_EXCLUDE_TAGS, HELP_ARG_UVPOLICY, UVIDEO_POLICIES, DOWNLOAD_POLICY_DEFAULT, DOWNLOAD_MODES,
     DOWNLOAD_MODE_DEFAULT, HELP_ARG_DMMODE, ACTION_STORE_TRUE
 )
-from tagger import validate_or_group
+from tagger import validate_or_group, validate_neg_and_group
 
 UVP_DEFAULT = DOWNLOAD_POLICY_DEFAULT
 DM_DEFAULT = DOWNLOAD_MODE_DEFAULT
@@ -86,6 +86,8 @@ def validate_parsed(args) -> Namespace:
                     assert tag[0] in ['-', '+', '(']
                     if tag[0] == '(':
                         validate_or_group(tag)
+                    elif tag.startswith('-('):
+                        validate_neg_and_group(tag)
                     # elif is_non_wtag(tag[1:]):
                     #     validate_tag(tag[1:])
                 except Exception:
@@ -146,6 +148,8 @@ def extra_tag(tag: str) -> str:
         assert tag[0] in ['-', '+', '(']
         if tag[0] == '(':
             validate_or_group(tag)
+        elif tag.startswith('-('):
+            validate_neg_and_group(tag)
         # elif is_non_wtag(tag[1:]):
         #     validate_tag(tag[1:])
     except Exception:

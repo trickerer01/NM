@@ -19,7 +19,7 @@ from defs import (
     SLASH, SITE_ITEM_REQUEST_BASE, TAGS_CONCAT_CHAR, DownloadResult, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH
 )
 from fetch_html import get_proxy, fetch_html
-from tagger import filtered_tags, unite_separated_tags, get_matching_tag, get_group_matching_tag
+from tagger import filtered_tags, unite_separated_tags, get_matching_tag, get_or_group_matching_tag, is_neg_and_group_matches
 
 downloads_queue = []  # type: List[int]
 failed_items = []  # type: List[int]
@@ -118,9 +118,13 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
                 for extag in extra_tags:
                     suc = True
                     if extag[0] == '(':
-                        if get_group_matching_tag(extag, tags_raw) is None:
+                        if get_or_group_matching_tag(extag, tags_raw) is None:
                             suc = False
                             Log(f'Video \'nm_{idi:d}.mp4\' misses required tag matching \'{extag}\'. Skipped!')
+                    elif extag.startswith('-('):
+                        if is_neg_and_group_matches(extag, tags_raw):
+                            suc = False
+                            Log(f'Video \'nm_{idi:d}.mp4\' contains excluded tags combination \'{extag[1:]}\'. Skipped!')
                     else:
                         mtag = get_matching_tag(extag[1:], tags_raw)
                         if mtag is not None and extag[0] == '-':
