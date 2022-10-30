@@ -173,7 +173,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     my_score = likes if len(likes) > 0 else my_rating if len(my_rating) > 1 else 'unk'
     fname_part1 = f'nm_{idi:d}_score({my_score}){f"_{my_title}" if my_title != "" else ""}'
     fname_part2 = 'pydw.mp4'
-    extra_len = 5 + 3 + 2  # 3 underscores + 2 brackets + len(1080p) - max len of all qualities
+    extra_len = 5 + 3 + 2  # 3 underscores + 2 brackets + len('1080p') - max len of all qualities
     while len(my_tags) > max(0, 240 - (len(dest_base) + len(fname_part1) + len(fname_part2) + extra_len)):
         my_tags = my_tags[:max(0, my_tags.rfind(TAGS_CONCAT_CHAR))]
     if len(my_tags) == 0 and len(fname_part1) > max(0, 240 - (len(dest_base) + len(fname_part2) + extra_len)):
