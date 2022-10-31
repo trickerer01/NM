@@ -31,39 +31,40 @@ re_tags_to_process = re_compile(
 
 re_tags_to_exclude = re_compile(
     r'^(?:'
-    r'a(?:l(?:iv.+?|l(?:_.+?|ian.+?|lsex)?)|mazons?|n(?:gl.+?|im.+?)|poca.*?|reol.*?|s(?:ian.*?|s(?:job)?)|udio.*?)|'  # a
+    r'a(?:gain|l(?:iv.+?|l(?:_.+?|ian.+?|lsex)?)|mazons?|n(?:gl.+?|im.+?)|poca.*?|r(?:che.*?|eol.*?|mor)|'  # a
+    r's(?:ian.*?|s(?:ault|job)?)|udi[bo].*?)|'  # a
     r'b(?:a(?:be.*?|ck.*?|ll.*?|re.*?|th.*?)|e(?:hind|lly)|i(?:g(?:[^j].+?)?|kin.+?)|l(?:end.*?|o(?:nd.*?|w[^j].*?)|ue.*?)|'  # b
     r'o(?:d[iy].*?|o[bt].*?|ss.*?|ttom.*?|unc.+?)|r(?:e(?:ast.*?|ed.*?)|o[tw].*?|unet.+?)|u(?:kk.*?|lg.+?|nny.*?|st.*?|tt.*?))|'  # b
-    r'c(?:a(?:ge.*?|ni.+?|p(?:i?tai?n|tur.+?)|rt.*?|v[ei].*?)|e(?:lebr.+?|nsor.+?)|'  # c
+    r'c(?:a(?:ge.*?|ni.+?|p(?:i?tai?n|tur.+?)|r[rt].*?|v[ei].*?)|e(?:lebr.+?|nsor.+?)|'  # c
     r'h(?:a(?:ir|mbers?|ract.+?|t.*?)|eat.*?|ok.*?|ub.+?)|ity|l(?:ap.*?|im.+?|o(?:n.+?|th.*?|wn.*?))|'  # c
-    r'o(?:ck.*?|lor.*?|m[ip].+?|n[dv].+?|w.+?)|r(?:e[as].+?|ing.*?|oss.*?)|u(?:lt.*?|m.+?|nn?[ai].*?|rv.+?|t[ei].*?))|'  # c
-    r'd(?:atass|ccomi.*?|e(?:ad[^_]?.*?|cens.+?|ep.*?|feat.*?)|i(?:ck.*?|ffer.*?|rt.*?|s(?:cipl.+?|eas.*?))|'  # d
-    r'o(?:ct.+?|gg.*?|ubl.+?)|r[iu]nk.*?|ub.+?)|'  # d
+    r'o(?:ck.*?|lor.*?|m[ip].+?|n(?:[dv].+?|sens.*?)|uch|w.+?)|r(?:e[as].+?|ing.*?|oss.*?)|u(?:lt.*?|m.+?|nn?[ai].*?|rv.+?|t[ei].*?))|'  # c
+    r'd(?:a(?:tass|ughter.*?)|ccomi.*?|e(?:ad[^_]?.*?|cens.+?|ep.*?|feat.*?)|i(?:ck.*?|ffer.*?|rt.*?|s(?:cipl.+?|eas.*?))|'  # d
+    r'o(?:ct.+?|gg.*?|ubl.+?)|r[iu]nk.*?|u[bo].*?)|'  # d
     r'e(?:ncoun.*?|rec.+?|vol.+?|x(?:c(?:ess.*?|it.+?|lus.*?)|p(?:er.+?|os.*?))|ye.+?)|'  # e
-    r'f(?:a(?:ce.*?|n(?:do.+?|ta.+?))|e(?:line|male.*?|tish.*?)|i(?:lm.*?|nger.*?)|l(?:ash.*?|uid.*?)|oot.*?|r(?:iend.*?|om.*?)|'
-    r'u(?:ck.*?|rry..+?|taon[^m].+?))|'  # f
-    r'g(?:ame.*?|irl.*?|l(?:ass.*?|o(?:r.+?|ve.*?)|yph.*?)|oal.*?|ym.*?)|'  # g
-    r'h(?:a(?:ir.*?|nd.*?|pp.*?|rds.+?)|e(?:art.*?|nta.*?)|o(?:ld.*?|me.*?|ok.*?|rd(?!core).+?|us.+?)|u(g[eg].*?|man.*?))|'  # h
-    r'i(?:mpreg.*?|n(?:side.*?|ter[rs].*?))|'  # i
+    r'f(?:a(?:ce.*?|n(?:do.+?|ta.+?))|e(?:et.*?|line|male.*?|tish.*?)|i(?:l[lm].*?|n(?:ale.*?|ger.*?|ish.*?))|'  # f
+    r'l(?:ash.*?|uid.*?)|oot.*?|r(?:iend.*?|om.*?)|u(?:ck.*?|rry..+?|ta(?:_on_[^m].+?|nari(?:_on_|on)[^m].+?|on[^m].+?)))|'  # f
+    r'g(?:ame.*?|irl.*?|l(?:a[ns]s.*?|o(?:r.+?|ve.*?)|yph.*?)|oal.*?|rop.+?|uy.*?|ym.*?)|'  # g
+    r'h(?:a(?:ir.*?|nd.*?|pp.*?|rds.+?)|e(?:art.*?|nta.*?)|o(?:l[do].*?|me.*?|ok.*?|rd(?!core).+?|us.+?)|u(g[eg].*?|man.*?)|ybrid)|'  # h
+    r'i(?:mpreg.*?|n(?:side.*?|ter[nrs].*?))|'  # i
     r'j(?:a[ck]u.+?|erk.*?)|'  # j
     r'k(?:iss.*?|not.*?)|'  # k
-    r'l(?:acta.+?|e(?:g.+?|otar.+?)|i(?:ck(?:ing)?|ft.*?|nger.*?|p.+?)|o(?:ck.*?|n[dg].*?))|'  # l
-    r'm(?:a(?:chin.+?|de|gaz.*?|ke.*?|le.*?|s(?:sag.+?|t(?:rub.+?|urb.+?))|t[ei].*?)|e(?:me.*?|ss.*?)|i(?:mic.*?|ni.*?|ssion.*?)|md|'  # m
-    r'o(?:[ao]n.+?|de.*?|ld.*?)|p4|u(?:ltipl.+?|s(?:c[lu].+?|ic.*?)))|'  # m
-    r'n(?:a(?:ke.+?|rra.+?|ught.*?)|e(?:ko.*?|tor.+?)|ipp.+?|o(?:_.+?|sound)|sfw.*?|ud[ei].*?)|'  # n
+    r'l(?:acta.+?|e(?:ak.*?|g.+?|otar.+?)|i(?:ck(?:ing)?|ft.*?|nger.*?|p.+?)|o(?:ck.*?|n[dg].*?|ok.*?))|'  # l
+    r'm(?:a(?:chin.+?|de|gaz.*?|ke.*?|le.*?|s(?:sag.+?|t(?:rub.+?|urb.+?))|t[ei].*?)|e(?:me.*?|ss.*?)|'  # m
+    r'i(?:lk.*?|mic.*?|ni.*?|ssion.*?)|md|o(?:[ao]n.+?|de.*?|ld.*?|m|ther)|p4|u(?:ltipl.+?|s(?:c[lu].+?|ic.*?)))|'  # m
+    r'n(?:a(?:ke.+?|rra.+?|ught.*?)|e(?:ko.*?|tor.+?)|ipp.+?|o(?:_.+?|sound)|sfw.*?|tr|ud[ei].*?)|'  # n
     r'o(?:bey.*?|il.+?|n.+?|perat.*?|riginal.*?|ut.+?)|'  # o
-    r'p(?:a(?:iz.+?|r[ot].*?)|en(?:et.+?|i.+?)|in[bn].+?|l(?:ay.*?|ea.*?)|o(?:nytail.*?|ol.*?|rn.*?|und.*?)|'  # p
-    r'r(?:edat.*?|inc.+?|o(?:ject.*?|n.+?))|u(?:bl?i.*?|ss.*?))|'  # p
-    r'r(?:34|63|aid.*?|e(?:al.*?|boo.+?|d(?!head).+?|vers.+?)|i(?:d[ei].*?|s[ei].*?|tual.*?)|'  # r
-    r'o(?:le.*?|om.*?|ugh.*?)|u(?:bb.+?|le.*?))|'  # r
-    r's(?:ans|chool.*?|ex.+?|ho(?:e.*?|rt.*?)|i(?:lver.*?|m(?:s[^\d].*?|ulat.+?)|ster.*?|ze.*?)|lap.*?|m(?:all.*?|il.+?|oth.+?)|'  # s
-    r'o(?:ft.*?|mes?|u(?:nd.*?|rce.*?))|p(?:an[ik].*?|ort.*?)|q(?:uea.+?)|'  # s
-    r't(?:a(?:nd.*?|r.*?)|ep.*?|o(?:ck.*?|ma.*?|r.*?)|raigh.+?|ud.*?|yl.+?)|u(?:bm.+?|per.*?)|wing.*?)|'  # s
+    r'p(?:a(?:iz.+?|r[ot].*?)|e(?:n(?:et.+?|i.+?)|tite)|i(?:erc.*?|n[bn].+?)|l(?:ay.*?|ea.*?)|o(?:nytail.*?|ol.*?|rn.*?|si.*?|und.*?)|'  # p
+    r'r(?:e(?:dat.*?|mak.*?|view.*?)|inc.+?|o(?:ject.*?|n.+?|stit.*?))|u(?:bl?i.*?|ss.*?))|'  # p
+    r'r(?:34|63|aid.*?|e(?:al.*?|boo.+?|d(?!head).+?|vers.+?)|i(?:d[ei].*?|mm.*?|s[ei].*?|tual.*?)|'  # r
+    r'o(?:le.*?|man.*?|om.*?|ugh.*?)|u(?:bb.+?|le.*?))|'  # r
+    r's(?:ans|chool.*?|ex.*?|fm|h(?:e|o(?:e.*?|rt.*?))|i(?:lver.*?|m(?:s[^\d].*?|ulat.+?)|nthet.*?|ster.*?|ze.*?)|lap.*?|'  # s
+    r'm(?:all.*?|il.+?|oth.+?)|o(?:ft.*?|mes?|u(?:nd.*?|rce.*?))|p(?:an[ik].*?|ort.*?)|q(?:u(?:ea.+?|irt.*?))|'  # s
+    r't(?:a(?:nd.*?|r.*?)|ep.*?|o(?:ck.*?|ma.*?|r.*?)|raigh.+?|ud.*?|yl.+?)|u(?:bm.+?|per.*?)|w(?:eat.*?|ing.*?))|'  # s
     r't(?:a(?:g.+?|il.*?|lk.*?|n.+?|tt?o.*?)|e(?:as.+?|mpl.*?|st.*?)|h(?:i(?:c(?:c+|k)?|gh.*?)|rou.+?)|i(?:ktok.*?|t.+?)|'  # t
-    r'o(?:e.+?|mb.*?|ngue.*?|on.*?)|r(?:ain.*?|ip.*?|oug.+?)|win.*?)|'  # t
+    r'o(?:e.+?|ilet|mb.*?|ngue.*?|on.*?|uch.*?)|r(?:ain.*?|ip.*?|oug.+?)|win.*?)|'  # t
     r'u(?:ltra.*?|n[cdw].+?)|'  # u
-    r'v(?:agi.+?|ery.*?|ide.+?|o(?:ice.*?|lkor)|r.+?)|'  # v
-    r'w(?:a[ln]k.*?|e(?:b.+?|t)|hat.*?|i(?:[df]e.*?|th_.+?)|o(?:l[fv].+?|rk.*?)|rit.+?)|'  # w
+    r'v(?:a(?:gi.+?|m(?:_guy)?)|ery.*?|i(?:de.+?|rtual.*?)|o(?:ice.*?|lkor)|r.+?|tub.*?)|'  # v
+    r'w(?:a(?:lk.*?|n[kt].*?)|e(?:b.+?|t)|hat.*?|i(?:[df]e.*?|th_.+?)|o(?:l[fv].+?|m[ae]n|rk.*?)|rit.+?)|'  # w
     r'x(?:vid.*?)|'  # x
     r'y(?:ou.+?)|'  # y
     r'\d{1,5}_?(?:\+?(?:(?:fe)?males?|boys?|girls?)|d|fps|p|s(?:ecs?_.+?)?)?'  # 0-9
@@ -73,21 +74,28 @@ re_tags_to_exclude = re_compile(
 RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(with),(sound)'): r'\1 \2',
     re_compile(r'(strap),(on)'): r'\1\2',
-    re_compile(r'([^,]+),([oi][fnr]|with|and),([^,]+)'): r'\1 \2 \3',
+    re_compile(r'(mr),(\.?x)'): r'\1\2',
+    re_compile(r'(?:(the),)?(legend),(of),(zelda)'): r'\1 \2 \3 \4',
+    re_compile(r'([^,]+),(a(?:nd|t)|in|o[fnr]|with),([^,]+)'): r'\1 \2 \3',
     re_compile(r'(three|f(?:o(?:re|ur)|ive)|\d+?),(some)'): r'\1\2',
     re_compile(r'([^,]+),(job)'): r'\1\2',
     re_compile(r'(ada),(wong)'): r'\1 \2',
     re_compile(r'(all),(fours?)'): r'\1 \2',
     re_compile(r'(all),(the),(way),(thr(?:ough|u))'): r'\1 \2 \3 \4',
     re_compile(r'(apex),(legends?)'): r'\1 \2',
+    re_compile(r'(azure?),(lane)'): r'\1 \2',
     re_compile(r'(belly),(bulge)'): r'\1 \2',
     re_compile(r'(cassie),(cage)'): r'\1 \2',
     re_compile(r'(claire),(redfield)'): r'\1 \2',
     re_compile(r'(c[ou]m+?ing),(soon)'): r'\1 \2',
+    re_compile(r'(cum),(shot)'): r'\1\2',
+    re_compile(r'(black),(widow)'): r'\1 \2',
     re_compile(r'(blood|d(?:ark|row)|high|night|void),(el(?:f|ves?))'): r'\1 \2',
     re_compile(r'(dat),(ass)'): r'\1 \2',
     re_compile(r'(dogg?y),(style)'): r'\1 \2',
     re_compile(r'(dragon),(ballz?)'): r'\1\2',
+    re_compile(r'(fap),(hero)'): r'\1 \2',
+    re_compile(r'(fate),(grand),(order)'): r'\1 \2 \3',
     re_compile(r'(final),(fantasy)(?:,(x[^,]{2}))?'): r'\1 \2 \3',
     re_compile(r'(first),(try|work)'): r'\1 \2',
     re_compile(r'(genshin),(impact)'): r'\1 \2',
@@ -95,11 +103,14 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(grand),(cupido)'): r'\1\2',
     re_compile(r'(group),(sex)'): r'\1 \2',
     re_compile(r'(hard),(core)'): r'\1\2',
+    re_compile(r'(harle?y),(quinn?)'): r'\1 \2',
     re_compile(r'(horse),(cock)'): r'\1\2',
     re_compile(r'(jaina),(proudmoore)'): r'\1 \2',
     re_compile(r'(jill),(valentine)'): r'\1 \2',
+    re_compile(r'(kantai),(collection)'): r'\1 \2',
     re_compile(r'(lady),([^,]+)'): r'\1 \2',
     re_compile(r'(lara),(croft)'): r'\1 \2',
+    re_compile(r'(lisa),(hamilton)'): r'\1 \2',
     re_compile(r'(marie),(rose)'): r'\1 \2',
     re_compile(r'(mia),(winters?)'): r'\1 \2',
     re_compile(r'(monster),(girls?)'): r'\1 \2',
@@ -115,9 +126,12 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(soft),(core)'): r'\1\2',
     re_compile(r'(stomach),(bulge)'): r'\1 \2',
     re_compile(r'(street),(fighter)'): r'\1 \2',
+    re_compile(r'(tied),(down|feet|hands?|up)'): r'\1 \2',
     re_compile(r'(tifa),(lockhart)'): r'\1 \2',
     re_compile(r'(tina),(armstrong)'): r'\1 \2',
     re_compile(r'(triss),(merigold)'): r'\1 \2',
+    re_compile(r'(vam),(guy)'): r'\1 \2',
+    re_compile(r'(voice),(act[^,]*)'): r'\1 \2',
     re_compile(r'(yorra),((?:comm?and|\d+)[^,]+)'): r'\1 \2',
 }
 
@@ -131,7 +145,10 @@ TAG_ALIASES = {
     'caning': 'bondage',
     'handcuffs': 'bondage',
     'handcuff': 'bondage',
+    'imprisoned': 'bondage',
     'cuffs': 'bondage',
+    'restraint': 'bondage',
+    'restraints': 'bondage',
     'shackle': 'bondage',
     'shackles': 'bondage',
     'cat_girl': 'catgirl',
@@ -151,6 +168,24 @@ TAG_ALIASES = {
     'futa_on_futa': 'futa',
     'futa_on_female': 'futa',
     'futaonfemale': 'futa',
+    'futanarixfuta': 'futa',
+    'futanarixfutanari': 'futa',
+    'futanarionfuta': 'futa',
+    'futanarionfutanari': 'futa',
+    'futanari_on_futa': 'futa',
+    'futanari_on_futanari': 'futa',
+    'futanari_on_female': 'futa',
+    'futanarionfemale': 'futa',
+    'futawithfuta': 'futa',
+    'futa_with_futa': 'futa',
+    'futa_with_female': 'futa',
+    'futawithfemale': 'futa',
+    'futanariwithfuta': 'futa',
+    'futanariwithfutanari': 'futa',
+    'futanari_with_futa': 'futa',
+    'futanari_with_futanari': 'futa',
+    'futanari_with_female': 'futa',
+    'futanariwithfemale': 'futa',
     'dominant': 'domination',
     'dominated': 'domination',
     'dominating': 'domination',
@@ -182,6 +217,7 @@ TAG_ALIASES = {
     'jainaproudmoore': 'jaina_proudmoore',
     'marierose': 'marie_rose',
     'metroid': 'samus_aran',
+    'residentevil': 'resident_evil',
     'samusaran': 'samus_aran',
     'streetfighter': 'street_fighter',
     'mortalcombat': 'mortal_combat',
