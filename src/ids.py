@@ -13,7 +13,7 @@ from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_ids
 from defs import Log, MAX_VIDEOS_QUEUE_SIZE, DEFAULT_HEADERS
-from download import download_id, failed_items
+from download import download_id, after_download
 from fetch_html import set_proxy
 from tagger import try_parse_id_or_group
 
@@ -59,11 +59,7 @@ async def main() -> None:
         for cv in as_completed([download_id(idi, '', 'unk', dest_base, quality, ex_tags, up, dm, s) for idi in id_sequence]):
             await cv
 
-    if len(failed_items) > 0:
-        failed_items.sort()
-        Log('Failed items:')
-        for fi in failed_items:
-            Log(' ', str(fi))
+    await after_download()
 
 
 async def run_main() -> None:

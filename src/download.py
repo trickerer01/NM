@@ -21,6 +21,8 @@ from defs import (
 from fetch_html import get_proxy, fetch_html
 from tagger import filtered_tags, unite_separated_tags, get_matching_tag, get_or_group_matching_tag, is_neg_and_group_matches
 
+NEWLINE = '\n'
+
 downloads_queue = []  # type: List[int]
 failed_items = []  # type: List[int]
 
@@ -88,21 +90,8 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     likes = ''
     i_html = await fetch_html(SITE_ITEM_REQUEST_BASE % idi)
     if i_html:
-        # is_err_404 = False
-        # is_private = False
-        # for d in i_html.find_all('legend'):
-        #     if (d.string and d.string == 'Error') or (d.string and d.string == 'Error'):
-        #         is_err_404 = True
-        #         break
-        # for d in i_html.find_all('div', class_='text-danger'):
-        #     if (d.string and re_pdanger.match(d.string)) or (d.string and re_pdanger.match(d.text)):
-        #         is_private = True
-        #         break
         if any('Error' in [d.string, d.text] for d in i_html.find_all('legend')):
-            if len(extra_tags) > 0 and unlisted_policy != DOWNLOAD_POLICY_ALWAYS:
-                Log(f'Got error 404 for id {idi:d} (may be unlisted), skipping due to private videos download policy...')
-                return await try_unregister_from_queue(idi)
-            Log(f'Warning: Got error 404 for id {idi:d} (may be unlisted), likes/tags/extra_title will not be extracted...')
+            Log(f'Warning: Got error 404 for id {idi:d} (may be unlisted), likes will not be extracted...')
         elif any(re_pdanger.match(d.text) for d in i_html.find_all('div', class_='text-danger')):
             Log(f'Warning: Got private video error for id {idi:d}, likes/extra_title will not be extracted...')
 
@@ -139,7 +128,10 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
             if tags_str != '':
                 my_tags = tags_str
         except Exception:
-            Log(f'Warning: could not find keywords section for id {idi:d}, no tags extracted...')
+            if len(extra_tags) > 0 and unlisted_policy != DOWNLOAD_POLICY_ALWAYS:
+                Log(f'Warning: could not extract tags from id {idi:d}, skipping due to untagged videos download policy...')
+                return await try_unregister_from_queue(idi)
+            Log(f'Warning: could not extract tags from id {idi:d}...')
         try:
             dislikes_int = int(i_html.find('span', id='video_dislikes').text)
             likes_int = int(i_html.find('span', id='video_likes').text)
@@ -285,6 +277,14 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, down
            DownloadResult.DOWNLOAD_SUCCESS if retries < CONNECT_RETRIES_ITEM else
            DownloadResult.DOWNLOAD_FAIL_RETRIES)
     return ret
+
+
+async def after_download() -> None:
+    if not is_queue_empty():
+        Log('pages: queue is not empty at exit!')
+
+    if len(failed_items) > 0:
+        Log(f'Failed items:\n{NEWLINE.join(str(fi) for fi in sorted(failed_items))}')
 
 #
 #

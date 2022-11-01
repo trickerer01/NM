@@ -15,7 +15,7 @@ from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_pages
 from defs import Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH
-from download import download_id, is_queue_empty, failed_items
+from download import download_id, is_queue_empty, after_download
 from fetch_html import fetch_html, set_proxy
 
 
@@ -138,11 +138,7 @@ async def main() -> None:
     if not is_queue_empty():
         Log('pages: queue is not empty at exit!')
 
-    if len(failed_items) > 0:
-        failed_items.sort()
-        Log('Failed items:')
-        for fi in failed_items:
-            Log(' ', str(fi))
+    await after_download()
 
 
 async def run_main() -> None:

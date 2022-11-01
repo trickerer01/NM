@@ -32,7 +32,7 @@ QUALITY_ENDS = ['_1080p', '_720p', '_hi', '_480p', '_360p', '_SD', '_low']
 
 DEFAULT_QUALITY = QUALITIES[4]
 
-# private videos download policy
+# unlisted videos download policy
 DOWNLOAD_POLICY_NOFILTERS = 'nofilters'
 DOWNLOAD_POLICY_ALWAYS = 'always'
 UVIDEO_POLICIES = [DOWNLOAD_POLICY_NOFILTERS, DOWNLOAD_POLICY_ALWAYS]
