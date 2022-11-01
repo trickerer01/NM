@@ -28,7 +28,7 @@ SLASH = '/'
 
 QUALITIES = ['1080p', '720p', 'hi', '480p', '360p', 'SD', 'low']
 QUALITY_STARTS = ['h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/']
-QUALITY_ENDS = ['_1080p', '_720p', '_hi', '_480p', '_360p', '_SD', '_low']
+QUALITY_ENDS = ['_1080p', '_720p', '_hi', '_480p', '_360p', '_SD', '']
 
 DEFAULT_QUALITY = QUALITIES[4]
 
@@ -65,7 +65,7 @@ HELP_ARG_EXCLUDE_TAGS = (
 CONNECT_RETRIES_PAGE = 5
 CONNECT_RETRIES_ITEM = 10
 
-MAX_VIDEOS_QUEUE_SIZE = 4
+MAX_VIDEOS_QUEUE_SIZE = 6
 
 Log = print
 
