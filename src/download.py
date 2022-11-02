@@ -20,7 +20,9 @@ from defs import (
     SLASH, SITE_ITEM_REQUEST_BASE, TAGS_CONCAT_CHAR, DownloadResult, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH
 )
 from fetch_html import get_proxy, fetch_html
-from tagger import filtered_tags, unite_separated_tags, get_matching_tag, get_or_group_matching_tag, is_neg_and_group_matches
+from tagger import (
+    filtered_tags, unite_separated_tags, get_matching_tag, get_or_group_matching_tag, is_neg_and_group_matches, register_item_tags,
+)
 
 NEWLINE = '\n'
 re_nmfile = re_compile(fr'^nm_([^_]+)_.*?({"|".join(q for q in QUALITIES)})_py.+?$')
@@ -91,11 +93,11 @@ async def try_unregister_from_queue(idi: int) -> None:
             Log(f'try_unregister_from_queue: {idi:d} was not in queue')
 
 
-async def report_total_queue_size_callback() -> None:
+async def report_total_queue_size_callback(base_sleep_time: float) -> None:
     global total_queue_size_last
     global download_queue_size_last
     while total_queue_size > 0:
-        wait_time = 10.0 if total_queue_size > 1 else 1.0
+        wait_time = base_sleep_time if total_queue_size > 1 else 1.0
         await sleep(wait_time)
         downloading_count = len(downloads_queue)
         queue_size = total_queue_size - downloading_count
@@ -106,7 +108,7 @@ async def report_total_queue_size_callback() -> None:
 
 
 async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, quality: str,
-                      extra_tags: List[str], unlisted_policy: str, download_mode: str, session: ClientSession) -> None:
+                      extra_tags: List[str], unlisted_policy: str, download_mode: str, save_tags: bool, session: ClientSession) -> None:
     while not await try_register_in_queue(idi):
         await sleep(uniform(2.0, 4.0))
 
@@ -127,6 +129,8 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
             keywords = str(i_html.find('meta', attrs={'name': 'keywords'}).get('content'))
             keywords = unite_separated_tags(keywords.replace(', ', TAGS_CONCAT_CHAR).lower())
             tags_raw = [tag.replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)]
+            if save_tags:
+                register_item_tags(idi, ' '.join(sorted(tag.replace(' ', '_') for tag in tags_raw)))
             if len(extra_tags) > 0:
                 for extag in extra_tags:
                     suc = True

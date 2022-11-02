@@ -14,9 +14,12 @@ from typing import List, Any, Tuple
 from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_pages
-from defs import Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH
+from defs import (
+    Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH, DOWNLOAD_MODE_FULL
+)
 from download import download_id, is_queue_empty, after_download, set_queue_size, report_total_queue_size_callback
 from fetch_html import fetch_html, set_proxy
+from tagger import init_tags_file, dump_item_tags
 
 
 PAGE_ENTRY_RE = re_compile(r'^/video/(\d+)/[^/]+?$')
@@ -31,7 +34,7 @@ class VideoEntryFull(VideoEntryBase):
     def __init__(self, m_id: int, m_title: str, my_rating: str) -> None:
         super().__init__(m_id)
         self.my_title = m_title or ''
-        self.my_rating = my_rating or ''
+        self.m_rate = my_rating or ''
 
     def __str__(self) -> str:
         return f'{self.my_id:d}: {self.my_title}'
@@ -72,6 +75,7 @@ async def main() -> None:
         quality = arglist.max_quality
         up = arglist.unli_video_policy
         dm = arglist.download_mode
+        st = arglist.dump_tags
         ex_tags = arglist.extra_tags
         set_proxy(arglist.proxy if hasattr(arglist, 'proxy') else None)
     except Exception:
@@ -130,13 +134,18 @@ async def main() -> None:
     minid, maxid = get_minmax_ids(v_entries)
     Log(f'\nOk! {len(v_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
     v_entries = list(reversed(v_entries))
+    if st:
+        init_tags_file(f'{dest_base}nm_!tags_{minid:d}-{maxid:d}.txt')
     set_queue_size(len(v_entries))
-    reporter = get_running_loop().create_task(report_total_queue_size_callback())
+    reporter = get_running_loop().create_task(report_total_queue_size_callback(3.0 if dm == DOWNLOAD_MODE_FULL else 1.0))
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
         s.headers.update(DEFAULT_HEADERS.copy())
-        for cv in as_completed([download_id(v.my_id, v.my_title, v.my_rating, dest_base, quality, ex_tags, up, dm, s) for v in v_entries]):
+        for cv in as_completed([download_id(v.my_id, v.my_title, v.m_rate, dest_base, quality, ex_tags, up, dm, st, s) for v in v_entries]):
             await cv
     await reporter
+
+    if st:
+        dump_item_tags()
 
     if not is_queue_empty():
         Log('pages: queue is not empty at exit!')

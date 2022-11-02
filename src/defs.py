@@ -24,7 +24,9 @@ DEFAULT_HEADERS = {'User-Agent': USER_AGENT}
 
 REPLACE_SYMBOLS = r'[^\da-zA-Z.,_+%\-()\[\] ]+?'
 NON_SEARCH_SYMBOLS = r'[^\da-zA-Z._\-\[\]]'
+
 SLASH = '/'
+UTF8 = 'utf-8'
 
 QUALITIES = ['1080p', '720p', 'hi', '480p', '360p', 'SD', 'low']
 QUALITY_STARTS = ['h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/']
