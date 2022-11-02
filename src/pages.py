@@ -6,7 +6,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-from asyncio import run as run_async, as_completed, sleep
+from asyncio import run as run_async, as_completed, sleep, get_running_loop
 from re import search as re_search, compile as re_compile
 from sys import argv
 from typing import List, Any, Tuple
@@ -15,7 +15,7 @@ from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_pages
 from defs import Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH
-from download import download_id, is_queue_empty, after_download
+from download import download_id, is_queue_empty, after_download, set_queue_size, report_total_queue_size_callback
 from fetch_html import fetch_html, set_proxy
 
 
@@ -130,10 +130,13 @@ async def main() -> None:
     minid, maxid = get_minmax_ids(v_entries)
     Log(f'\nOk! {len(v_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
     v_entries = list(reversed(v_entries))
+    set_queue_size(len(v_entries))
+    reporter = get_running_loop().create_task(report_total_queue_size_callback())
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
         s.headers.update(DEFAULT_HEADERS.copy())
         for cv in as_completed([download_id(v.my_id, v.my_title, v.my_rating, dest_base, quality, ex_tags, up, dm, s) for v in v_entries]):
             await cv
+    await reporter
 
     if not is_queue_empty():
         Log('pages: queue is not empty at exit!')
