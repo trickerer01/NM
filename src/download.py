@@ -129,8 +129,6 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
             keywords = str(i_html.find('meta', attrs={'name': 'keywords'}).get('content'))
             keywords = unite_separated_tags(keywords.replace(', ', TAGS_CONCAT_CHAR).lower())
             tags_raw = [tag.replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)]
-            if save_tags:
-                register_item_tags(idi, ' '.join(sorted(tag.replace(' ', '_') for tag in tags_raw)))
             if len(extra_tags) > 0:
                 for extag in extra_tags:
                     suc = True
@@ -152,6 +150,8 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
                             Log(f'Video \'nm_{idi:d}.mp4\' misses required tag matching \'{extag[1:]}\'. Skipped!')
                     if suc is False:
                         return await try_unregister_from_queue(idi)
+            if save_tags:
+                register_item_tags(idi, ' '.join(tag.replace(' ', '_') for tag in tags_raw))
             tags_str = filtered_tags(tags_raw)
             if tags_str != '':
                 my_tags = tags_str
@@ -253,7 +253,7 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, down
     # we need this when downloading many small files (previews)
     await sleep(1.0 - min(0.9, 0.1 * len(downloads_queue)))
 
-    # filename_short = 'rv_' + str(idi)
+    # filename_short = 'nm_' + str(idi)
     # Log('Retrieving %s...' % filename_short)
     while (not (path.exists(dest) and file_size > 0)) and retries < CONNECT_RETRIES_ITEM:
         try:
