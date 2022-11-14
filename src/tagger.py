@@ -31,37 +31,38 @@ re_tags_to_process = re_compile(
 
 re_tags_to_exclude = re_compile(
     r'^(?:'
-    r'a(?:dult.*?|gain|hegao|l(?:iv.+?|l(?:_.+?|ian.+?|lsex|ons?)?)|mazons?|n(?:gl.+?|im.+?)|poca.*?|r(?:che.*?|eol.*?|mor)|'  # a
-    r's(?:ian.*?|s(?:ault|job)?)|udi[bo].*?)|'  # a
+    r'a(?:dult.*?|gain|hegao|l(?:iv.+?|l(?:_.+?|ian.+?|lsex|ons?)?)|mazons?|n(?:gl.+?|im.+?)|poca.*?|r(?:che.*?|eol.*?|mor|t)|'  # a
+    r's(?:ian.*?|s(?:ault|job)?)|thlet.*?|udi[bo].*?)|'  # a
     r'b(?:a(?:be.*?|ck.*?|ll.*?|re.*?|th.*?)|e(?:hind|lly)|i(?:g(?:[^j].+?)?|kin.+?)|l(?:end.*?|o(?:nd.*?|w[^j].*?)|ue.*?)|'  # b
     r'o(?:d[iy].*?|o[bt].*?|ss.*?|ttom.*?|unc.+?)|r(?:e(?:ast.*?|ed.*?)|o[tw].*?|unet.+?)|u(?:kk.*?|lg.+?|nny.*?|st.*?|tt.*?))|'  # b
     r'c(?:a(?:ge.*?|ni.+?|p(?:i?tai?n|tur.+?)|r[rt].*?|v[ei].*?)|e(?:lebr.+?|nsor.+?)|'  # c
     r'h(?:a(?:ir|lleng.*?|mbers?|ract.+?|t.*?)|eat.*?|ines.*?|ok.*?|ub.+?)|ity|l(?:ap.*?|im.+?|o(?:n.+?|th.*?|wn.*?))|'  # c
-    r'o(?:ck.*?|lor.*?|m[ip].+?|n(?:[dv].+?|sens.*?)|uch|w.+?)|r(?:e[as].+?|ing.*?|oss.*?)|u(?:lt.*?|m.+?|nn?[ai].*?|rv.+?|t[ei].*?))|'  # c
+    r'o(?:ck.*?|lor.*?|m[ip].+?|n(?:[dv].+?|sens.*?)|uch|w.+?)|r(?:e[as].+?|ing.*?|o(?:ss.*?|uch.*?))|'  # c
+    r'u(?:lt.*?|m.+?|nn?[ai].*?|rv.+?|t[ei].*?))|'  # c
     r'd(?:a(?:tass|ughter.*?)|ccomi.*?|e(?:ad[^_]?.*?|cens.+?|ep.*?|feat.*?)|i(?:ck.*?|ffer.*?|rt.*?|s(?:cipl.+?|eas.*?))|'  # d
-    r'o(?:ct.+?|gg.*?|ubl.+?)|r[iu]nk.*?|u[bo].*?)|'  # d
+    r'o(?:ct.+?|gg.*?|ubl.+?)|r[iu]nk.*?|u[abo].*?)|'  # d
     r'e(?:ncoun.*?|rec.+?|v(?:il.?audio|ol.+?)|x(?:c(?:ess.*?|it.+?|lus.*?)|hibit.*?|p(?:er.+?|os.*?))|ye.+?)|'  # e
-    r'f(?:a(?:c[et].*?|n(?:do.+?|ta.+?))|e(?:et.*?|line|male.*?|tish.*?)|i(?:l[lm].*?|n(?:ale.*?|ger.*?|ish.*?))|'  # f
+    r'f(?:a(?:c[et].*?|n(?:do.+?|ta.+?))|e(?:et.*?|line|male.*?|rtil.*?|tish.*?)|i(?:l[lm].*?|n(?:ale.*?|ger.*?|ish.*?))|'  # f
     r'l(?:ash.*?|uid.*?)|oot.*?|r(?:eckl.*?|iend.*?|om.*?)|u(?:ck.*?|rry..+?|ta(?:_on_[^m].+?|nari(?:_on_|on)[^m].+?|on[^m].+?)))|'  # f
     r'g(?:ame.*?|irl.*?|l(?:a[ns]s.*?|o(?:r.+?|ve.*?)|yph.*?)|oal.*?|rop.+?|uy.*?|ym.*?)|'  # g
     r'h(?:a(?:ir.*?|nd.*?|pp.*?|rds.+?)|e(?:art.*?|nta.*?)|o(?:l[do].*?|me.*?|ok.*?|rd(?!core).+?|us.+?)|u(g[eg].*?|man.*?)|ybrid)|'  # h
     r'i(?:mpreg.*?|n(?:side.*?|ter[nrs].*?))|'  # i
-    r'j(?:a[ck]u.+?|erk.*?)|'  # j
+    r'j(?:a[ck]u.+?|erk.*?|iggl.*?|uic.+?)|'  # j
     r'k(?:iss.*?|not.*?)|'  # k
-    r'l(?:acta.+?|e(?:ak.*?|g.+?|otar.+?)|i(?:ck(?:ing)?|ft.*?|nger.*?|p.+?)|o(?:ck.*?|n[dg].*?|ok.*?))|'  # l
+    r'l(?:a(?:cta.+?|rge.*?)|e(?:ak.*?|g.+?|otar.+?)|i(?:ck(?:ing)?|ft.*?|nger.*?|p.+?)|o(?:ck.*?|n[dg].*?|ok.*?))|'  # l
     r'm(?:a(?:chin.+?|de|gaz.*?|ke.*?|le.*?|rr[iy].*?|s(?:sag.+?|t(?:rub.+?|urb.+?))|t[ei].*?)|e(?:me.*?|ss.*?)|'  # m
-    r'i(?:lk.*?|mic.*?|ni.*?|ssion.*?)|md|o(?:[ao]n.+?|de.*?|ld.*?|m|saic|ther)|p4|u(?:ltipl.+?|s(?:c[lu].+?|ic.*?)))|'  # m
+    r'i(?:lk.*?|mic.*?|ni.*?|ssion.*?)|md|o(?:[ao]n.+?|d(?:e.*?)?|ld.*?|m|saic|ther)|p4|u(?:ltipl.+?|s(?:c[lu].+?|ic.*?)))|'  # m
     r'n(?:a(?:ke.+?|rra.+?|ught.*?)|e(?:ko.*?|tor.+?)|ipp.+?|o(?:_.+?|sound)|sfw.*?|tr|ud[ei].*?)|'  # n
     r'o(?:bey.*?|il.+?|n.+?|perat.*?|riginal.*?|ut.*?)|'  # o
     r'p(?:a(?:iz.+?|nt.*?|r(?:asite|[ot].*?))|e(?:n(?:et.+?|i.+?)|tite)|i(?:erc.*?|gtail.*?|ll.*?|n[bn].+?)|l(?:ay.*?|ea.*?)|'  # p
     r'o(?:nytail.*?|ol.*?|rn.*?|si.*?|und.*?)|r(?:e(?:dat.*?|mak.*?|view.*?)|inc.+?|o(?:ject.*?|n.+?|stit.*?))|u(?:bl?i.*?|ss.*?))|'  # p
     r'r(?:34|63|aid.*?|e(?:al.*?|boo.+?|d(?!head).+?|vers.+?)|i(?:d[ei].*?|mm.*?|s[ei].*?|tual.*?)|'  # r
     r'o(?:le.*?|man.*?|om.*?|ugh.*?)|u(?:bb.+?|le.*?))|'  # r
-    r's(?:ans|chool.*?|ex.*?|fm|h(?:e|o(?:e.*?|rt.*?))|i(?:lver.*?|m(?:s[^\d].*?|ulat.+?)|nthet.*?|ster.*?|ze.*?)|lap.*?|'  # s
-    r'm(?:all.*?|il.+?|oth.+?)|o(?:ft.*?|mes?|u(?:nd.*?|rce.*?))|p(?:an[ik].*?|ort.*?)|q(?:u(?:ea.+?|irt.*?))|'  # s
+    r's(?:ans|chool.*?|ex.*?|fm|h(?:e|in[ey]|o(?:e.*?|rt.*?|uld.*?))|i(?:lver.*?|m(?:s[^\d].*?|ulat.+?)|nthet.*?|ster.*?|ze.*?)|'  # s
+    r'l(?:ap.*?)|m(?:all.*?|il.+?|oth.+?)|o(?:ft.*?|mes?|u(?:nd.*?|rce.*?))|p(?:an[ik].*?|ort.*?)|q(?:u(?:ea.+?|irt.*?))|'  # s
     r't(?:a(?:nd.*?|r.*?)|ep.*?|o(?:ck.*?|ma.*?|r.*?)|raigh.+?|ud.*?|yl.+?)|u(?:bm.+?|per.*?)|w(?:eat.*?|i(?:m.*?|ng.*?)))|'  # s
     r't(?:a(?:g.+?|il.*?|lk.*?|n.+?|tt?o.*?)|e(?:as.+?|mpl.*?|st.*?)|h(?:i(?:c(?:c+|k)?|gh.*?)|rou.+?)|i(?:ktok.*?|t.+?)|'  # t
-    r'o(?:e.+?|ilet|mb.*?|ngue.*?|on.*?|uch.*?)|r(?:ain.*?|ip.*?|oug.+?)|win.*?)|'  # t
+    r'o(?:e.+?|ilet|mb.*?|ngue.*?|on.*?|uch.*?)|pr|r(?:ain.*?|ip.*?|oug.+?)|win.*?)|'  # t
     r'u(?:ltra.*?|n[cdw].+?)|'  # u
     r'v(?:a(?:gi.+?|m(?:_guy)?)|ery.*?|i(?:de.+?|rt(?:amat.*?|ual.*?))|o(?:ice.*?|lkor)|r.+?|tub.*?)|'  # v
     r'w(?:a(?:lk.*?|n[kt].*?)|e(?:b.+?|t)|hat.*?|i(?:[df]e.*?|th_.+?)|o(?:l[fv].+?|m[ae]n|rk.*?)|rit.+?|tf)|'  # w
@@ -83,8 +84,10 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(all),(fours?)'): r'\1 \2',
     re_compile(r'(all),(the),(way),(thr(?:ough|u))'): r'\1 \2 \3 \4',
     re_compile(r'(apex),(legends?)'): r'\1 \2',
+    re_compile(r'(ashley),(williams)'): r'\1 \2',
     re_compile(r'(azure?),(lane)'): r'\1 \2',
     re_compile(r'(belly),(bulge)'): r'\1 \2',
+    re_compile(r'(carlos),(oliveira)'): r'\1 \2',
     re_compile(r'(cassie),(cage)'): r'\1 \2',
     re_compile(r'(claire),(redfield)'): r'\1 \2',
     re_compile(r'(c[ou]m+?ing),(soon)'): r'\1 \2',
@@ -106,12 +109,17 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(harle?y),(quinn?)'): r'\1 \2',
     re_compile(r'(horse),(cock)'): r'\1\2',
     re_compile(r'(jaina),(proudmoore)'): r'\1 \2',
+    re_compile(r'(jennifer),(walters)'): r'\1 \2',
+    re_compile(r'(jessie),(rasberry)'): r'\1 \2',
     re_compile(r'(jill),(valentine)'): r'\1 \2',
+    re_compile(r'(judy),(alvare[sz])'): r'\1 \2',
     re_compile(r'(kantai),(collection)'): r'\1 \2',
     re_compile(r'(lady),([^,]+)'): r'\1 \2',
     re_compile(r'(lara),(croft)'): r'\1 \2',
     re_compile(r'(lisa),(hamilton)'): r'\1 \2',
     re_compile(r'(marie),(rose)'): r'\1 \2',
+    re_compile(r'(mass),(effect)'): r'\1 \2',
+    re_compile(r'(merle),(nyalentine)'): r'\1 \2',
     re_compile(r'(mia),(winters?)'): r'\1 \2',
     re_compile(r'(monster),(girls?)'): r'\1 \2',
     re_compile(r'(mortal),([ck]ombat)'): r'\1 \2',
@@ -422,18 +430,21 @@ def filtered_tags(tags_list: List[str]) -> str:
         # tag_char = tag[0] if tag[0] in tag_chars[1:] else tag_chars[0]
         do_add = True
         if len(tags_list_final) > 0:
+            nutag = re_sub(r'[^a-z]+', '', re_sub(re_numbered_or_counted_tag, r'\1', tag))
             # try and see
             # 1) if this tag can be consumed by existing tags
             # 2) if this tag can consume existing tags
             for i in reversed(range(len(tags_list_final))):
                 t = re_sub(re_numbered_or_counted_tag, r'\1', tags_list_final[i].lower())
-                if len(t) >= len(tag) and (tag in t):
+                nut = re_sub(r'[^a-z]+', '', t)
+                if len(nut) >= len(nutag) and (nutag in nut):
                     do_add = False
                     break
             if do_add:
                 for i in reversed(range(len(tags_list_final))):
                     t = re_sub(re_numbered_or_counted_tag, r'\1', tags_list_final[i].lower())
-                    if len(tag) >= len(t) and (t in tag):
+                    nut = re_sub(r'[^a-z]+', '', t)
+                    if len(nutag) >= len(nut) and (nut in nutag):
                         del tags_list_final[i]
         if do_add:
             for i, c in enumerate(tag):  # type: int, str
