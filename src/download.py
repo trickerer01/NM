@@ -178,6 +178,9 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
             likes = f'{"+" if likes_int > 0 else ""}{likes_int:d}'
         except Exception:
             pass
+    else:
+        Log(f'Unable to retreive html for {idi:d}! Aborted!')
+        return await try_unregister_from_queue(idi)
 
     # qlist = [QUALITIES.copy(), QUALITY_STARTS.copy(), QUALITY_ENDS.copy()]
     #
@@ -213,7 +216,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     ret_vals = []  # type: List[int]
     for i in range(QUALITIES.index(quality), len(QUALITIES)):
         link = f'{SITE_BASE}/media/videos/{QUALITY_STARTS[i]}{idi:d}{QUALITY_ENDS[i]}.mp4'
-        filename = f'{fname_part1}_({my_tags})_{QUALITIES[i]}_{fname_part2}'
+        filename = f'{fname_part1}{f"_({my_tags})" if len(my_tags) > 0 else ""}_{QUALITIES[i]}_{fname_part2}'
         res = await download_file(idi, filename, dest_base, link, download_mode, session, True)
         if res not in [DownloadResult.DOWNLOAD_SUCCESS, DownloadResult.DOWNLOAD_FAIL_ALREADY_EXISTS]:
             ret_vals.append(res)
