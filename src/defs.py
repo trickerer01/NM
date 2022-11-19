@@ -60,8 +60,18 @@ HELP_ARG_UVPOLICY = (
     'Unlisted videos download policy. By default these videos are ignored if you use extra +tags/-tags. Use \'always\' to override'
 )
 HELP_ARG_DMMODE = 'Download (file creation) mode'
-HELP_ARG_EXCLUDE_TAGS = (
-    'All remaining \'-args\' count as tags to exclude. Videos containing any of those tags will be skipped. Case insensitive'
+HELP_ARG_EXTRA_TAGS = (
+    'All remaining \'-args\' and \'+args\' count as tags to exclude / require.'
+    ' Videos containing any of -tags, or not containing all of +tags will be skipped. Only existing tags are allowed'
+)
+HELP_ARG_DWN_SCENARIO = (
+    'Download scenario. This allows to scan for tags and sort videos accordingly in a single pass.'
+    ' Useful when you have several queries you need to process for same id range.'
+    ' Format:'
+    ' "{SUBDIR1}: tag1 tag2; {SUBDIR2}: tag3 tag4 -tag1 -tag2"'
+    ' You can also use following arguments in each subquery: -quality, -uvp.'
+    ' Example:'
+    ' \'python ids.py --download-scenario "1g: 1girl -1monster -quality 480p; 2g: 2girls -1girl -1monster -quality 720p"\''
 )
 
 CONNECT_RETRIES_PAGE = 5
@@ -72,6 +82,13 @@ MAX_VIDEOS_QUEUE_SIZE = 6
 Log = print
 
 TAGS_CONCAT_CHAR = ','
+
+
+def normalize_path(basepath: str, append_slash: bool = True) -> str:
+    normalized_path = basepath.replace('\\', SLASH)
+    if append_slash and len(normalized_path) != 0 and normalized_path[-1] != SLASH:
+        normalized_path += SLASH
+    return normalized_path
 
 
 class DownloadResult:

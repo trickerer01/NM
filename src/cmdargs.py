@@ -13,10 +13,11 @@ from typing import Optional, List
 
 from defs import (
     SLASH, Log, NON_SEARCH_SYMBOLS, HELP_PATH, HELP_PAGES, HELP_STOP_ID, HELP_SEARCH, QUALITIES, DEFAULT_QUALITY, HELP_QUALITY,
-    HELP_ARG_PROXY, HELP_BEGIN_ID, HELP_ARG_EXCLUDE_TAGS, HELP_ARG_UVPOLICY, UVIDEO_POLICIES, DOWNLOAD_POLICY_DEFAULT, DOWNLOAD_MODES,
-    DOWNLOAD_MODE_DEFAULT, HELP_ARG_DMMODE, ACTION_STORE_TRUE
+    HELP_ARG_PROXY, HELP_BEGIN_ID, HELP_ARG_EXTRA_TAGS, HELP_ARG_UVPOLICY, UVIDEO_POLICIES, DOWNLOAD_POLICY_DEFAULT, DOWNLOAD_MODES,
+    DOWNLOAD_MODE_DEFAULT, HELP_ARG_DMMODE, HELP_ARG_DWN_SCENARIO, ACTION_STORE_TRUE, normalize_path,
 )
-from tagger import validate_or_group, validate_neg_and_group
+from scenario import DownloadScenario
+from tagger import assert_valid_or_group, validate_neg_and_group
 
 UVP_DEFAULT = DOWNLOAD_POLICY_DEFAULT
 DM_DEFAULT = DOWNLOAD_MODE_DEFAULT
@@ -53,11 +54,9 @@ def valid_positive_nonzero_int(val: str) -> int:
 
 def valid_path(pathstr: str) -> str:
     try:
-        newpath = path.abspath(unquote(pathstr)).replace('\\', SLASH)
+        newpath = normalize_path(unquote(pathstr))
         if not path.exists(newpath[:(newpath.find(SLASH) + 1)]):
             raise ValueError
-        if newpath[-1] != SLASH:
-            newpath += SLASH
     except Exception:
         raise ArgumentError
 
@@ -83,13 +82,7 @@ def validate_parsed(args) -> Namespace:
         if len(unks) > 0:
             for tag in unks:
                 try:
-                    assert tag[0] in ['-', '+', '(']
-                    if tag[0] == '(':
-                        validate_or_group(tag)
-                    elif tag.startswith('-('):
-                        validate_neg_and_group(tag)
-                    # elif is_non_wtag(tag[1:]):
-                    #     validate_tag(tag[1:])
+                    assert extra_tag(tag)
                 except Exception:
                     error_to_print = f'\nInvalid tag: \'{tag}\'\n'
                     raise
@@ -147,7 +140,7 @@ def extra_tag(tag: str) -> str:
     try:
         assert tag[0] in ['-', '+', '(']
         if tag[0] == '(':
-            validate_or_group(tag)
+            assert_valid_or_group(tag)
         elif tag.startswith('-('):
             validate_neg_and_group(tag)
         # elif is_non_wtag(tag[1:]):
@@ -158,13 +151,20 @@ def extra_tag(tag: str) -> str:
     return tag.lower()
 
 
+def download_scenario_format(fmt_str: str) -> DownloadScenario:
+    try:
+        return DownloadScenario.from_string(fmt_str)
+    except Exception:
+        raise ArgumentError
+
+
 def add_common_args(parser_or_group: ArgumentParser) -> None:
     parser_or_group.add_argument('-path', default=path.abspath(path.curdir), help=HELP_PATH, type=valid_path)
     parser_or_group.add_argument('-proxy', metavar='#type://a.d.d.r:port', help=HELP_ARG_PROXY, type=valid_proxy)
     parser_or_group.add_argument('-uvp', '--unli-video-policy', default=UVP_DEFAULT, help=HELP_ARG_UVPOLICY, choices=UVIDEO_POLICIES)
     parser_or_group.add_argument('-dmode', '--download-mode', default=DM_DEFAULT, help=HELP_ARG_DMMODE, choices=DOWNLOAD_MODES)
     parser_or_group.add_argument('-tdump', '--dump-tags', action=ACTION_STORE_TRUE, help='Save tags')
-    parser_or_group.add_argument(dest='extra_tags', nargs=ZERO_OR_MORE, help=HELP_ARG_EXCLUDE_TAGS, type=extra_tag)
+    parser_or_group.add_argument(dest='extra_tags', nargs=ZERO_OR_MORE, help=HELP_ARG_EXTRA_TAGS, type=extra_tag)
 
 
 def prepare_arglist_ids(args: List[str]) -> Namespace:
@@ -180,6 +180,7 @@ def prepare_arglist_ids(args: List[str]) -> Namespace:
     arggr_ids.add_argument('-count', metavar='#number', default=1, help='Ids count to process', type=valid_positive_nonzero_int)
     arggr_ids.add_argument('-end', metavar='#number', default=1, help='End video id', type=valid_positive_nonzero_int)
     parser.add_argument('-max_quality', default=DEFAULT_QUALITY, help=HELP_QUALITY, choices=QUALITIES)
+    parser.add_argument('-script', '--download-scenario', default=None, help=HELP_ARG_DWN_SCENARIO, type=download_scenario_format)
 
     add_common_args(parser)
 
