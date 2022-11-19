@@ -137,9 +137,17 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
         except Exception:
             Log(f'Warning: could not find description section for id {idi:d}...')
         try:
+            my_author = str(i_html.find('div', class_='pull-left user-container').find('span').string).lower()
+        except Exception:
+            Log(f'Warning: cannot extract author for {idi:d}.')
+            my_author = ''
+        try:
             keywords = str(i_html.find('meta', attrs={'name': 'keywords'}).get('content'))
             keywords = unite_separated_tags(keywords.replace(', ', TAGS_CONCAT_CHAR).lower())
             tags_raw = [tag.replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)]
+            for add_tag in [ca for ca in [my_author] if len(ca) > 0]:
+                if add_tag not in tags_raw:
+                    tags_raw.append(add_tag)
             if len(extra_tags) > 0:
                 for extag in extra_tags:
                     suc = True
