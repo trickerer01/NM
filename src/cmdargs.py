@@ -138,7 +138,6 @@ def valid_proxy(prox: str) -> str:
 
 def extra_tag(tag: str) -> str:
     try:
-        assert tag[0] in ['-', '+', '(']
         if tag[0] == '(':
             assert_valid_or_group(tag)
         elif tag.startswith('-('):
