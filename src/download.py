@@ -182,7 +182,10 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
         except Exception:
             Log(f'Warning: could not find description section for id {idi:d}...')
         try:
-            my_author = str(i_html.find('div', class_='pull-left user-container').find('span').string).lower()
+            try:
+                my_author = str(i_html.find('div', class_='pull-left user-container').find('span').string).lower()
+            except Exception:
+                my_author = i_html.find('div', class_='text-danger').find('a').string
         except Exception:
             Log(f'Warning: cannot extract author for {idi:d}.')
             my_author = ''
