@@ -8,7 +8,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 from asyncio import sleep
 from os import path, stat, remove, makedirs, listdir
-from random import uniform
 from re import sub, search, match, compile as re_compile
 from typing import List, Optional
 
@@ -159,11 +158,13 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
                       extra_tags: List[str], unlisted_policy: str, download_mode: str, save_tags: bool, session: ClientSession) -> None:
     global current_ididx
 
+    my_index = id_sequence.index(idi)
     while id_sequence[current_ididx] != idi:
-        await sleep(min(10.0, 0.2 * abs(id_sequence.index(idi) - current_ididx)))
+        diff = abs(my_index - current_ididx)
+        await sleep((0.1 * diff) if (diff < 100) else (10.0 + 0.05 * diff))
 
     while not await try_register_in_queue(idi):
-        await sleep(uniform(2.0, 4.0))
+        await sleep(1.5)
 
     current_ididx += 1
 
@@ -174,7 +175,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     i_html = await fetch_html(SITE_ITEM_REQUEST_BASE % idi)
     if i_html:
         if any('Error' in [d.string, d.text] for d in i_html.find_all('legend')):
-            Log(f'Warning: Got error 404 for id {idi:d} (may be unlisted), likes will not be extracted...')
+            Log(f'Warning: Got error 404 for id {idi:d} (may be unlisted), author/likes will not be extracted...')
         elif any(re_pdanger.match(d.text) for d in i_html.find_all('div', class_='text-danger')):
             Log(f'Warning: Got private video error for id {idi:d}, likes/extra_title will not be extracted...')
 
