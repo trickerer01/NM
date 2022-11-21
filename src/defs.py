@@ -7,6 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 from base64 import b64decode
+from datetime import datetime
 
 
 __NM_DEBUG__ = False
@@ -82,6 +83,13 @@ MAX_VIDEOS_QUEUE_SIZE = 6
 Log = print
 
 TAGS_CONCAT_CHAR = ','
+start_time = datetime.now()
+
+
+def get_elapsed_time_s() -> str:
+    mm, ss = divmod((datetime.now() - start_time).seconds, 60)
+    hh, mm = divmod(mm, 60)
+    return f'{hh:02d}:{mm:02d}:{ss:02d}'
 
 
 def normalize_path(basepath: str, append_slash: bool = True) -> str:
