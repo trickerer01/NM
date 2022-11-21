@@ -16,8 +16,7 @@ from defs import (
     HELP_ARG_PROXY, HELP_BEGIN_ID, HELP_ARG_EXTRA_TAGS, HELP_ARG_UVPOLICY, UVIDEO_POLICIES, DOWNLOAD_POLICY_DEFAULT, DOWNLOAD_MODES,
     DOWNLOAD_MODE_DEFAULT, HELP_ARG_DMMODE, HELP_ARG_DWN_SCENARIO, ACTION_STORE_TRUE, normalize_path,
 )
-from scenario import DownloadScenario
-from tagger import assert_valid_or_group, validate_neg_and_group
+from scenario import DownloadScenario, extra_tag
 
 UVP_DEFAULT = DOWNLOAD_POLICY_DEFAULT
 DM_DEFAULT = DOWNLOAD_MODE_DEFAULT
@@ -134,20 +133,6 @@ def valid_proxy(prox: str) -> str:
         raise ArgumentError
 
     return newval
-
-
-def extra_tag(tag: str) -> str:
-    try:
-        if tag[0] == '(':
-            assert_valid_or_group(tag)
-        elif tag.startswith('-('):
-            validate_neg_and_group(tag)
-        # elif is_non_wtag(tag[1:]):
-        #     validate_tag(tag[1:])
-    except Exception:
-        raise ArgumentError
-
-    return tag.lower()
 
 
 def download_scenario_format(fmt_str: str) -> DownloadScenario:
