@@ -15,7 +15,7 @@ from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_pages
 from defs import (
-    Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH, DOWNLOAD_MODE_FULL
+    Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH, DOWNLOAD_MODE_FULL, DOWNLOAD_POLICY_DEFAULT
 )
 from download import download_id, is_queue_empty, after_download, report_total_queue_size_callback, register_id_sequence
 from fetch_html import fetch_html, set_proxy
@@ -77,7 +77,15 @@ async def main() -> None:
         dm = arglist.download_mode
         st = arglist.dump_tags
         ex_tags = arglist.extra_tags
+        ds = arglist.download_scenario
         set_proxy(arglist.proxy if hasattr(arglist, 'proxy') else None)
+
+        if ds:
+            if up != DOWNLOAD_POLICY_DEFAULT:
+                Log('Info: running download script, outer unlisted policy will be ignored')
+                up = DOWNLOAD_POLICY_DEFAULT
+            if len(ex_tags) > 0:
+                Log(f'Info: running download script: outer extra tags: {str(ex_tags)}')
     except Exception:
         Log('\nError reading parsed arglist!')
         return
@@ -141,7 +149,7 @@ async def main() -> None:
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
         s.headers.update(DEFAULT_HEADERS.copy())
         for cv in as_completed(
-                [download_id(v.my_id, v.my_title, v.m_rate, dest_base, quality, None, ex_tags, up, dm, st, s) for v in v_entries]):
+                [download_id(v.my_id, v.my_title, v.m_rate, dest_base, quality, ds, ex_tags, up, dm, st, s) for v in v_entries]):
             await cv
     await reporter
 
