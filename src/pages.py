@@ -81,12 +81,18 @@ async def main() -> None:
         set_proxy(arglist.proxy if hasattr(arglist, 'proxy') else None)
         set_verbosity(arglist.verbose)
 
+        delay_for_message = False
         if ds:
             if up != DOWNLOAD_POLICY_DEFAULT:
                 Log('Info: running download script, outer unlisted policy will be ignored')
                 up = DOWNLOAD_POLICY_DEFAULT
+                delay_for_message = True
             if len(ex_tags) > 0:
                 Log(f'Info: running download script: outer extra tags: {str(ex_tags)}')
+                delay_for_message = True
+
+        if delay_for_message:
+            await sleep(3.0)
     except Exception:
         Log('\nError reading parsed arglist!')
         return
