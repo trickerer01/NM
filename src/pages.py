@@ -72,7 +72,7 @@ async def main() -> None:
         stop_id = arglist.stop_id
         begin_id = arglist.begin_id
         search_str = arglist.search
-        quality = arglist.max_quality
+        quality = arglist.quality
         up = arglist.unli_video_policy
         dm = arglist.download_mode
         st = arglist.dump_tags

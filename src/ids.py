@@ -29,7 +29,7 @@ async def main() -> None:
         dest_base = arglist.path
         start_id = arglist.start
         end_id = arglist.end
-        quality = arglist.max_quality
+        quality = arglist.quality
         up = arglist.unli_video_policy
         dm = arglist.download_mode
         st = arglist.dump_tags

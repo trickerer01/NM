@@ -70,15 +70,14 @@ class DownloadScenario(object):
         ds = DownloadScenario()
 
         parser = ArgumentParser(add_help=False)
-        parser.add_argument('-max_quality', default=DEFAULT_QUALITY, help=HELP_QUALITY, choices=QUALITIES)
+        parser.add_argument('-quality', default=DEFAULT_QUALITY, help=HELP_QUALITY, choices=QUALITIES)
         parser.add_argument('-uvp', '--unli-video-policy', default=UVP_DEFAULT, help=HELP_ARG_UVPOLICY, choices=UVIDEO_POLICIES)
         parser.add_argument(dest='extra_tags', nargs=ZERO_OR_MORE, help=HELP_ARG_EXTRA_TAGS, type=extra_tag)
 
         for query_raw in fmt_str.split('; '):
-            subfolder, args = query_raw.split(': ')
-
             error_to_print = ''
             try:
+                subfolder, args = query_raw.split(': ')
                 parsed, unks = parser.parse_known_args(args.split())
                 if len(unks) > 0:
                     for tag in unks:
@@ -91,7 +90,7 @@ class DownloadScenario(object):
                 if parsed.unli_video_policy == DOWNLOAD_POLICY_ALWAYS and ds.has_subquery(unlist_video_policy=DOWNLOAD_POLICY_ALWAYS):
                     error_to_print = f'Scenario can only have one subquery with unlisted video policy \'{DOWNLOAD_POLICY_ALWAYS}\'!'
                     raise ValueError
-                ds.add_subquery(SubQueryParams(subfolder, parsed.extra_tags, parsed.max_quality, parsed.unli_video_policy))
+                ds.add_subquery(SubQueryParams(subfolder, parsed.extra_tags, parsed.quality, parsed.unli_video_policy))
             except (ArgumentError, TypeError, Exception):
                 if error_to_print != '':
                     Log(error_to_print)
