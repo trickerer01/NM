@@ -342,7 +342,7 @@ def get_matching_tag(wtag: str, mtags: List[str]) -> Optional[str]:
     if not is_non_wtag(wtag):
         escaped_tag = (
             wtag.replace('.', '\\.').replace('[', '\\[').replace(']', '\\]').replace('(', '\\(').replace(')', '\\)').replace('-', '\\-')
-            .replace('*', '.*').replace('?', '.')
+            .replace('*', '.*').replace('?', '.').replace('+', '\\+')
         )
         pat = re_compile(rf'^{escaped_tag}$')
         for htag in mtags:
