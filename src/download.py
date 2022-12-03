@@ -196,7 +196,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
             try:
                 my_author = str(i_html.find('div', class_='pull-left user-container').find('span').string).lower()
             except Exception:
-                my_author = i_html.find('div', class_='text-danger').find('a').string
+                my_author = i_html.find('div', class_='text-danger').find('a').string.lower()
         except Exception:
             Log(f'Warning: cannot extract author for {idi:d}.')
             my_author = ''
