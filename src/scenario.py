@@ -14,23 +14,9 @@ from defs import (
     Log, DEFAULT_QUALITY, HELP_QUALITY, QUALITIES, HELP_ARG_UVPOLICY, UVIDEO_POLICIES, HELP_ARG_EXTRA_TAGS, DOWNLOAD_POLICY_DEFAULT,
     DOWNLOAD_POLICY_ALWAYS
 )
-from tagger import assert_valid_or_group, validate_neg_and_group
+from tagger import extra_tag
 
 UVP_DEFAULT = DOWNLOAD_POLICY_DEFAULT
-
-
-def extra_tag(tag: str) -> str:
-    try:
-        if tag[0] == '(':
-            assert_valid_or_group(tag)
-        elif tag.startswith('-('):
-            validate_neg_and_group(tag)
-        # elif is_non_wtag(tag[1:]):
-        #     validate_tag(tag[1:])
-    except Exception:
-        raise ArgumentError
-
-    return tag.lower()
 
 
 class SubQueryParams(object):

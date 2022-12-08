@@ -13,6 +13,13 @@ from datetime import datetime
 __NM_DEBUG__ = False
 
 
+class BaseConfig(object):
+    def __init__(self):
+        self.verbose = False
+
+
+ExtraConfig = BaseConfig()
+
 SITE_BASE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
 # Params required: (str, int). Ex. SITE_PAGE_REQUEST_BASE % ('', 1)
 SITE_PAGE_REQUEST_BASE = b64decode(

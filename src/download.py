@@ -17,7 +17,7 @@ from aiohttp import ClientSession
 from defs import (
     __NM_DEBUG__, Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, SITE_BASE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
     SLASH, SITE_ITEM_REQUEST_BASE, TAGS_CONCAT_CHAR, DownloadResult, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH, normalize_path,
-    get_elapsed_time_s,
+    get_elapsed_time_s, ExtraConfig,
 )
 from fetch_html import get_proxy, fetch_html
 from scenario import DownloadScenario
@@ -29,8 +29,6 @@ NEWLINE = '\n'
 re_nmfile = re_compile(fr'^nm_([^_]+)_.*?({"|".join(q for q in QUALITIES)})_py.+?$')
 re_pdanger = re_compile(r'^This is a private video\..*?$')
 
-verbose = False
-
 downloads_queue = []  # type: List[int]
 failed_items = []  # type: List[int]
 total_queue_size = 0
@@ -38,11 +36,6 @@ total_queue_size_last = 0
 download_queue_size_last = 0
 id_sequence = []  # type: List[int]
 current_ididx = 0
-
-
-def set_verbosity(verb: bool) -> None:
-    global verbose
-    verbose = verb
 
 
 def register_id_sequence(id_seq: List[int]) -> None:
@@ -126,23 +119,23 @@ def is_filtered_out_by_extra_tags(idi: int, tags_raw: List[str], extra_tags: Lis
             if extag[0] == '(':
                 if get_or_group_matching_tag(extag, tags_raw) is None:
                     suc = False
-                    if do_log or verbose:
+                    if do_log or ExtraConfig.verbose:
                         Log(f'[{subfolder}] Video \'nm_{idi:d}.mp4\' misses required tag matching \'{extag}\'. Skipped!')
             elif extag.startswith('-('):
                 if is_neg_and_group_matches(extag, tags_raw):
                     suc = False
-                    if do_log or verbose:
+                    if do_log or ExtraConfig.verbose:
                         Log(f'[{subfolder}] Video \'nm_{idi:d}.mp4\' contains excluded tags combination \'{extag[1:]}\'. Skipped!')
             else:
                 my_extag = extag[1:] if extag[0] == '-' else extag
                 mtag = get_matching_tag(my_extag, tags_raw)
                 if mtag is not None and extag[0] == '-':
                     suc = False
-                    if do_log or verbose:
+                    if do_log or ExtraConfig.verbose:
                         Log(f'[{subfolder}] Video \'nm_{idi:d}.mp4\' contains excluded tag \'{mtag}\'. Skipped!')
                 elif mtag is None and extag[0] != '-':
                     suc = False
-                    if do_log or verbose:
+                    if do_log or ExtraConfig.verbose:
                         Log(f'[{subfolder}] Video \'nm_{idi:d}.mp4\' misses required tag matching \'{my_extag}\'. Skipped!')
     return not suc
 

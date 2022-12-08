@@ -317,6 +317,18 @@ TAG_ALIASES = {
 }
 
 
+def extra_tag(tag: str) -> str:
+    try:
+        if tag[0] == '(':
+            assert_valid_or_group(tag)
+        elif tag.startswith('-('):
+            validate_neg_and_group(tag)
+        return tag.lower().replace(' ', '_')
+    except Exception:
+        Log(f'Fatal: invalid tags group: \'{tag}\'!')
+        raise ValueError
+
+
 def is_non_wtag(tag: str) -> bool:
     return not re_fullmatch(r'^[^?*]*[?*].*?$', tag)
 
