@@ -63,7 +63,7 @@ HELP_BEGIN_ID = 'If you want to download only videos above or equal to this id'
 HELP_PATH = 'Download destination. Default is current folder'
 HELP_SEARCH = 'If you want to only traverse pages matching some search query'
 HELP_QUALITY = f'Video quality. Default is \'{DEFAULT_QUALITY}\'. If not found, anything less is used'
-HELP_ARG_PROXY = 'Proxy to use in format: a.d.d.r:port'
+HELP_ARG_PROXY = 'Proxy to use. Example: http://127.0.0.1:222'
 HELP_ARG_UVPOLICY = (
     'Unlisted videos download policy. By default these videos are ignored if you use extra \'tags\' / \'-tags\'. Use'
     f' \'{DOWNLOAD_POLICY_ALWAYS}\' to override'
