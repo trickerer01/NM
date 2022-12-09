@@ -186,6 +186,13 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
         except Exception:
             Log(f'Warning: could not find description section for id {idi:d}...')
         try:
+            dislikes_int = int(i_html.find('span', id='video_dislikes').text)
+            likes_int = int(i_html.find('span', id='video_likes').text)
+            likes_int -= dislikes_int
+            likes = f'{"+" if likes_int > 0 else ""}{likes_int:d}'
+        except Exception:
+            pass
+        try:
             try:
                 my_author = str(i_html.find('div', class_='pull-left user-container').find('span').string).lower()
             except Exception:
@@ -209,6 +216,13 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
                     return await try_unregister_from_queue(idi)
                 my_subfolder = scenario.queries[sub_idx].subfolder
                 my_quality = scenario.queries[sub_idx].quality
+            if ExtraConfig.min_score and len(likes) > 0:
+                try:
+                    if int(likes) < ExtraConfig.min_score:
+                        Log(f'Info: video {idi:d} has low score \'{int(likes):d}\' (required {ExtraConfig.min_score:d}), skipping...')
+                        return await try_unregister_from_queue(idi)
+                except Exception:
+                    pass
             if save_tags:
                 register_item_tags(idi, ' '.join(tag.replace(' ', '_') for tag in tags_raw), my_subfolder)
             tags_str = filtered_tags(tags_raw)
@@ -226,13 +240,6 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
                 Log(f'Warning: could not extract tags from id {idi:d}, skipping due to unlisted videos download policy...')
                 return await try_unregister_from_queue(idi)
             Log(f'Warning: could not extract tags from id {idi:d}...')
-        try:
-            dislikes_int = int(i_html.find('span', id='video_dislikes').text)
-            likes_int = int(i_html.find('span', id='video_likes').text)
-            likes_int -= dislikes_int
-            likes = f'{"+" if likes_int > 0 else ""}{likes_int:d}'
-        except Exception:
-            pass
     else:
         Log(f'Unable to retreive html for {idi:d}! Aborted!')
         return await try_unregister_from_queue(idi)

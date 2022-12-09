@@ -82,6 +82,10 @@ HELP_ARG_DWN_SCENARIO = (
     ' Example:'
     ' \'python ids.py --download-scenario "1g: 1girl -1monster -quality 480p; 2g: 2girls -1girl -1monster -quality 720p"\''
 )
+HELP_ARG_MINSCORE = (
+    'Score filter for videos (likes minus dislikes).'
+    ' Videos having score below this value will be skipped, unless score extraction fails - in that case video always get a pass'
+)
 
 CONNECT_RETRIES_PAGE = 5
 CONNECT_RETRIES_ITEM = 10

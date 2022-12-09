@@ -67,6 +67,7 @@ async def main() -> None:
 
     try:
         ExtraConfig.verbose = arglist.verbose
+        ExtraConfig.min_score = arglist.minimum_score
 
         dest_base = arglist.path
         start_page = arglist.start
