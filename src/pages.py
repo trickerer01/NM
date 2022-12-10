@@ -13,7 +13,7 @@ from typing import List, Any, Tuple
 
 from aiohttp import ClientSession, TCPConnector
 
-from cmdargs import prepare_arglist_pages
+from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
 from defs import (
     Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH, DOWNLOAD_MODE_FULL, DOWNLOAD_POLICY_DEFAULT, ExtraConfig
 )
@@ -61,8 +61,10 @@ def get_minmax_ids(entry_list: List[VideoEntryBase]) -> Tuple[int, int]:
 async def main() -> None:
     try:
         arglist = prepare_arglist_pages(sys.argv[1:])
+        while is_parsed_cmdfile(arglist):
+            arglist = prepare_arglist_pages(read_cmdfile(arglist.path))
     except Exception:
-        Log('\nUnable to parse cmdline. Exiting...')
+        Log(f'\nUnable to parse cmdline. Exiting.\n{sys.exc_info()[0]}: {sys.exc_info()[1]}')
         return
 
     try:
@@ -81,7 +83,7 @@ async def main() -> None:
         st = arglist.dump_tags
         ex_tags = arglist.extra_tags
         ds = arglist.download_scenario
-        set_proxy(arglist.proxy if hasattr(arglist, 'proxy') else None)
+        set_proxy(arglist.proxy)
 
         delay_for_message = False
         if ds:

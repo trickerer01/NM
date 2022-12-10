@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 from base64 import b64decode
 from datetime import datetime
+from typing import Optional
 
 
 __NM_DEBUG__ = False
@@ -16,6 +17,7 @@ __NM_DEBUG__ = False
 class BaseConfig(object):
     def __init__(self):
         self.verbose = False
+        self.min_score = None  # type: Optional[int]
 
 
 ExtraConfig = BaseConfig()
@@ -86,6 +88,10 @@ HELP_ARG_DWN_SCENARIO = (
 HELP_ARG_MINSCORE = (
     'Score filter for videos (likes minus dislikes).'
     ' Videos having score below this value will be skipped, unless score extraction fails - in that case video always get a pass'
+)
+HELP_CMDFILE = (
+    'Full path to file containing cmdline arguments. One word per line. Useful when cmdline length exceeds maximum for your OS.'
+    ' Windows: ~32000, MinGW: ~4000 to ~32000, Linux: ~127000+'
 )
 
 CONNECT_RETRIES_PAGE = 5
