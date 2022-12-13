@@ -30,6 +30,7 @@ async def main() -> None:
     try:
         ExtraConfig.verbose = arglist.verbose
         ExtraConfig.min_score = arglist.minimum_score
+        ExtraConfig.naming_flags = arglist.naming
 
         dest_base = arglist.path
         start_id = arglist.start

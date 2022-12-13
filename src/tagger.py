@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from re import compile as re_compile, fullmatch as re_fullmatch, match as re_match, sub as re_sub
 from typing import List, Optional, Dict
 
-from defs import TAGS_CONCAT_CHAR, Log, UTF8, normalize_path
+from defs import TAGS_CONCAT_CHAR, Log, UTF8, normalize_path, prefixp
 
 re_replace_symbols = re_compile(
     r'[^0-9a-zA-Z_+()\[\]]+'
@@ -492,9 +492,10 @@ def dump_item_tags() -> None:
             continue
         min_id = min(tags_dict.keys())
         max_id = max(tags_dict.keys())
-        fullpath = f'{normalize_path(f"{saved_tags_dest_base}{subfolder}")}nm_!tags_{min_id:d}-{max_id:d}.txt'
+        fullpath = f'{normalize_path(f"{saved_tags_dest_base}{subfolder}")}{prefixp()}!tags_{min_id:d}-{max_id:d}.txt'
         with open(fullpath, 'at', encoding=UTF8) as saved_tags_file:
-            saved_tags_file.writelines(f'nm_{idi:d}: {tags.strip()}\n' for idi, tags in sorted(tags_dict.items(), key=lambda t: t[0]))
+            saved_tags_file.writelines(f'{prefixp()}{idi:d}: {tags.strip()}\n'
+                                       for idi, tags in sorted(tags_dict.items(), key=lambda t: t[0]))
 
 #
 #
