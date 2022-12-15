@@ -88,7 +88,7 @@ HELP_ARG_UVPOLICY = (
 HELP_ARG_DMMODE = 'Download (file creation) mode'
 HELP_ARG_EXTRA_TAGS = (
     'All remaining \'args\' and \'-args\' count as tags to exclude / require.'
-    ' Videos containing any of \'-tags\', or not containing all of \'tags\' will be skipped'
+    ' Videos containing any of \'-tags\', or not containing all of \'tags\' will be skipped.'
 )
 HELP_ARG_DWN_SCENARIO = (
     'Download scenario. This allows to scan for tags and sort videos accordingly in a single pass.'
@@ -102,7 +102,7 @@ HELP_ARG_DWN_SCENARIO = (
 )
 HELP_ARG_MINSCORE = (
     'Score filter for videos (likes minus dislikes).'
-    ' Videos having score below this value will be skipped, unless score extraction fails - in that case video always get a pass'
+    ' Videos having score below this value will be skipped, unless score extraction fails - in that case video always gets a pass'
 )
 HELP_ARG_CMDFILE = (
     'Full path to file containing cmdline arguments. One word per line. Useful when cmdline length exceeds maximum for your OS.'
