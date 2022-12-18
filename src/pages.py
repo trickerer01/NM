@@ -15,9 +15,10 @@ from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
 from defs import (
-    Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, SLASH, DOWNLOAD_MODE_FULL, DOWNLOAD_POLICY_DEFAULT, ExtraConfig
+    Log, SITE_PAGE_REQUEST_BASE, DEFAULT_HEADERS, MAX_VIDEOS_QUEUE_SIZE, DOWNLOAD_MODE_FULL, DOWNLOAD_POLICY_DEFAULT, ExtraConfig,
+    SLASH,
 )
-from download import download_id, is_queue_empty, after_download, report_total_queue_size_callback, register_id_sequence
+from download import download_id, after_download, report_total_queue_size_callback, register_id_sequence
 from fetch_html import fetch_html, set_proxy
 from tagger import init_tags_files, dump_item_tags
 
@@ -64,13 +65,13 @@ async def main() -> None:
         while is_parsed_cmdfile(arglist):
             arglist = prepare_arglist_pages(read_cmdfile(arglist.path))
     except Exception:
-        Log(f'\nUnable to parse cmdline. Exiting.\n{sys.exc_info()[0]}: {sys.exc_info()[1]}')
+        Log.fatal(f'\nUnable to parse cmdline. Exiting.\n{sys.exc_info()[0]}: {sys.exc_info()[1]}')
         return
 
     try:
-        ExtraConfig.verbose = arglist.verbose
         ExtraConfig.min_score = arglist.minimum_score
         ExtraConfig.naming_flags = arglist.naming
+        ExtraConfig.logging_flags = arglist.log_level
 
         dest_base = arglist.path
         start_page = arglist.start
@@ -89,17 +90,17 @@ async def main() -> None:
         delay_for_message = False
         if ds:
             if up != DOWNLOAD_POLICY_DEFAULT:
-                Log('Info: running download script, outer unlisted policy will be ignored')
+                Log.info('Info: running download script, outer unlisted policy will be ignored')
                 up = DOWNLOAD_POLICY_DEFAULT
                 delay_for_message = True
             if len(ex_tags) > 0:
-                Log(f'Info: running download script: outer extra tags: {str(ex_tags)}')
+                Log.info(f'Info: running download script: outer extra tags: {str(ex_tags)}')
                 delay_for_message = True
 
         if delay_for_message:
             await sleep(3.0)
     except Exception:
-        Log('\nError reading parsed arglist!')
+        Log.fatal('\nError reading parsed arglist!')
         return
 
     v_entries = []
@@ -108,13 +109,13 @@ async def main() -> None:
     pi = start_page
     while pi < start_page + pages_count:
         if pi > maxpage > 0:
-            Log('reached parsed max page, page scan completed')
+            Log.info('reached parsed max page, page scan completed')
             break
-        Log(f'page {pi:d}...{" (this is the last page!)" if 0 < maxpage == pi else ""}')
+        Log.info(f'page {pi:d}...{" (this is the last page!)" if 0 < maxpage == pi else ""}')
 
         a_html = await fetch_html(SITE_PAGE_REQUEST_BASE % (search_str, pi))
         if not a_html:
-            Log(f'cannot get html for page {pi:d}')
+            Log.error(f'Error: cannot get html for page {pi:d}')
             continue
 
         pi += 1
@@ -136,10 +137,10 @@ async def main() -> None:
         for refpair in zip(arefs, rrefs, trefs):
             cur_id = extract_id(refpair[0])
             if cur_id < stop_id:
-                Log(f'skipping {cur_id:d} < {stop_id:d}')
+                Log.trace(f'skipping {cur_id:d} < {stop_id:d}')
                 continue
             if cur_id > begin_id:
-                Log(f'skipping {cur_id:d} > {begin_id:d}')
+                Log.trace(f'skipping {cur_id:d} > {begin_id:d}')
                 continue
             href_rel = str(refpair[0].get('href'))
             tref = refpair[2].text
@@ -148,11 +149,11 @@ async def main() -> None:
             v_entries.append(VideoEntryFull(cur_id, my_title, my_rating))
 
     if len(v_entries) == 0:
-        Log('\nNo videos found. Aborted.')
+        Log.fatal('\nNo videos found. Aborted.')
         return
 
     minid, maxid = get_minmax_ids(v_entries)
-    Log(f'\nOk! {len(v_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
+    Log.info(f'\nOk! {len(v_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
     v_entries = list(reversed(v_entries))
     if st:
         init_tags_files(dest_base)
@@ -167,9 +168,6 @@ async def main() -> None:
 
     if st:
         dump_item_tags()
-
-    if not is_queue_empty():
-        Log('pages: queue is not empty at exit!')
 
     await after_download()
 

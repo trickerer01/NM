@@ -14,9 +14,9 @@ from typing import Optional, List
 from defs import (
     SLASH, Log, NON_SEARCH_SYMBOLS, HELP_PATH, HELP_PAGES, HELP_STOP_ID, HELP_SEARCH, QUALITIES, DEFAULT_QUALITY, HELP_QUALITY,
     HELP_ARG_PROXY, HELP_BEGIN_ID, HELP_ARG_EXTRA_TAGS, HELP_ARG_UVPOLICY, UVIDEO_POLICIES, DOWNLOAD_POLICY_DEFAULT, DOWNLOAD_MODES,
-    DOWNLOAD_MODE_DEFAULT, NAMING_FLAGS, NAMING_FLAGS_FULL, NAMING_FLAGS_DEFAULT,
-    HELP_ARG_DMMODE, HELP_ARG_DWN_SCENARIO, HELP_ARG_MINSCORE, HELP_ARG_CMDFILE, HELP_ARG_NAMING,
-    ACTION_STORE_TRUE, normalize_path, UTF8,
+    DOWNLOAD_MODE_DEFAULT, NAMING_FLAGS, NAMING_FLAGS_FULL, NAMING_FLAGS_DEFAULT, LOGGING_FLAGS, LOGGING_FLAGS_DEFAULT,
+    HELP_ARG_DMMODE, HELP_ARG_DWN_SCENARIO, HELP_ARG_MINSCORE, HELP_ARG_CMDFILE, HELP_ARG_NAMING, HELP_ARG_LOGGING,
+    ACTION_STORE_TRUE, normalize_path, UTF8, LoggingFlags,
 )
 from scenario import DownloadScenario, valid_int
 from tagger import extra_tag
@@ -24,6 +24,7 @@ from tagger import extra_tag
 UVP_DEFAULT = DOWNLOAD_POLICY_DEFAULT
 DM_DEFAULT = DOWNLOAD_MODE_DEFAULT
 NAMING_DEFAULT = NAMING_FLAGS_DEFAULT
+LOGGING_DEFAULT = LOGGING_FLAGS_DEFAULT
 
 PARSER_TITLE_FILE = 'file'
 PARSER_TITLE_CMD = 'cmd'
@@ -126,7 +127,7 @@ def validate_parsed(args: List[str], default_sub: ArgumentParser) -> Namespace:
         # Log('\n', e)
         parser.print_help()
         if error_to_print != '':
-            Log(error_to_print)
+            Log.error(error_to_print)
         raise
 
     return parsed
@@ -191,16 +192,23 @@ def naming_flags(flags: str) -> int:
         raise ArgumentError
 
 
+def log_level(level: str) -> LoggingFlags:
+    try:
+        return LoggingFlags(int(LOGGING_FLAGS[level], 16))
+    except Exception:
+        raise ArgumentError
+
+
 def add_common_args(parser_or_group: ArgumentParser) -> None:
     parser_or_group.add_argument('-path', default=path.abspath(path.curdir), help=HELP_PATH, type=valid_path)
     parser_or_group.add_argument('-quality', default=DEFAULT_QUALITY, help=HELP_QUALITY, choices=QUALITIES)
     parser_or_group.add_argument('-naming', metavar='#MASK', default=NAMING_DEFAULT, help=HELP_ARG_NAMING, type=naming_flags)
+    parser_or_group.add_argument('-log', '--log-level', default=LOGGING_DEFAULT, help=HELP_ARG_LOGGING, type=log_level)
     parser_or_group.add_argument('-minscore', '--minimum-score', metavar='#score', default=-999999, help=HELP_ARG_MINSCORE, type=valid_int)
     parser_or_group.add_argument('-proxy', metavar='#type://a.d.d.r:port', default=None, help=HELP_ARG_PROXY, type=valid_proxy)
     parser_or_group.add_argument('-uvp', '--unli-video-policy', default=UVP_DEFAULT, help=HELP_ARG_UVPOLICY, choices=UVIDEO_POLICIES)
     parser_or_group.add_argument('-dmode', '--download-mode', default=DM_DEFAULT, help=HELP_ARG_DMMODE, choices=DOWNLOAD_MODES)
     parser_or_group.add_argument('-tdump', '--dump-tags', action=ACTION_STORE_TRUE, help='Save tags')
-    parser_or_group.add_argument('--verbose', action=ACTION_STORE_TRUE, help='Use verbose mode for output')
     parser_or_group.add_argument('-script', '--download-scenario', default=None, help=HELP_ARG_DWN_SCENARIO, type=download_scenario_format)
     parser_or_group.add_argument(dest='extra_tags', nargs=ZERO_OR_MORE, help=HELP_ARG_EXTRA_TAGS, type=extra_tag)
 

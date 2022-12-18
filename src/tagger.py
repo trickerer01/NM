@@ -325,7 +325,7 @@ def extra_tag(tag: str) -> str:
             validate_neg_and_group(tag)
         return tag.lower().replace(' ', '_')
     except Exception:
-        Log(f'Fatal: invalid tags group: \'{tag}\'!')
+        Log.fatal(f'Fatal: invalid tags group: \'{tag}\'!')
         raise ValueError
 
 
@@ -412,8 +412,8 @@ def unite_separated_tags(comma_separated_tags_str: str) -> str:
         try:
             words = re_sub(raw_tag_replacement_re, raw_tag_replacement_groups, words)
         except Exception:
-            Log(f'Unable to apply \'{str(raw_tag_replacement_re)}\' with groups\'{raw_tag_replacement_groups}\' to string \'{words}\'\n'
-                f'!Orig was: \'{comma_separated_tags_str}\'!')
+            Log.warn(f'Unable to apply \'{str(raw_tag_replacement_re)}\' with groups\'{raw_tag_replacement_groups}\' to string \'{words}\'!'
+                     f'\nOrig was: \'{comma_separated_tags_str}\'!')
             continue
     return words
 
