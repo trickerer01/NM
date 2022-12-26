@@ -129,6 +129,9 @@ async def main() -> None:
                     maxpage = max(maxpage, page_num)
                 except Exception:
                     pass
+            if maxpage == 0:
+                Log.info('Could not extract max page, assuming single page search')
+                maxpage = 1
 
         arefs = a_html.find_all('a', href=PAGE_ENTRY_RE)
         rrefs = a_html.find_all('b', string=re_compile(r'^(?:\d{1,3}%|-)$'))
