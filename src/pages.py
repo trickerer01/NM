@@ -121,12 +121,9 @@ async def main() -> None:
         pi += 1
 
         if maxpage == 0:
-            lis = a_html.find_all('li', class_='hidden-xs')
-            li_pages = [li.find('a') for li in lis]
-            for li_page in li_pages:
+            for li_page in [li.find('a') for li in a_html.find_all('li', class_='hidden-xs')]:
                 try:
-                    page_num = int(str(li_page.text))
-                    maxpage = max(maxpage, page_num)
+                    maxpage = max(maxpage, int(str(li_page.text)))
                 except Exception:
                     pass
             if maxpage == 0:
