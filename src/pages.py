@@ -107,64 +107,64 @@ async def main() -> None:
     maxpage = 0
 
     pi = start_page
-    while pi < start_page + pages_count:
-        if pi > maxpage > 0:
-            Log.info('reached parsed max page, page scan completed')
-            break
-        Log.info(f'page {pi:d}...{" (this is the last page!)" if 0 < maxpage == pi else ""}')
-
-        a_html = await fetch_html(SITE_PAGE_REQUEST_BASE % (search_str, pi))
-        if not a_html:
-            Log.error(f'Error: cannot get html for page {pi:d}')
-            continue
-
-        pi += 1
-
-        if maxpage == 0:
-            for li_page in [li.find('a') for li in a_html.find_all('li', class_='hidden-xs')]:
-                try:
-                    maxpage = max(maxpage, int(str(li_page.text)))
-                except Exception:
-                    pass
-            if maxpage == 0:
-                Log.info('Could not extract max page, assuming single page search')
-                maxpage = 1
-
-        arefs = a_html.find_all('a', href=PAGE_ENTRY_RE)
-        rrefs = a_html.find_all('b', string=re_compile(r'^(?:\d{1,3}%|-)$'))
-        trefs = a_html.find_all('span', class_='video-title title-truncate m-t-5')
-        assert len(arefs) == len(rrefs) == len(trefs)
-        for refpair in zip(arefs, rrefs, trefs):
-            cur_id = extract_id(refpair[0])
-            if cur_id < stop_id:
-                Log.trace(f'skipping {cur_id:d} < {stop_id:d}')
-                continue
-            if cur_id > begin_id:
-                Log.trace(f'skipping {cur_id:d} > {begin_id:d}')
-                continue
-            href_rel = str(refpair[0].get('href'))
-            tref = refpair[2].text
-            my_title = tref if tref != '' else href_rel[href_rel.rfind(SLASH) + 1:] if href_rel != '' else ''
-            my_rating = str(refpair[1].text)
-            v_entries.append(VideoEntryFull(cur_id, my_title, my_rating))
-
-    if len(v_entries) == 0:
-        Log.fatal('\nNo videos found. Aborted.')
-        return
-
-    minid, maxid = get_minmax_ids(v_entries)
-    Log.info(f'\nOk! {len(v_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
-    v_entries = list(reversed(v_entries))
-    if st:
-        init_tags_files(dest_base)
-    register_id_sequence([v.my_id for v in v_entries])
-    reporter = get_running_loop().create_task(report_total_queue_size_callback(3.0 if dm == DOWNLOAD_MODE_FULL else 1.0))
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
+        while pi < start_page + pages_count:
+            if pi > maxpage > 0:
+                Log.info('reached parsed max page, page scan completed')
+                break
+            Log.info(f'page {pi:d}...{" (this is the last page!)" if 0 < maxpage == pi else ""}')
+
+            a_html = await fetch_html(SITE_PAGE_REQUEST_BASE % (search_str, pi), session=s)
+            if not a_html:
+                Log.error(f'Error: cannot get html for page {pi:d}')
+                continue
+
+            pi += 1
+
+            if maxpage == 0:
+                for li_page in [li.find('a') for li in a_html.find_all('li', class_='hidden-xs')]:
+                    try:
+                        maxpage = max(maxpage, int(str(li_page.text)))
+                    except Exception:
+                        pass
+                if maxpage == 0:
+                    Log.info('Could not extract max page, assuming single page search')
+                    maxpage = 1
+
+            arefs = a_html.find_all('a', href=PAGE_ENTRY_RE)
+            rrefs = a_html.find_all('b', string=re_compile(r'^(?:\d{1,3}%|-)$'))
+            trefs = a_html.find_all('span', class_='video-title title-truncate m-t-5')
+            assert len(arefs) == len(rrefs) == len(trefs)
+            for refpair in zip(arefs, rrefs, trefs):
+                cur_id = extract_id(refpair[0])
+                if cur_id < stop_id:
+                    Log.trace(f'skipping {cur_id:d} < {stop_id:d}')
+                    continue
+                if cur_id > begin_id:
+                    Log.trace(f'skipping {cur_id:d} > {begin_id:d}')
+                    continue
+                href_rel = str(refpair[0].get('href'))
+                tref = refpair[2].text
+                my_title = tref if tref != '' else href_rel[href_rel.rfind(SLASH) + 1:] if href_rel != '' else ''
+                my_rating = str(refpair[1].text)
+                v_entries.append(VideoEntryFull(cur_id, my_title, my_rating))
+
+        if len(v_entries) == 0:
+            Log.fatal('\nNo videos found. Aborted.')
+            return
+
+        minid, maxid = get_minmax_ids(v_entries)
+        Log.info(f'\nOk! {len(v_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
+        v_entries = list(reversed(v_entries))
+        if st:
+            init_tags_files(dest_base)
+        register_id_sequence([v.my_id for v in v_entries])
+        reporter = get_running_loop().create_task(report_total_queue_size_callback(3.0 if dm == DOWNLOAD_MODE_FULL else 1.0))
         s.headers.update(DEFAULT_HEADERS.copy())
         for cv in as_completed(
                 [download_id(v.my_id, v.my_title, v.m_rate, dest_base, quality, ds, ex_tags, up, dm, st, s) for v in v_entries]):
             await cv
-    await reporter
+        await reporter
 
     if st:
         dump_item_tags()

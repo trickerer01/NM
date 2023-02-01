@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 from asyncio import sleep
 from os import path, stat, remove, makedirs, listdir
+from random import uniform as frand
 from re import sub, search, match, compile as re_compile
 from typing import List, Optional
 
@@ -15,12 +16,12 @@ from aiofile import async_open
 from aiohttp import ClientSession
 
 from defs import (
-    Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, SITE_BASE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
+    Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, SITE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
     SLASH, SITE_ITEM_REQUEST_BASE, TAGS_CONCAT_CHAR, DownloadResult, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH, normalize_path,
     get_elapsed_time_s, ExtraConfig, has_naming_flag, prefixp, NAMING_FLAG_PREFIX, NAMING_FLAG_SCORE, NAMING_FLAG_TITLE, NAMING_FLAG_TAGS,
     LoggingFlags
 )
-from fetch_html import get_proxy, fetch_html
+from fetch_html import fetch_html, wrap_request
 from scenario import DownloadScenario
 from tagger import (
     filtered_tags, unite_separated_tags, get_matching_tag, get_or_group_matching_tag, is_neg_and_group_matches, register_item_tags,
@@ -180,7 +181,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     my_quality = quality
     my_tags = 'no_tags'
     likes = ''
-    i_html = await fetch_html(SITE_ITEM_REQUEST_BASE % idi)
+    i_html = await fetch_html(SITE_ITEM_REQUEST_BASE % idi, session=session)
     if i_html:
         if any('Error' in [d.string, d.text] for d in i_html.find_all('legend')):
             Log.error(f'Warning: Got error 404 for {prefixp()}{idi:d}.mp4 (may be unlisted), author/likes will not be extracted...')
@@ -270,7 +271,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     # qes = qlist[2]
     #
     # for i in range(qs.index(quality), len(qs)):
-    #     link = SITE_BASE + '/media/videos/' + qss[i] + str(idi) + qes[i] + '.mp4'
+    #     link = SITE + '/media/videos/' + qss[i] + str(idi) + qes[i] + '.mp4'
     #     filename = 'nm_' + str(idi) + ('_' + my_title if my_title != '' else '') + '_' + qs[i] + '_pydw.mp4'
     #     if await download_file(idi, filename, dest_base, link, session):
     #         return
@@ -295,7 +296,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
 
     ret_vals = []  # type: List[int]
     for i in range(QUALITIES.index(my_quality), len(QUALITIES)):
-        link = f'{SITE_BASE}/media/videos/{QUALITY_STARTS[i]}{idi:d}{QUALITY_ENDS[i]}.mp4'
+        link = f'{SITE}/media/videos/{QUALITY_STARTS[i]}{idi:d}{QUALITY_ENDS[i]}.mp4'
         filename = f'{fname_part1}_{QUALITIES[i]}_{fname_part2}'
         res = await download_file(idi, filename, my_dest_base, link, download_mode, session, True, my_subfolder)
         if res not in [DownloadResult.DOWNLOAD_SUCCESS, DownloadResult.DOWNLOAD_FAIL_ALREADY_EXISTS]:
@@ -360,7 +361,7 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, down
                 break
 
             r = None
-            async with s.request('GET', link, timeout=7200, proxy=get_proxy()) as r:
+            async with await wrap_request(s, 'GET', link, timeout=7200, headers={'Referer': link}) as r:
                 if r.status == 404:
                     Log.error(f'Got 404 for {prefixp()}{idi:d}.mp4...!')
                     retries = CONNECT_RETRIES_ITEM - 1
@@ -392,7 +393,7 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, down
                 r.close()
             if path.exists(dest):
                 remove(dest)
-            await sleep(1)
+            await sleep(frand(1.0, 7.0))
             continue
 
     # delay next file if queue is full
