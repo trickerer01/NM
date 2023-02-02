@@ -10,7 +10,7 @@ from asyncio import sleep
 from os import path, stat, remove, makedirs, listdir
 from random import uniform as frand
 from re import sub, search, match, compile as re_compile
-from typing import List, Optional
+from typing import List, Optional, Set
 
 from aiofile import async_open
 from aiohttp import ClientSession
@@ -31,6 +31,8 @@ NEWLINE = '\n'
 re_nmfile = re_compile(fr'^(?:nm_)?([^_]+)_.*?({"|".join(q for q in QUALITIES)})_py.+?$')
 re_pdanger = re_compile(r'^This is a private video\..*?$')
 
+found_filenames_base = set()  # type: Set[str]
+found_filenames_all = set()  # type: Set[str]
 downloads_queue = []  # type: List[int]
 failed_items = []  # type: List[int]
 total_queue_size = 0
@@ -161,6 +163,43 @@ def get_uvp_always_subquery_idx(scenario: DownloadScenario) -> int:
     return -1
 
 
+def file_exists_in_folder(dest_base: str, idi: int, quality: str, check_subfolders: bool) -> bool:
+    global found_filenames_base
+    global found_filenames_all
+
+    if not path.exists(dest_base):
+        return False
+
+    if len(found_filenames_base) == 0 and len(found_filenames_all) == 0:
+        subfolders = list()
+        cur_names = listdir(dest_base)
+        for idx_c in reversed(range(len(cur_names))):
+            fullpath_c = f'{dest_base}{cur_names[idx_c]}'
+            if path.isdir(fullpath_c):
+                subfolders.append(normalize_path(fullpath_c))
+                del cur_names[idx_c]
+            elif path.isfile(fullpath_c):
+                found_filenames_all.add(cur_names[idx_c])
+        found_filenames_base = cur_names
+        for subfolder in subfolders:
+            for sub_name in listdir(subfolder):
+                fullpath_s = f'{subfolder}{sub_name}'
+                if path.isfile(fullpath_s):
+                    found_filenames_all.add(sub_name)
+
+    for fname in sorted(found_filenames_all if check_subfolders else found_filenames_base):
+        try:
+            f_match = match(re_nmfile, fname)
+            f_id = f_match.group(1)
+            f_quality = f_match.group(2)
+            if str(idi) == f_id and quality == f_quality:
+                return True
+        except Exception:
+            continue
+
+    return False
+
+
 async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, quality: str, scenario: Optional[DownloadScenario],
                       extra_tags: List[str], unlisted_policy: str, download_mode: str, save_tags: bool, session: ClientSession) -> None:
     global current_ididx
@@ -176,6 +215,10 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     await sleep(0.25)  # max 4 base requests per second
 
     current_ididx += 1
+
+    if file_exists_in_folder(dest_base, idi, quality, True):
+        Log.info(f'download_id: {prefixp()}{idi:d}.mp4 (or similar) found in {dest_base} (or subfolder). Skipped.')
+        return await try_unregister_from_queue(idi)
 
     my_subfolder = ''
     my_quality = quality
@@ -326,22 +369,13 @@ async def download_file(idi: int, filename: str, dest_base: str, link: str, down
         except Exception:
             raise IOError(f'ERROR: Unable to create subfolder \'{dest_base}\'!')
     else:
-        # to check if file already exists we only take into account id and quality
         nm_match = match(re_nmfile, filename)
-        nm_id = nm_match.group(1)
         nm_quality = nm_match.group(2)
-        for fname in listdir(dest_base):
-            try:
-                f_match = match(re_nmfile, fname)
-                f_id = f_match.group(1)
-                f_quality = f_match.group(2)
-                if nm_id == f_id and nm_quality == f_quality:
-                    Log.info(f'{filename} (or similar) already exists. Skipped.')
-                    if from_ids is False:
-                        await try_unregister_from_queue(idi)
-                    return DownloadResult.DOWNLOAD_FAIL_ALREADY_EXISTS
-            except Exception:
-                continue
+        if file_exists_in_folder(dest_base, idi, nm_quality, False):
+            Log.info(f'{filename} (or similar) already exists. Skipped.')
+            if from_ids is False:
+                await try_unregister_from_queue(idi)
+            return DownloadResult.DOWNLOAD_FAIL_ALREADY_EXISTS
 
     while not await try_register_in_queue(idi):
         await sleep(1.0)
