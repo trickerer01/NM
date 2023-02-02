@@ -19,7 +19,7 @@ from defs import (
     SLASH,
 )
 from download import download_id, after_download, report_total_queue_size_callback, register_id_sequence
-from fetch_html import fetch_html, set_proxy
+from fetch_html import fetch_html
 from tagger import init_tags_files, dump_item_tags
 
 
@@ -69,6 +69,7 @@ async def main() -> None:
         return
 
     try:
+        ExtraConfig.proxy = arglist.proxy
         ExtraConfig.min_score = arglist.minimum_score
         ExtraConfig.naming_flags = arglist.naming
         ExtraConfig.logging_flags = arglist.log_level
@@ -85,7 +86,6 @@ async def main() -> None:
         st = arglist.dump_tags
         ex_tags = arglist.extra_tags
         ds = arglist.download_scenario
-        set_proxy(arglist.proxy)
 
         delay_for_message = False
         if ds:

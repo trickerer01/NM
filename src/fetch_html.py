@@ -13,15 +13,9 @@ from typing import Optional
 from bs4 import BeautifulSoup
 from aiohttp import ClientSession, ClientResponse
 
-from defs import CONNECT_RETRIES_PAGE, Log, DEFAULT_HEADERS, CONNECT_REQUEST_DELAY
+from defs import CONNECT_RETRIES_PAGE, Log, DEFAULT_HEADERS, CONNECT_REQUEST_DELAY, ExtraConfig
 
-proxy = None  # type: Optional[str]
 request_delay = 0.0
-
-
-def set_proxy(prox: str) -> None:
-    global proxy
-    proxy = prox
 
 
 async def wrap_request(s: ClientSession, method: str, url: str, **kwargs) -> ClientResponse:
@@ -32,12 +26,12 @@ async def wrap_request(s: ClientSession, method: str, url: str, **kwargs) -> Cli
         await sleep(d)
     request_delay = CONNECT_REQUEST_DELAY
     s.headers.update(DEFAULT_HEADERS.copy())
-    kwargs.update(proxy=proxy)
+    kwargs.update(proxy=ExtraConfig.proxy)
     r = await s.request(method, url, **kwargs)
     return r
 
 
-async def fetch_html(url: str, tries: Optional[int] = None, *, session: ClientSession) -> Optional[BeautifulSoup]:
+async def fetch_html(url: str, *, tries: int = None, session: ClientSession) -> Optional[BeautifulSoup]:
     # very basic, minimum validation
     tries = tries or CONNECT_RETRIES_PAGE
 
