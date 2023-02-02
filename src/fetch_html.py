@@ -17,6 +17,7 @@ from defs import CONNECT_RETRIES_PAGE, Log, DEFAULT_HEADERS
 
 
 proxy = None  # type: Optional[str]
+request_delay = 0.0
 
 
 def set_proxy(prox: str) -> None:
@@ -25,6 +26,12 @@ def set_proxy(prox: str) -> None:
 
 
 async def wrap_request(s: ClientSession, method: str, url: str, **kwargs) -> ClientResponse:
+    global request_delay
+    while request_delay > 0.0:
+        d = request_delay
+        request_delay = 0.0
+        await sleep(d)
+    request_delay = 0.5
     s.headers.update(DEFAULT_HEADERS.copy())
     kwargs.update(proxy=proxy)
     r = await s.request(method, url, **kwargs)
