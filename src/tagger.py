@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from re import compile as re_compile, fullmatch as re_fullmatch, match as re_match, sub as re_sub
 from typing import List, Optional, Dict
 
-from defs import TAGS_CONCAT_CHAR, Log, UTF8, normalize_path, prefixp
+from defs import TAGS_CONCAT_CHAR, Log, UTF8, normalize_path, prefixp, ExtraConfig
 
 re_replace_symbols = re_compile(
     r'[^0-9a-zA-Z_+()\[\]]+'
@@ -471,13 +471,7 @@ def filtered_tags(tags_list: List[str]) -> str:
     return trim_undersores(TAGS_CONCAT_CHAR.join(tags_list_final))
 
 
-saved_tags_dest_base = ''
 saved_tags_dict = {'': {}}  # type: Dict[str, Dict[int, str]]
-
-
-def init_tags_files(dest_base: str) -> None:
-    global saved_tags_dest_base
-    saved_tags_dest_base = dest_base
 
 
 def register_item_tags(item_id: int, tags_str: str, subfolder: str) -> None:
@@ -492,7 +486,7 @@ def dump_item_tags() -> None:
             continue
         min_id = min(tags_dict.keys())
         max_id = max(tags_dict.keys())
-        fullpath = f'{normalize_path(f"{saved_tags_dest_base}{subfolder}")}{prefixp()}!tags_{min_id:d}-{max_id:d}.txt'
+        fullpath = f'{normalize_path(f"{ExtraConfig.dest_base}{subfolder}")}{prefixp()}!tags_{min_id:d}-{max_id:d}.txt'
         with open(fullpath, 'wt', encoding=UTF8) as saved_tags_file:
             saved_tags_file.writelines(f'{prefixp()}{idi:d}: {tags.strip()}\n'
                                        for idi, tags in sorted(tags_dict.items(), key=lambda t: t[0]))

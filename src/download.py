@@ -61,9 +61,9 @@ def is_in_queue(idi: int) -> bool:
     return downloads_queue.count(idi) > 0
 
 
-def normalize_filename(filename: str, dest_base: str) -> str:
+def normalize_filename(filename: str, base_path: str) -> str:
     filename = sub(REPLACE_SYMBOLS, '_', filename)
-    dest = dest_base.replace('\\', SLASH)
+    dest = base_path.replace('\\', SLASH)
     if dest[-1] != SLASH:
         dest += SLASH
     dest += filename
@@ -163,16 +163,16 @@ def get_uvp_always_subquery_idx(scenario: DownloadScenario) -> int:
     return -1
 
 
-def scan_dest_folder(dest_base: str) -> None:
+def scan_dest_folder() -> None:
     global found_filenames_base
     global found_filenames_all
 
-    if path.exists(dest_base):
+    if path.exists(ExtraConfig.dest_base):
         Log.info('Scanning dest folder...')
         subfolders = list()
-        cur_names = listdir(dest_base)
+        cur_names = listdir(ExtraConfig.dest_base)
         for idx_c in reversed(range(len(cur_names))):
-            fullpath_c = f'{dest_base}{cur_names[idx_c]}'
+            fullpath_c = f'{ExtraConfig.dest_base}{cur_names[idx_c]}'
             if path.isdir(fullpath_c):
                 subfolders.append(normalize_path(fullpath_c))
                 del cur_names[idx_c]
@@ -189,8 +189,8 @@ def scan_dest_folder(dest_base: str) -> None:
                  f'(total files: {len(found_filenames_all):d})')
 
 
-def file_exists_in_folder(dest_base: str, idi: int, quality: str, check_subfolders: bool) -> bool:
-    if path.exists(dest_base):
+def file_exists_in_folder(base_folder, idi: int, quality: str, check_subfolders: bool) -> bool:
+    if path.exists(base_folder):
         for fname in sorted(found_filenames_all if check_subfolders else found_filenames_base):
             try:
                 f_match = match(re_nmfile, fname)
@@ -203,7 +203,7 @@ def file_exists_in_folder(dest_base: str, idi: int, quality: str, check_subfolde
     return False
 
 
-async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, quality: str, scenario: Optional[DownloadScenario],
+async def download_id(idi: int, my_title: str, my_rating: str, quality: str, scenario: Optional[DownloadScenario],
                       extra_tags: List[str], unlisted_policy: str, download_mode: str, save_tags: bool, session: ClientSession) -> None:
     global current_ididx
 
@@ -217,8 +217,8 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
 
     current_ididx += 1
 
-    if file_exists_in_folder(dest_base, idi, quality, True):
-        Log.info(f'download_id: {prefixp()}{idi:d}.mp4 (or similar) found in {dest_base} (or subfolder). Skipped.')
+    if file_exists_in_folder(ExtraConfig.dest_base, idi, quality, True):
+        Log.info(f'download_id: {prefixp()}{idi:d}.mp4 (or similar) found in {ExtraConfig.dest_base} (or subfolder). Skipped.')
         return await try_unregister_from_queue(idi)
 
     my_subfolder = ''
@@ -320,7 +320,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     #     if await download_file(idi, filename, dest_base, link, session):
     #         return
 
-    my_dest_base = normalize_path(f'{dest_base}{my_subfolder}')
+    my_dest_base = normalize_path(f'{ExtraConfig.dest_base}{my_subfolder}')
     my_score = likes if len(likes) > 0 else my_rating if len(my_rating) > 1 else 'unk'
     extra_len = 5 + 3 + 2  # 3 underscores + 2 brackets + len('1080p') - max len of all qualities
     fname_part2 = 'pydw.mp4'

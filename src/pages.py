@@ -20,7 +20,7 @@ from defs import (
 )
 from download import download_id, after_download, report_total_queue_size_callback, register_id_sequence, scan_dest_folder
 from fetch_html import fetch_html
-from tagger import init_tags_files, dump_item_tags
+from tagger import dump_item_tags
 
 
 PAGE_ENTRY_RE = re_compile(r'^/video/(\d+)/[^/]+?$')
@@ -69,12 +69,12 @@ async def main() -> None:
         return
 
     try:
+        ExtraConfig.dest_base = arglist.path
         ExtraConfig.proxy = arglist.proxy
         ExtraConfig.min_score = arglist.minimum_score
         ExtraConfig.naming_flags = arglist.naming
         ExtraConfig.logging_flags = arglist.log_level
 
-        dest_base = arglist.path
         start_page = arglist.start
         pages_count = arglist.pages
         stop_id = arglist.stop_id
@@ -156,14 +156,12 @@ async def main() -> None:
         minid, maxid = get_minmax_ids(v_entries)
         Log.info(f'\nOk! {len(v_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
         v_entries = list(reversed(v_entries))
-        if st:
-            init_tags_files(dest_base)
         register_id_sequence([v.my_id for v in v_entries])
-        scan_dest_folder(dest_base)
+        scan_dest_folder()
         reporter = get_running_loop().create_task(report_total_queue_size_callback(3.0 if dm == DOWNLOAD_MODE_FULL else 1.0))
         s.headers.update(DEFAULT_HEADERS.copy())
         for cv in as_completed(
-                [download_id(v.my_id, v.my_title, v.m_rate, dest_base, quality, ds, ex_tags, up, dm, st, s) for v in v_entries]):
+                [download_id(v.my_id, v.my_title, v.m_rate, quality, ds, ex_tags, up, dm, st, s) for v in v_entries]):
             await cv
         await reporter
 
