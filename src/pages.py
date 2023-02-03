@@ -69,17 +69,7 @@ async def main() -> None:
         return
 
     try:
-        ExtraConfig.dest_base = arglist.path
-        ExtraConfig.proxy = arglist.proxy
-        ExtraConfig.min_score = arglist.minimum_score
-        ExtraConfig.quality = arglist.quality
-        ExtraConfig.un_video_policy = arglist.unli_video_policy
-        ExtraConfig.download_mode = arglist.download_mode
-        ExtraConfig.save_tags = arglist.dump_tags
-        ExtraConfig.extra_tags = arglist.extra_tags
-        ExtraConfig.naming_flags = arglist.naming
-        ExtraConfig.logging_flags = arglist.log_level
-
+        ExtraConfig.read_params(arglist)
         start_page = arglist.start
         pages_count = arglist.pages
         stop_id = arglist.stop_id
