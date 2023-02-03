@@ -72,6 +72,7 @@ async def main() -> None:
         ExtraConfig.dest_base = arglist.path
         ExtraConfig.proxy = arglist.proxy
         ExtraConfig.min_score = arglist.minimum_score
+        ExtraConfig.quality = arglist.quality
         ExtraConfig.naming_flags = arglist.naming
         ExtraConfig.logging_flags = arglist.log_level
 
@@ -80,7 +81,6 @@ async def main() -> None:
         stop_id = arglist.stop_id
         begin_id = arglist.begin_id
         search_str = arglist.search
-        quality = arglist.quality
         up = arglist.unli_video_policy
         dm = arglist.download_mode
         st = arglist.dump_tags
@@ -161,7 +161,7 @@ async def main() -> None:
         reporter = get_running_loop().create_task(report_total_queue_size_callback(3.0 if dm == DOWNLOAD_MODE_FULL else 1.0))
         s.headers.update(DEFAULT_HEADERS.copy())
         for cv in as_completed(
-                [download_id(v.my_id, v.my_title, v.m_rate, quality, ds, ex_tags, up, dm, st, s) for v in v_entries]):
+                [download_id(v.my_id, v.my_title, v.m_rate, ds, ex_tags, up, dm, st, s) for v in v_entries]):
             await cv
         await reporter
 
