@@ -204,7 +204,7 @@ def file_exists_in_folder(base_folder: str, idi: int, quality: str, check_subfol
 
 
 async def download_id(idi: int, my_title: str, my_rating: str, scenario: Optional[DownloadScenario],
-                      extra_tags: List[str], download_mode: str, save_tags: bool, session: ClientSession) -> None:
+                      extra_tags: List[str], save_tags: bool, session: ClientSession) -> None:
     global current_ididx
 
     my_index = id_sequence.index(idi)
@@ -342,7 +342,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, scenario: Optiona
     for i in range(QUALITIES.index(my_quality), len(QUALITIES)):
         link = f'{SITE}/media/videos/{QUALITY_STARTS[i]}{idi:d}{QUALITY_ENDS[i]}.mp4'
         filename = f'{fname_part1}_{QUALITIES[i]}_{fname_part2}'
-        res = await download_file(idi, filename, my_dest_base, link, download_mode, session, True, my_subfolder)
+        res = await download_file(idi, filename, my_dest_base, link, session, True, my_subfolder)
         if res not in [DownloadResult.DOWNLOAD_SUCCESS, DownloadResult.DOWNLOAD_FAIL_ALREADY_EXISTS]:
             ret_vals.append(res)
         else:
@@ -356,8 +356,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, scenario: Optiona
     return await try_unregister_from_queue(idi)
 
 
-async def download_file(idi: int, filename: str, my_dest_base: str, link: str, download_mode: str, s: ClientSession,
-                        from_ids=False, subfolder='') -> int:
+async def download_file(idi: int, filename: str, my_dest_base: str, link: str, s: ClientSession, from_ids=False, subfolder='') -> int:
     dest = normalize_filename(filename, my_dest_base)
     sfilename = f'{f"{subfolder}/" if len(subfolder) > 0 else ""}{filename}'
     file_size = 0
@@ -389,7 +388,7 @@ async def download_file(idi: int, filename: str, my_dest_base: str, link: str, d
     # Log('Retrieving %s...' % filename_short)
     while (not (path.exists(dest) and file_size > 0)) and retries < CONNECT_RETRIES_ITEM:
         try:
-            if download_mode == DOWNLOAD_MODE_TOUCH:
+            if ExtraConfig.dm == DOWNLOAD_MODE_TOUCH:
                 Log.info(f'Saving<touch> {0.0:.2f} Mb to {sfilename}')
                 with open(dest, 'wb'):
                     pass
