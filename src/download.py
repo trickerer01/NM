@@ -215,8 +215,6 @@ async def download_id(idi: int, my_title: str, my_rating: str, dest_base: str, q
     while not await try_register_in_queue(idi):
         await sleep(1.5)
 
-    await sleep(0.25)  # max 4 base requests per second
-
     current_ididx += 1
 
     if file_exists_in_folder(dest_base, idi, quality, True):
