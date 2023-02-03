@@ -75,6 +75,7 @@ async def main() -> None:
         ExtraConfig.quality = arglist.quality
         ExtraConfig.un_video_policy = arglist.unli_video_policy
         ExtraConfig.download_mode = arglist.download_mode
+        ExtraConfig.save_tags = arglist.dump_tags
         ExtraConfig.naming_flags = arglist.naming
         ExtraConfig.logging_flags = arglist.log_level
 
@@ -83,7 +84,6 @@ async def main() -> None:
         stop_id = arglist.stop_id
         begin_id = arglist.begin_id
         search_str = arglist.search
-        st = arglist.dump_tags
         ex_tags = arglist.extra_tags
         ds = arglist.download_scenario
 
@@ -161,11 +161,11 @@ async def main() -> None:
         reporter = get_running_loop().create_task(report_total_queue_size_callback(3.0 if ExtraConfig.dm == DOWNLOAD_MODE_FULL else 1.0))
         s.headers.update(DEFAULT_HEADERS.copy())
         for cv in as_completed(
-                [download_id(v.my_id, v.my_title, v.m_rate, ds, ex_tags, st, s) for v in v_entries]):
+                [download_id(v.my_id, v.my_title, v.m_rate, ds, ex_tags, s) for v in v_entries]):
             await cv
         await reporter
 
-    if st:
+    if ExtraConfig.save_tags:
         dump_item_tags()
 
     await after_download()
