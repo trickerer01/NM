@@ -76,6 +76,7 @@ async def main() -> None:
         ExtraConfig.un_video_policy = arglist.unli_video_policy
         ExtraConfig.download_mode = arglist.download_mode
         ExtraConfig.save_tags = arglist.dump_tags
+        ExtraConfig.extra_tags = arglist.extra_tags
         ExtraConfig.naming_flags = arglist.naming
         ExtraConfig.logging_flags = arglist.log_level
 
@@ -84,7 +85,6 @@ async def main() -> None:
         stop_id = arglist.stop_id
         begin_id = arglist.begin_id
         search_str = arglist.search
-        ex_tags = arglist.extra_tags
         ds = arglist.download_scenario
 
         delay_for_message = False
@@ -93,8 +93,8 @@ async def main() -> None:
                 Log.info('Info: running download script, outer unlisted policy will be ignored')
                 ExtraConfig.uvp = DOWNLOAD_POLICY_DEFAULT
                 delay_for_message = True
-            if len(ex_tags) > 0:
-                Log.info(f'Info: running download script: outer extra tags: {str(ex_tags)}')
+            if len(ExtraConfig.extra_tags) > 0:
+                Log.info(f'Info: running download script: outer extra tags: {str(ExtraConfig.extra_tags)}')
                 delay_for_message = True
 
         if delay_for_message:
@@ -161,7 +161,7 @@ async def main() -> None:
         reporter = get_running_loop().create_task(report_total_queue_size_callback(3.0 if ExtraConfig.dm == DOWNLOAD_MODE_FULL else 1.0))
         s.headers.update(DEFAULT_HEADERS.copy())
         for cv in as_completed(
-                [download_id(v.my_id, v.my_title, v.m_rate, ds, ex_tags, s) for v in v_entries]):
+                [download_id(v.my_id, v.my_title, v.m_rate, ds, s) for v in v_entries]):
             await cv
         await reporter
 

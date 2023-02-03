@@ -34,18 +34,18 @@ async def main() -> None:
         ExtraConfig.un_video_policy = arglist.unli_video_policy
         ExtraConfig.download_mode = arglist.download_mode
         ExtraConfig.save_tags = arglist.dump_tags
+        ExtraConfig.extra_tags = arglist.extra_tags
         ExtraConfig.naming_flags = arglist.naming
         ExtraConfig.logging_flags = arglist.log_level
 
         start_id = arglist.start
         end_id = arglist.end
-        ex_tags = arglist.extra_tags
         ds = arglist.download_scenario
 
         if arglist.use_id_sequence:
-            id_sequence = try_parse_id_or_group(ex_tags)
+            id_sequence = try_parse_id_or_group(ExtraConfig.extra_tags)
             if id_sequence is None:
-                Log.fatal(f'\nInvalid ID \'or\' group \'{ex_tags[0] if len(ex_tags) > 0 else ""}\'!')
+                Log.fatal(f'\nInvalid ID \'or\' group \'{ExtraConfig.extra_tags[0] if len(ExtraConfig.extra_tags) > 0 else ""}\'!')
                 raise ValueError
         else:
             id_sequence = None
@@ -59,8 +59,8 @@ async def main() -> None:
                 Log.info('Info: running download script, outer unlisted policy will be ignored')
                 ExtraConfig.uvp = DOWNLOAD_POLICY_DEFAULT
                 delay_for_message = True
-            if len(ex_tags) > 0:
-                Log.info(f'Info: running download script: outer extra tags: {str(ex_tags)}')
+            if len(ExtraConfig.extra_tags) > 0:
+                Log.info(f'Info: running download script: outer extra tags: {str(ExtraConfig.extra_tags)}')
                 delay_for_message = True
 
         if delay_for_message:
@@ -72,14 +72,14 @@ async def main() -> None:
     if id_sequence is None:
         id_sequence = list(range(start_id, end_id + 1))
     else:
-        ex_tags = []
+        ExtraConfig.extra_tags = []
 
     register_id_sequence(id_sequence)
     scan_dest_folder()
     reporter = get_running_loop().create_task(report_total_queue_size_callback(3.0 if ExtraConfig.dm == DOWNLOAD_MODE_FULL else 1.0))
     async with ClientSession(connector=TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE), read_bufsize=2**20) as s:
         s.headers.update(DEFAULT_HEADERS.copy())
-        for cv in as_completed([download_id(idi, '', 'unk', ds, ex_tags, s) for idi in id_sequence]):
+        for cv in as_completed([download_id(idi, '', 'unk', ds, s) for idi in id_sequence]):
             await cv
     await reporter
 
