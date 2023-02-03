@@ -163,14 +163,11 @@ def get_uvp_always_subquery_idx(scenario: DownloadScenario) -> int:
     return -1
 
 
-def file_exists_in_folder(dest_base: str, idi: int, quality: str, check_subfolders: bool) -> bool:
+def scan_dest_folder(dest_base: str) -> None:
     global found_filenames_base
     global found_filenames_all
 
-    if not path.exists(dest_base):
-        return False
-
-    if len(found_filenames_base) == 0 and len(found_filenames_all) == 0:
+    if path.exists(dest_base):
         subfolders = list()
         cur_names = listdir(dest_base)
         for idx_c in reversed(range(len(cur_names))):
@@ -187,16 +184,18 @@ def file_exists_in_folder(dest_base: str, idi: int, quality: str, check_subfolde
                 if path.isfile(fullpath_s):
                     found_filenames_all.add(sub_name)
 
-    for fname in sorted(found_filenames_all if check_subfolders else found_filenames_base):
-        try:
-            f_match = match(re_nmfile, fname)
-            f_id = f_match.group(1)
-            f_quality = f_match.group(2)
-            if str(idi) == f_id and quality == f_quality:
-                return True
-        except Exception:
-            continue
 
+def file_exists_in_folder(dest_base: str, idi: int, quality: str, check_subfolders: bool) -> bool:
+    if path.exists(dest_base):
+        for fname in sorted(found_filenames_all if check_subfolders else found_filenames_base):
+            try:
+                f_match = match(re_nmfile, fname)
+                f_id = f_match.group(1)
+                f_quality = f_match.group(2)
+                if str(idi) == f_id and quality == f_quality:
+                    return True
+            except Exception:
+                continue
     return False
 
 
