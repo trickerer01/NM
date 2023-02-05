@@ -50,29 +50,10 @@ class SubQueryParams(object):
 
 
 class DownloadScenario(object):
-    def __init__(self) -> None:
+    def __init__(self, fmt_str: str = None) -> None:
         self.queries = []  # type: List[SubQueryParams]
-
-    def __len__(self) -> int:
-        return len(self.queries)
-
-    def add_subquery(self, subquery: SubQueryParams) -> None:
-        self.queries.append(subquery)
-
-    def has_subquery(self, **kwargs) -> bool:
-        for sq in self.queries:
-            all_matched = True
-            for k, v in kwargs.items():
-                if not (k in sq.__dict__.keys() and sq.__getattribute__(k) == v):
-                    all_matched = False
-                    break
-            if all_matched is True:
-                return True
-        return False
-
-    @staticmethod
-    def from_string(fmt_str: str) -> DownloadScenario:
-        ds = DownloadScenario()
+        if fmt_str is None:
+            return
 
         parser = ArgumentParser(add_help=False)
         parser.add_argument('-quality', default=DEFAULT_QUALITY, help=HELP_QUALITY, choices=QUALITIES)
@@ -92,11 +73,11 @@ class DownloadScenario(object):
                         except Exception:
                             error_to_print = f'\nInvalid tag: \'{tag}\'\n'
                             raise
-                    parsed.extra_tags += [tag for tag in unks]
-                if parsed.unli_video_policy == DOWNLOAD_POLICY_ALWAYS and ds.has_subquery(unlist_video_policy=DOWNLOAD_POLICY_ALWAYS):
+                parsed.extra_tags += [tag.lower().replace(' ', '_') for tag in unks]
+                if parsed.unli_video_policy == DOWNLOAD_POLICY_ALWAYS and self.has_subquery(unlist_video_policy=DOWNLOAD_POLICY_ALWAYS):
                     error_to_print = f'Scenario can only have one subquery with unlisted video policy \'{DOWNLOAD_POLICY_ALWAYS}\'!'
                     raise ValueError
-                ds.add_subquery(SubQueryParams(
+                self.add_subquery(SubQueryParams(
                     subfolder, parsed.extra_tags, parsed.quality, parsed.minimum_score, parsed.unli_video_policy
                 ))
             except (ArgumentError, TypeError, Exception):
@@ -104,8 +85,24 @@ class DownloadScenario(object):
                     Log.error(error_to_print)
                 raise
 
-        assert len(ds) > 0
-        return ds
+        assert len(self) > 0
+
+    def __len__(self) -> int:
+        return len(self.queries)
+
+    def add_subquery(self, subquery: SubQueryParams) -> None:
+        self.queries.append(subquery)
+
+    def has_subquery(self, **kwargs) -> bool:
+        for sq in self.queries:
+            all_matched = True
+            for k, v in kwargs.items():
+                if not (k in sq.__dict__.keys() and sq.__getattribute__(k) == v):
+                    all_matched = False
+                    break
+            if all_matched is True:
+                return True
+        return False
 
 #
 #
