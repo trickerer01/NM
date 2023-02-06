@@ -20,6 +20,8 @@ from path_util import scan_dest_folder
 from fetch_html import fetch_html
 from tagger import dump_item_tags
 
+__all__ = ()
+
 
 PAGE_ENTRY_RE = re_compile(r'^/video/(\d+)/[^/]+?$')
 

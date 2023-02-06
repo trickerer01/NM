@@ -282,7 +282,7 @@ def extract_ext(href: str) -> str:
 
 
 def has_naming_flag(flag: int) -> bool:
-    return not not ExtraConfig.naming_flags & flag
+    return not not (ExtraConfig.naming_flags & flag)
 
 
 class DownloadResult:
