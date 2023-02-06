@@ -15,6 +15,8 @@ from aiohttp import ClientSession, ClientResponse
 
 from defs import CONNECT_RETRIES_PAGE, Log, DEFAULT_HEADERS, CONNECT_REQUEST_DELAY, ExtraConfig
 
+__all__ = ('wrap_request', 'fetch_html')
+
 request_delay = 0.0
 
 

@@ -11,6 +11,11 @@ from typing import List, Optional, Dict
 
 from defs import TAGS_CONCAT_CHAR, Log, UTF8, normalize_path, prefixp, ExtraConfig
 
+__all__ = (
+    'filtered_tags', 'unite_separated_tags', 'get_matching_tag', 'get_or_group_matching_tag', 'is_neg_and_group_matches',
+    'register_item_tags', 'try_parse_id_or_group', 'dump_item_tags', 'extra_tag'
+)
+
 re_replace_symbols = re_compile(
     r'[^0-9a-zA-Z_+()\[\]]+'
 )

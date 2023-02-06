@@ -27,6 +27,8 @@ from tagger import (
     filtered_tags, unite_separated_tags, get_matching_tag, get_or_group_matching_tag, is_neg_and_group_matches, register_item_tags,
 )
 
+__all__ = ('download_id', 'after_download', 'report_total_queue_size_callback', 'register_id_sequence', 'scan_dest_folder')
+
 NEWLINE = '\n'
 re_nmfile = re_compile(fr'^(?:nm_)?([^_]+)_.*?({"|".join(q for q in QUALITIES)})_py.+?$')
 re_pdanger = re_compile(r'^This is a private video\..*?$')
