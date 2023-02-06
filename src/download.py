@@ -25,10 +25,10 @@ from fetch_html import fetch_html, wrap_request
 from path_util import file_exists_in_folder
 from scenario import DownloadScenario
 from tagger import (
-    filtered_tags, unite_separated_tags, get_matching_tag, get_or_group_matching_tag, is_neg_and_group_matches, register_item_tags,
+    filtered_tags, get_matching_tag, get_or_group_matching_tag, is_neg_and_group_matches, register_item_tags, unite_separated_tags,
 )
 
-__all__ = ('download_id', 'after_download', 'report_total_queue_size_callback', 'register_id_sequence')
+__all__ = ('download_id', 'download_file', 'after_download', 'report_total_queue_size_callback', 'register_id_sequence')
 
 NEWLINE = '\n'
 
