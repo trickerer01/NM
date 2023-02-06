@@ -9,17 +9,16 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from asyncio import sleep
 from os import path, stat, remove, makedirs, listdir
 from random import uniform as frand
-from re import sub, search, match, compile as re_compile
+from re import compile as re_compile, match
 from typing import List, Optional, Set
 
 from aiofile import async_open
 from aiohttp import ClientSession
 
 from defs import (
-    Log, CONNECT_RETRIES_ITEM, REPLACE_SYMBOLS, MAX_VIDEOS_QUEUE_SIZE, SITE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
-    SLASH, SITE_ITEM_REQUEST_BASE, TAGS_CONCAT_CHAR, DownloadResult, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH, normalize_path,
-    get_elapsed_time_s, ExtraConfig, has_naming_flag, prefixp, NAMING_FLAG_PREFIX, NAMING_FLAG_SCORE, NAMING_FLAG_TITLE, NAMING_FLAG_TAGS,
-    LoggingFlags
+    CONNECT_RETRIES_ITEM, MAX_VIDEOS_QUEUE_SIZE, SITE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS, SITE_ITEM_REQUEST_BASE, TAGS_CONCAT_CHAR,
+    DownloadResult, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH, NAMING_FLAG_PREFIX, NAMING_FLAG_SCORE, NAMING_FLAG_TITLE, NAMING_FLAG_TAGS,
+    Log, ExtraConfig, normalize_path, normalize_filename, get_elapsed_time_s, has_naming_flag, prefixp, LoggingFlags
 )
 from fetch_html import fetch_html, wrap_request
 from scenario import DownloadScenario
@@ -61,22 +60,6 @@ def is_queue_full() -> bool:
 
 def is_in_queue(idi: int) -> bool:
     return downloads_queue.count(idi) > 0
-
-
-def normalize_filename(filename: str, base_path: str) -> str:
-    filename = sub(REPLACE_SYMBOLS, '_', filename)
-    dest = base_path.replace('\\', SLASH)
-    if dest[-1] != SLASH:
-        dest += SLASH
-    dest += filename
-    return dest
-
-
-def extract_ext(href: str) -> str:
-    try:
-        return search(r'(\.[^&]{3,5})&', href).group(1)
-    except Exception:
-        return '.mp4'
 
 
 async def try_register_in_queue(idi: int) -> bool:
