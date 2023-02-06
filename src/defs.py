@@ -11,7 +11,7 @@ from base64 import b64decode
 from datetime import datetime
 from enum import IntEnum
 from locale import getpreferredencoding
-from re import sub, search
+from re import compile as re_compile, search, sub
 from typing import Optional
 from urllib.parse import urlparse
 
@@ -290,6 +290,10 @@ class DownloadResult:
     DOWNLOAD_FAIL_NOT_FOUND = 1
     DOWNLOAD_FAIL_RETRIES = 2
     DOWNLOAD_FAIL_ALREADY_EXISTS = 3
+
+
+re_nmfile = re_compile(fr'^(?:nm_)?([^_]+)_.*?({"|".join(q for q in QUALITIES)})_py.+?$')
+re_pdanger = re_compile(r'^This is a private video\..*?$')
 
 #
 #

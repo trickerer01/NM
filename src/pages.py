@@ -15,7 +15,8 @@ from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
 from defs import Log, SITE_PAGE_REQUEST_BASE, MAX_VIDEOS_QUEUE_SIZE, DOWNLOAD_MODE_FULL, DOWNLOAD_POLICY_DEFAULT, ExtraConfig, SLASH
-from download import download_id, after_download, report_total_queue_size_callback, register_id_sequence, scan_dest_folder
+from download import download_id, after_download, report_total_queue_size_callback, register_id_sequence
+from path_util import scan_dest_folder
 from fetch_html import fetch_html
 from tagger import dump_item_tags
 
