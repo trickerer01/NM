@@ -20,8 +20,6 @@ re_replace_symbols = re_compile(
     r'[^0-9a-zA-Z_+()\[\]]+'
 )
 
-# used with re.sub
-# noinspection RegExpAnonymousGroup
 re_numbered_or_counted_tag = re_compile(
     r'^(?!rule_?\d+)(?:\d+?\+?)?([^\d]+?)(?:_\d+|s)?$'
 )
