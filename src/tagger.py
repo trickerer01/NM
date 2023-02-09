@@ -425,8 +425,6 @@ def filtered_tags(tags_list: List[str]) -> str:
     if len(tags_list) == 0:
         return ''
 
-    # tag_chars = '!abcdefghijklmnopqrstuvwxyz'
-    # tags_dict = {c: [] for c in tag_chars}  # type: Dict[str, List[str]]
     tags_list_final = []  # type: List[str]
 
     for tag in tags_list:
@@ -443,7 +441,6 @@ def filtered_tags(tags_list: List[str]) -> str:
 
         tag = trim_undersores(tag)
 
-        # tag_char = tag[0] if tag[0] in tag_chars[1:] else tag_chars[0]
         do_add = True
         if len(tags_list_final) > 0:
             nutag = re_sub(r'[^a-z]+', '', re_sub(re_numbered_or_counted_tag, r'\1', tag))
@@ -468,9 +465,6 @@ def filtered_tags(tags_list: List[str]) -> str:
                     tag = f'{tag[:i]}{c.upper()}{tag[i + 1:]}'
             tags_list_final.append(tag)
 
-    # tags_list_final = []
-    # [tags_list_final.extend(tag_list) for tag_list in tags_dict.values() if len(tag_list) != 0]
-
     return trim_undersores(TAGS_CONCAT_CHAR.join(tags_list_final))
 
 
@@ -485,7 +479,7 @@ def register_item_tags(item_id: int, tags_str: str, subfolder: str) -> None:
 
 def dump_item_tags() -> None:
     for subfolder, tags_dict in saved_tags_dict.items():
-        if len(tags_dict.items()) == 0:
+        if len(tags_dict) == 0:
             continue
         min_id = min(tags_dict.keys())
         max_id = max(tags_dict.keys())
