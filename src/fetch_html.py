@@ -41,7 +41,6 @@ class RequestQueue:
 
 async def wrap_request(s: ClientSession, method: str, url: str, **kwargs) -> ClientResponse:
     await RequestQueue.until_ready(url)
-    Log.debug(f'wrap_request: {url}')
     s.headers.update(DEFAULT_HEADERS.copy())
     kwargs.update(proxy=ExtraConfig.proxy)
     r = await s.request(method, url, **kwargs)
