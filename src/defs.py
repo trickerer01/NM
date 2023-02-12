@@ -28,6 +28,7 @@ class BaseConfig(object):
         self.extra_tags = None  # type: Optional[str]
         self.naming_flags = 0
         self.logging_flags = 0
+        self.validate_tags = True
 
     def read_params(self, params: Namespace) -> None:
         self.dest_base = params.path
@@ -40,6 +41,7 @@ class BaseConfig(object):
         self.extra_tags = params.extra_tags
         self.naming_flags = params.naming
         self.logging_flags = params.log_level
+        self.validate_tags = (not getattr(params, 'no_validation')) if hasattr(params, 'no_validation') else self.validate_tags
 
     @property
     def uvp(self) -> Optional[str]:
