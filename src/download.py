@@ -17,7 +17,7 @@ from aiohttp import ClientSession
 
 from defs import (
     CONNECT_RETRIES_ITEM, MAX_VIDEOS_QUEUE_SIZE, TAGS_CONCAT_CHAR, SITE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS, SITE_ITEM_REQUEST_BASE,
-    DownloadResult, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH, NAMING_FLAG_PREFIX, NAMING_FLAG_SCORE, NAMING_FLAG_TITLE, NAMING_FLAG_TAGS,
+    DownloadResult, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH, NamingFlags,
     Log, ExtraConfig, normalize_path, normalize_filename, get_elapsed_time_s, has_naming_flag, prefixp, LoggingFlags,
     re_nmfile, re_pdanger,
 )
@@ -272,12 +272,12 @@ async def download_id(idi: int, my_title: str, my_rating: str, scenario: Optiona
     extra_len = 5 + 3 + 2  # 3 underscores + 2 brackets + len('1080p') - max len of all qualities
     fname_part2 = 'pydw.mp4'
     fname_part1 = (
-        f'{prefixp() if has_naming_flag(NAMING_FLAG_PREFIX) else ""}'
+        f'{prefixp() if has_naming_flag(NamingFlags.NAMING_FLAG_PREFIX) else ""}'
         f'{idi:d}'
-        f'{f"_score({my_score})" if has_naming_flag(NAMING_FLAG_SCORE) else ""}'
-        f'{f"_{my_title}" if my_title != "" and has_naming_flag(NAMING_FLAG_TITLE) else ""}'
+        f'{f"_score({my_score})" if has_naming_flag(NamingFlags.NAMING_FLAG_SCORE) else ""}'
+        f'{f"_{my_title}" if my_title != "" and has_naming_flag(NamingFlags.NAMING_FLAG_TITLE) else ""}'
     )
-    if has_naming_flag(NAMING_FLAG_TAGS):
+    if has_naming_flag(NamingFlags.NAMING_FLAG_TAGS):
         while len(my_tags) > max(0, 240 - (len(my_dest_base) + len(fname_part1) + len(fname_part2) + extra_len)):
             my_tags = my_tags[:max(0, my_tags.rfind(TAGS_CONCAT_CHAR))]
         fname_part1 = f'{fname_part1}{f"_({my_tags})" if len(my_tags) > 0 else ""}'
