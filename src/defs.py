@@ -55,17 +55,19 @@ class BaseConfig(object):
 ExtraConfig = BaseConfig()
 
 SITE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
-# Params required: (str, int). Ex. SITE_PAGE_REQUEST_BASE % ('', 1)
 SITE_PAGE_REQUEST_BASE = b64decode(
     'aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcz9vPW1yJnNlYXJjaF9xdWVyeT0lcyZwYWdlPSVk').decode()
-# Params required: (int). Ex. SITE_ITEM_REQUEST_BASE % (69999)
+"""Params required: (str, int). Ex. SITE_PAGE_REQUEST_BASE % ('', 1)"""
 SITE_ITEM_REQUEST_BASE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdmlkZW8vJWQv').decode()
+"""Params required: (int). Ex. SITE_ITEM_REQUEST_BASE % (69999)"""
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux i686; rv:102.0) Gecko/20100101 Firefox/102.0'
 DEFAULT_HEADERS = {'User-Agent': USER_AGENT, 'Referer': SITE}
 HOST = urlparse(SITE).netloc
 
+# language=PythonRegExp
 REPLACE_SYMBOLS = r'[^\da-zA-Z.,_+%\-()\[\] ]+?'
+# language=PythonRegExp
 NON_SEARCH_SYMBOLS = r'[^\da-zA-Z._\-\[\]]'
 
 SLASH = '/'
@@ -188,7 +190,7 @@ CONNECT_REQUEST_DELAY = 1.0
 MAX_VIDEOS_QUEUE_SIZE = 6
 
 TAGS_CONCAT_CHAR = ','
-start_time = datetime.now()
+START_TIME = datetime.now()
 
 
 class Log:
@@ -242,7 +244,7 @@ def prefixp() -> str:
 
 
 def get_elapsed_time_s() -> str:
-    mm, ss = divmod((datetime.now() - start_time).seconds, 60)
+    mm, ss = divmod((datetime.now() - START_TIME).seconds, 60)
     hh, mm = divmod(mm, 60)
     return f'{hh:02d}:{mm:02d}:{ss:02d}'
 
