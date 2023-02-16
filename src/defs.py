@@ -300,7 +300,7 @@ class DownloadResult:
     DOWNLOAD_FAIL_ALREADY_EXISTS = 3
 
 
-re_nmfile = re_compile(fr'^(?:nm_)?([^_]+)_.*?({"|".join(q for q in QUALITIES)})_py.+?$')
+re_nmfile = re_compile(fr'^(?:nm_)?([^_]+)_.*?({"|".join(QUALITIES)})_py.+?$')
 re_pdanger = re_compile(r'^This is a private video\..*?$')
 
 #
