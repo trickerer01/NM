@@ -16,7 +16,7 @@ from aiohttp import ClientSession, TCPConnector
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
 from defs import Log, SITE_PAGE_REQUEST_BASE, MAX_VIDEOS_QUEUE_SIZE, DOWNLOAD_POLICY_DEFAULT, ExtraConfig, SLASH, calc_sleep_time
 from download import download_id, after_download, report_total_queue_size_callback, register_id_sequence, at_interrupt
-from path_util import scan_dest_folder
+from path_util import scan_dest_folder, prefilter_existing_items
 from fetch_html import fetch_html
 from tagger import dump_item_tags
 
@@ -149,8 +149,10 @@ async def main() -> None:
         minid, maxid = get_minmax_ids(v_entries)
         Log.info(f'\nOk! {len(v_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
         v_entries = list(reversed(v_entries))
-        register_id_sequence([v.my_id for v in v_entries])
+        id_sequence = [v.my_id for v in v_entries]
         scan_dest_folder()
+        prefilter_existing_items(id_sequence)
+        register_id_sequence(id_sequence)
         reporter = get_running_loop().create_task(report_total_queue_size_callback(calc_sleep_time(3.0)))
         for cv in as_completed([download_id(v.my_id, v.my_title, v.m_rate, ds, s) for v in v_entries]):
             await cv

@@ -8,11 +8,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 from os import path, listdir
 from re import match
-from typing import Set
+from typing import Set, List
 
-from defs import ExtraConfig, Log, normalize_path, re_nmfile
+from defs import ExtraConfig, Log, normalize_path, re_nmfile, prefixp
 
-__all__ = ('scan_dest_folder', 'file_exists_in_folder')
+__all__ = ('scan_dest_folder', 'file_exists_in_folder', 'prefilter_existing_items')
 
 found_filenames_base = set()  # type: Set[str]
 found_filenames_all = set()  # type: Set[str]
@@ -56,6 +56,13 @@ def file_exists_in_folder(base_folder: str, idi: int, quality: str, check_subfol
             except Exception:
                 continue
     return False
+
+
+def prefilter_existing_items(id_sequence: List[int]) -> None:
+    for idx in reversed(range(len(id_sequence))):  # type: int
+        if file_exists_in_folder(ExtraConfig.dest_base, id_sequence[idx], ExtraConfig.quality, True):
+            Log.info(f'Info: {prefixp()}{id_sequence[idx]:d}.mp4 found in {ExtraConfig.dest_base} (or subfolder). Skipped.')
+            del id_sequence[idx]
 
 #
 #
