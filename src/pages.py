@@ -14,7 +14,7 @@ from typing import List, Any, Tuple
 from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
-from defs import Log, SITE_PAGE_REQUEST_BASE, MAX_VIDEOS_QUEUE_SIZE, DOWNLOAD_MODE_FULL, DOWNLOAD_POLICY_DEFAULT, ExtraConfig, SLASH
+from defs import Log, SITE_PAGE_REQUEST_BASE, MAX_VIDEOS_QUEUE_SIZE, DOWNLOAD_POLICY_DEFAULT, ExtraConfig, SLASH, calc_sleep_time
 from download import download_id, after_download, report_total_queue_size_callback, register_id_sequence, at_interrupt
 from path_util import scan_dest_folder
 from fetch_html import fetch_html
@@ -29,6 +29,9 @@ PAGE_ENTRY_RE = re_compile(r'^/video/(\d+)/[^/]+?$')
 class VideoEntryBase:
     def __init__(self, m_id: int) -> None:
         self.my_id = m_id or 0
+
+    def __eq__(self, other) -> bool:
+        return self.my_id == other.my_id if isinstance(other, type(self)) else self.my_id == other if isinstance(other, int) else False
 
 
 class VideoEntryFull(VideoEntryBase):
@@ -70,15 +73,15 @@ async def main() -> None:
 
     try:
         ExtraConfig.read_params(arglist)
-        start_page = arglist.start
-        pages_count = arglist.pages
-        stop_id = arglist.stop_id
-        begin_id = arglist.begin_id
-        search_str = arglist.search
+        start_page = arglist.start  # type: int
+        pages_count = arglist.pages  # type: int
+        stop_id = arglist.stop_id  # type: int
+        begin_id = arglist.begin_id  # type: int
+        search_str = arglist.search  # type: str
         ds = arglist.download_scenario
 
         delay_for_message = False
-        if ds:
+        if ds is not None:
             if ExtraConfig.uvp != DOWNLOAD_POLICY_DEFAULT:
                 Log.info('Info: running download script, outer unlisted policy will be ignored')
                 ExtraConfig.uvp = DOWNLOAD_POLICY_DEFAULT
@@ -87,7 +90,7 @@ async def main() -> None:
                 Log.info(f'Info: running download script: outer extra tags: {str(ExtraConfig.extra_tags)}')
                 delay_for_message = True
 
-        if delay_for_message:
+        if delay_for_message is True:
             await sleep(3.0)
     except Exception:
         Log.fatal('\nError reading parsed arglist!')
@@ -148,13 +151,12 @@ async def main() -> None:
         v_entries = list(reversed(v_entries))
         register_id_sequence([v.my_id for v in v_entries])
         scan_dest_folder()
-        reporter = get_running_loop().create_task(report_total_queue_size_callback(3.0 if ExtraConfig.dm == DOWNLOAD_MODE_FULL else 1.0))
-        for cv in as_completed(
-                [download_id(v.my_id, v.my_title, v.m_rate, ds, s) for v in v_entries]):
+        reporter = get_running_loop().create_task(report_total_queue_size_callback(calc_sleep_time(3.0)))
+        for cv in as_completed([download_id(v.my_id, v.my_title, v.m_rate, ds, s) for v in v_entries]):
             await cv
         await reporter
 
-    if ExtraConfig.save_tags:
+    if ExtraConfig.save_tags is True:
         dump_item_tags()
 
     await after_download()
