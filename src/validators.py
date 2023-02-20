@@ -11,7 +11,33 @@ from ipaddress import IPv4Address
 from os import path
 from re import match as re_match
 
-from defs import normalize_path, unquote, Log, NamingFlags, LoggingFlags, SLASH, NON_SEARCH_SYMBOLS, NAMING_FLAGS, LOGGING_FLAGS
+from defs import (
+    normalize_path, unquote, Log, NamingFlags, LoggingFlags, SLASH, NON_SEARCH_SYMBOLS, NAMING_FLAGS, LOGGING_FLAGS, ExtraConfig,
+    DOWNLOAD_POLICY_DEFAULT,
+)
+
+
+def find_and_resolve_config_conflicts(pages: bool, has_scenario: bool) -> bool:
+    delay_for_message = False
+    if pages:
+        if has_scenario is True:
+            if ExtraConfig.uvp != DOWNLOAD_POLICY_DEFAULT:
+                Log.info('Info: running download script, outer unlisted policy will be ignored')
+                ExtraConfig.uvp = DOWNLOAD_POLICY_DEFAULT
+                delay_for_message = True
+            if len(ExtraConfig.extra_tags) > 0:
+                Log.info(f'Info: running download script: outer extra tags: {str(ExtraConfig.extra_tags)}')
+                delay_for_message = True
+    else:
+        if has_scenario is True:
+            if ExtraConfig.uvp != DOWNLOAD_POLICY_DEFAULT:
+                Log.info('Info: running download script, outer unlisted policy will be ignored')
+                ExtraConfig.uvp = DOWNLOAD_POLICY_DEFAULT
+                delay_for_message = True
+            if len(ExtraConfig.extra_tags) > 0:
+                Log.info(f'Info: running download script: outer extra tags: {str(ExtraConfig.extra_tags)}')
+                delay_for_message = True
+    return delay_for_message
 
 
 def valid_int(val: str) -> int:

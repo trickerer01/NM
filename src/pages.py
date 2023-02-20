@@ -14,11 +14,12 @@ from typing import List, Any, Tuple
 from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
-from defs import Log, SITE_PAGE_REQUEST_BASE, MAX_VIDEOS_QUEUE_SIZE, DOWNLOAD_POLICY_DEFAULT, ExtraConfig, SLASH
+from defs import Log, MAX_VIDEOS_QUEUE_SIZE, ExtraConfig, SITE_PAGE_REQUEST_BASE, SLASH
 from download import DownloadWorker, at_interrupt
 from path_util import prefilter_existing_items
 from fetch_html import fetch_html
 from scenario import DownloadScenario
+from validators import find_and_resolve_config_conflicts
 
 __all__ = ()
 
@@ -80,17 +81,7 @@ async def main() -> None:
         search_str = arglist.search  # type: str
         ds = arglist.download_scenario  # type: DownloadScenario
 
-        delay_for_message = False
-        if ds is not None:
-            if ExtraConfig.uvp != DOWNLOAD_POLICY_DEFAULT:
-                Log.info('Info: running download script, outer unlisted policy will be ignored')
-                ExtraConfig.uvp = DOWNLOAD_POLICY_DEFAULT
-                delay_for_message = True
-            if len(ExtraConfig.extra_tags) > 0:
-                Log.info(f'Info: running download script: outer extra tags: {str(ExtraConfig.extra_tags)}')
-                delay_for_message = True
-
-        if delay_for_message is True:
+        if find_and_resolve_config_conflicts(True, ds is not None) is True:
             await sleep(3.0)
     except Exception:
         Log.fatal('\nError reading parsed arglist!')
