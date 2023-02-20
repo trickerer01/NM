@@ -12,7 +12,7 @@ from typing import Set, List
 
 from defs import ExtraConfig, Log, normalize_path, re_nmfile, prefixp
 
-__all__ = ('scan_dest_folder', 'file_exists_in_folder', 'prefilter_existing_items')
+__all__ = ('file_exists_in_folder', 'prefilter_existing_items')
 
 found_filenames_base = set()  # type: Set[str]
 found_filenames_all = set()  # type: Set[str]
@@ -22,7 +22,7 @@ def scan_dest_folder() -> None:
     global found_filenames_base
     global found_filenames_all
 
-    if path.exists(ExtraConfig.dest_base):
+    if path.isdir(ExtraConfig.dest_base):
         Log.info('Scanning dest folder...')
         subfolders = list()
         cur_names = listdir(ExtraConfig.dest_base)
@@ -45,7 +45,7 @@ def scan_dest_folder() -> None:
 
 
 def file_exists_in_folder(base_folder: str, idi: int, quality: str, check_subfolders: bool) -> bool:
-    if path.exists(base_folder):
+    if path.isdir(base_folder):
         for fname in sorted(found_filenames_all if check_subfolders else found_filenames_base):
             try:
                 f_match = match(re_nmfile, fname)
@@ -59,6 +59,8 @@ def file_exists_in_folder(base_folder: str, idi: int, quality: str, check_subfol
 
 
 def prefilter_existing_items(id_sequence: List[int]) -> None:
+    assert len(found_filenames_all) == 0
+    scan_dest_folder()
     for idx in reversed(range(len(id_sequence))):  # type: int
         if file_exists_in_folder(ExtraConfig.dest_base, id_sequence[idx], ExtraConfig.quality, True):
             Log.info(f'Info: {prefixp()}{id_sequence[idx]:d}.mp4 found in {ExtraConfig.dest_base} (or subfolder). Skipped.')
