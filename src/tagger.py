@@ -124,7 +124,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(mass),(effect)'): r'\1 \2',
     re_compile(r'(merle),(nyalentine)'): r'\1 \2',
     re_compile(r'(mia),(winters?)'): r'\1 \2',
-    re_compile(r'(monster),(girls?)'): r'\1 \2',
+    re_compile(r'(monster),(girls?|hunter)'): r'\1 \2',
     re_compile(r'(mortal),([ck]ombat)'): r'\1 \2',
     re_compile(r'(my),(little),(pony)'): r'\1 \2 \3',
     re_compile(r'(nier),(automata)'): r'\1 \2',
