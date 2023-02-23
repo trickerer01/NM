@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import sys
 from asyncio import run as run_async, sleep
+from typing import Optional
 
 from cmdargs import prepare_arglist_ids, read_cmdfile, is_parsed_cmdfile
 from defs import Log, ExtraConfig
@@ -18,7 +19,6 @@ from tagger import try_parse_id_or_group
 from validators import find_and_resolve_config_conflicts
 
 __all__ = ()
-
 
 
 async def main() -> None:
@@ -34,7 +34,7 @@ async def main() -> None:
         ExtraConfig.read_params(arglist)
         start_id = arglist.start  # type: int
         end_id = arglist.end  # type: int
-        ds = arglist.download_scenario  # type: DownloadScenario
+        ds = arglist.download_scenario  # type: Optional[DownloadScenario]
 
         if arglist.use_id_sequence is True:
             id_sequence = try_parse_id_or_group(ExtraConfig.extra_tags)
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     try:
         run_async(run_main())
     except (KeyboardInterrupt, SystemExit):
-        Log.warn(f'Warning: catched KeyboardInterrupt/SystemExit...')
+        Log.warn('Warning: catched KeyboardInterrupt/SystemExit...')
         at_interrupt()
     exit(0)
 

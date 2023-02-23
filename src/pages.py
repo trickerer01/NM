@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import sys
 from asyncio import run as run_async, sleep
 from re import search as re_search, compile as re_compile
-from typing import List, Any, Tuple
+from typing import List, Any, Tuple, Optional
 
 from aiohttp import ClientSession, TCPConnector
 
@@ -22,7 +22,6 @@ from scenario import DownloadScenario
 from validators import find_and_resolve_config_conflicts
 
 __all__ = ()
-
 
 PAGE_ENTRY_RE = re_compile(r'^/video/(\d+)/[^/]+?$')
 
@@ -79,7 +78,7 @@ async def main() -> None:
         stop_id = arglist.stop_id  # type: int
         begin_id = arglist.begin_id  # type: int
         search_str = arglist.search  # type: str
-        ds = arglist.download_scenario  # type: DownloadScenario
+        ds = arglist.download_scenario  # type: Optional[DownloadScenario]
 
         if find_and_resolve_config_conflicts(True, ds is not None) is True:
             await sleep(3.0)
@@ -128,7 +127,7 @@ async def main() -> None:
                     Log.trace(f'skipping {cur_id:d} > {begin_id:d}')
                     continue
                 href_rel = str(refpair[0].get('href'))
-                tref = refpair[2].text
+                tref = str(refpair[2].text)
                 my_title = tref if tref != '' else href_rel[href_rel.rfind(SLASH) + 1:] if href_rel != '' else ''
                 my_rating = str(refpair[1].text)
                 v_entries.append(VideoEntryFull(cur_id, my_title, my_rating))
@@ -139,12 +138,13 @@ async def main() -> None:
 
         minid, maxid = get_minmax_ids(v_entries)
         Log.info(f'\nOk! {len(v_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
-        v_entries = list(reversed(v_entries))
-        id_sequence = [v.my_id for v in v_entries]
+        v_entries.reverse()
 
-        prefilter_existing_items(id_sequence)
+        prefilter_existing_items([v.my_id for v in v_entries])
 
-        await DownloadWorker(((v.my_id, v.my_title, v.m_rate, ds) for v in v_entries), s).run()
+        await DownloadWorker(
+            ((v.my_id, v.my_title, v.m_rate, ds) for v in v_entries),
+            s).run()
 
 
 async def run_main() -> None:
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     try:
         run_async(run_main())
     except (KeyboardInterrupt, SystemExit):
-        Log.warn(f'Warning: catched KeyboardInterrupt/SystemExit...')
+        Log.warn('Warning: catched KeyboardInterrupt/SystemExit...')
         at_interrupt()
     exit(0)
 
