@@ -9,12 +9,15 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import sys
 from asyncio import run as run_async, sleep
 from re import search as re_search, compile as re_compile
-from typing import List, Any, Tuple, Optional
+from typing import List, Tuple, Optional, Any
 
 from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
-from defs import Log, MAX_VIDEOS_QUEUE_SIZE, ExtraConfig, SITE_PAGE_REQUEST_BASE, SLASH, HelpPrintExitException
+from defs import (
+    Log, MAX_VIDEOS_QUEUE_SIZE, ExtraConfig, SITE_PAGE_REQUEST_BASE, SLASH,
+    HelpPrintExitException,
+)
 from download import DownloadWorker, at_interrupt
 from path_util import prefilter_existing_items
 from fetch_html import fetch_html
