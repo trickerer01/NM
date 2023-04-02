@@ -13,7 +13,7 @@ from re import match
 from typing import List, Optional, Union, Coroutine, Tuple
 
 from aiofile import async_open
-from aiohttp import ClientSession, TCPConnector
+from aiohttp import ClientSession, TCPConnector, ClientTimeout
 
 from defs import (
     CONNECT_RETRIES_ITEM, MAX_VIDEOS_QUEUE_SIZE, TAGS_CONCAT_CHAR, SITE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS, SITE_ITEM_REQUEST_BASE,
@@ -30,6 +30,9 @@ from tagger import (
 )
 
 __all__ = ('DownloadWorker', 'at_interrupt')
+
+CTOD = ClientTimeout(total=7200, connect=5)
+"""Client timeout (download)"""
 
 download_worker = None  # type: Optional[DownloadWorker]
 
@@ -337,7 +340,7 @@ async def download_file(idi: int, filename: str, my_dest_base: str, link: str, s
                 break
 
             r = None
-            async with await wrap_request(download_worker.session, 'GET', link, timeout=7200, headers={'Referer': link}) as r:
+            async with await wrap_request(download_worker.session, 'GET', link, timeout=CTOD, headers={'Referer': link}) as r:
                 if r.status == 404:
                     Log.error(f'Got 404 for {prefixp()}{idi:d}.mp4...!')
                     retries = CONNECT_RETRIES_ITEM - 1
