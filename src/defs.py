@@ -162,6 +162,10 @@ ACTION_STORE_FALSE = 'store_false'
 HELP_PAGES = 'Pages count to process. Required'
 HELP_STOP_ID = 'If you want to download only videos above or equal to this id'
 HELP_BEGIN_ID = 'If you want to download only videos above or equal to this id'
+HELP_ARG_IDSEQUENCE = (
+    'Use video id sequence instead of range. This disables start / count / end id parametes and expects an id sequesnce instead of'
+    ' extra tags. Sequence structure: (id=<id1>~id=<id2>~id=<id3>~...~id=<idN>)'
+)
 HELP_PATH = 'Download destination. Default is current folder'
 HELP_SEARCH = 'If you want to only traverse pages matching some search query'
 HELP_QUALITY = f'Video quality. Default is \'{DEFAULT_QUALITY}\'. If not found, anything less is used'
@@ -179,7 +183,7 @@ HELP_ARG_DWN_SCENARIO = (
     'Download scenario. This allows to scan for tags and sort videos accordingly in a single pass.'
     ' Useful when you have several queries you need to process for same id range.'
     ' Format:'
-    ' "{SUBDIR1}: tag1 tag2; {SUBDIR2}: tag3 tag4 -tag1 -tag2"'
+    ' "{SUBDIR1}: tag1 tag2; {SUBDIR2}: tag3 tag4 -tag1 -tag2".'
     ' You can also use following arguments in each subquery: -quality, -minscore, -uvp.'
     ' Example:'
     ' \'python ids.py -path ... -start ... -end ... --download-scenario'
@@ -321,6 +325,10 @@ class DownloadResult:
     DOWNLOAD_FAIL_NOT_FOUND = 1
     DOWNLOAD_FAIL_RETRIES = 2
     DOWNLOAD_FAIL_ALREADY_EXISTS = 3
+
+
+class HelpPrintExitException(Exception):
+    pass
 
 
 re_nmfile = re_compile(fr'^(?:nm_)?([^_]+)_.*?({"|".join(QUALITIES)})_py.+?$')
