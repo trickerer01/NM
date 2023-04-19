@@ -75,7 +75,7 @@ HOST = urlparse(SITE).netloc
 # language=PythonRegExp
 REPLACE_SYMBOLS = r'[^\da-zA-Z.,_+%\-()\[\] ]+?'
 # language=PythonRegExp
-NON_SEARCH_SYMBOLS = r'[^\da-zA-Z._\-\[\]]'
+NON_SEARCH_SYMBOLS = r'[^\da-zA-Z._+\-\[\]]'
 
 SLASH = '/'
 UTF8 = 'utf-8'
@@ -161,13 +161,13 @@ ACTION_STORE_FALSE = 'store_false'
 
 HELP_PAGES = 'Pages count to process. Required'
 HELP_STOP_ID = 'If you want to download only videos above or equal to this id'
-HELP_BEGIN_ID = 'If you want to download only videos above or equal to this id'
+HELP_BEGIN_ID = 'If you want to download only videos below or equal to this id'
 HELP_ARG_IDSEQUENCE = (
     'Use video id sequence instead of range. This disables start / count / end id parametes and expects an id sequesnce instead of'
     ' extra tags. Sequence structure: (id=<id1>~id=<id2>~id=<id3>~...~id=<idN>)'
 )
 HELP_PATH = 'Download destination. Default is current folder'
-HELP_SEARCH = 'If you want to only traverse pages matching some search query'
+HELP_SEARCH = 'If you want to only traverse pages matching some search query. Spaces must be replced with \'+\', ex. \'side+view\''
 HELP_QUALITY = f'Video quality. Default is \'{DEFAULT_QUALITY}\'. If not found, anything less is used'
 HELP_ARG_PROXY = 'Proxy to use. Example: http://127.0.0.1:222'
 HELP_ARG_UVPOLICY = (
@@ -211,6 +211,7 @@ CONNECT_RETRIES_ITEM = 50
 CONNECT_REQUEST_DELAY = 1.0
 
 MAX_VIDEOS_QUEUE_SIZE = 6
+DOWNLOAD_STATUS_CHECK_TIMER = 120.0
 
 TAGS_CONCAT_CHAR = ','
 START_TIME = datetime.now()

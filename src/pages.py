@@ -137,15 +137,21 @@ async def main() -> None:
                 my_rating = str(refpair[1].text)
                 v_entries.append(VideoEntryFull(cur_id, my_title, my_rating))
 
+        orig_count = len(v_entries)
+        minid, maxid = get_minmax_ids(v_entries)
+        v_entries.reverse()
+        prefilter_existing_items([v.my_id for v in v_entries])
+
+        removed_count = orig_count - len(v_entries)
+
         if len(v_entries) == 0:
-            Log.fatal('\nNo videos found. Aborted.')
+            if removed_count == orig_count:
+                Log.fatal(f'\nAll {orig_count:d} videos already exist. Aborted.')
+            else:
+                Log.fatal('\nNo videos found. Aborted.')
             return
 
-        minid, maxid = get_minmax_ids(v_entries)
-        Log.info(f'\nOk! {len(v_entries):d} videos found, bound {minid:d} to {maxid:d}. Working...\n')
-        v_entries.reverse()
-
-        prefilter_existing_items([v.my_id for v in v_entries])
+        Log.info(f'\nOk! {len(v_entries):d} videos found (+{removed_count:d} filtered), bound {minid:d} to {maxid:d}. Working...\n')
 
         await DownloadWorker(
             ((v.my_id, v.my_title, v.m_rate, ds) for v in v_entries),
