@@ -50,6 +50,7 @@ class BaseConfig(object):
     def uvp(self) -> Optional[str]:
         return self.un_video_policy
 
+    # noinspection PyUnresolvedReferences
     @uvp.setter
     def uvp(self, value: str) -> None:
         self.un_video_policy = value
@@ -137,8 +138,11 @@ class LoggingFlags(IntEnum):
     LOGGING_FATAL = 0x800
     # some extra logging flags are merged into normal flags for now
     LOGGING_EX_MISSING_TAGS = LOGGING_TRACE
+    """0x001"""
     LOGGING_EX_EXCLUDED_TAGS = LOGGING_INFO
+    """0x004"""
     LOGGING_EX_LOW_SCORE = LOGGING_INFO
+    """0x004"""
     LOGGING_ALL = LOGGING_FATAL | LOGGING_ERROR | LOGGING_WARN | LOGGING_INFO | LOGGING_DEBUG | LOGGING_TRACE
     """0x81F"""
 
@@ -265,6 +269,11 @@ class Log:
 
 def prefixp() -> str:
     return 'nm_'
+
+
+def get_elapsed_time_i() -> int:
+    """Returns time since launch in **seconds**"""
+    return (datetime.now() - START_TIME).seconds
 
 
 def get_elapsed_time_s() -> str:

@@ -37,14 +37,13 @@ LOGGING_DEFAULT = LOGGING_FLAGS_DEFAULT
 
 PARSER_TITLE_FILE = 'file'
 PARSER_TITLE_CMD = 'cmd'
+EXISTING_PARSERS = {PARSER_TITLE_CMD, PARSER_TITLE_FILE}
 
 parser = None  # type: Optional[ArgumentParser]
 
 
 def read_cmdfile(cmdfile_path: str) -> List[str]:
-    """
-    Read cmd args from a text file
-    """
+    """Read cmd args from a text file"""
     with open(cmdfile_path, 'rt', encoding=UTF8) as cmdfile:
         args = []  # type: List[str]
         for line in cmdfile.readlines():
@@ -55,9 +54,7 @@ def read_cmdfile(cmdfile_path: str) -> List[str]:
 
 
 def is_parsed_cmdfile(parse_result: Namespace) -> bool:
-    """
-    Determines if parsed cmdline points to a text file
-    """
+    """Determines if parsed cmdline points to a text file"""
     return hasattr(parse_result, 'path') and not hasattr(parse_result, 'extra_tags')
 
 
@@ -67,7 +64,7 @@ def validate_parsed(args: List[str], default_sub: ArgumentParser) -> Namespace:
     error_to_print = ''
     try:
         parsed, unks = (
-            parser.parse_known_args(args) if args[0] in [PARSER_TITLE_CMD, PARSER_TITLE_FILE] else default_sub.parse_known_args(args))
+            parser.parse_known_args(args) if args[0] in EXISTING_PARSERS else default_sub.parse_known_args(args))
         if not is_parsed_cmdfile(parsed):
             for tag in unks:
                 try:

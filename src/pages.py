@@ -52,8 +52,7 @@ def extract_id(aref: Any) -> int:
 
 
 def get_minmax_ids(entry_list: List[VideoEntryBase]) -> Tuple[int, int]:
-    minid = 0
-    maxid = 0
+    minid = maxid = 0
     for entry in entry_list:
         if entry.my_id == 0:
             continue
