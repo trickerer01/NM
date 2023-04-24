@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import sys
 from asyncio import run as run_async, sleep
 from re import search as re_search, compile as re_compile
-from typing import List, Tuple, Optional, Any
+from typing import Optional, Any
 
 from aiohttp import ClientSession, TCPConnector
 
@@ -49,19 +49,6 @@ class VideoEntryFull(VideoEntryBase):
 
 def extract_id(aref: Any) -> int:
     return int(re_search(PAGE_ENTRY_RE, str(aref.get('href'))).group(1))
-
-
-def get_minmax_ids(entry_list: List[VideoEntryBase]) -> Tuple[int, int]:
-    minid = maxid = 0
-    for entry in entry_list:
-        if entry.my_id == 0:
-            continue
-        if entry.my_id > maxid:
-            maxid = entry.my_id
-        if entry.my_id < minid or minid == 0:
-            minid = entry.my_id
-
-    return minid, maxid
 
 
 async def main() -> None:
@@ -137,11 +124,11 @@ async def main() -> None:
                 v_entries.append(VideoEntryFull(cur_id, my_title, my_rating))
 
         orig_count = len(v_entries)
-        minid, maxid = get_minmax_ids(v_entries)
         v_entries.reverse()
         prefilter_existing_items([v.my_id for v in v_entries])
 
         removed_count = orig_count - len(v_entries)
+        minid, maxid = min(v_entries, key=lambda x: x.my_id).my_id, max(v_entries, key=lambda x: x.my_id).my_id
 
         if len(v_entries) == 0:
             if 0 < orig_count == removed_count:
@@ -150,7 +137,7 @@ async def main() -> None:
                 Log.fatal('\nNo videos found. Aborted.')
             return
 
-        Log.info(f'\nOk! {len(v_entries):d} videos found (+{removed_count:d} filtered), bound {minid:d} to {maxid:d}. Working...\n')
+        Log.info(f'\nOk! {len(v_entries):d} videos found (+{removed_count:d} filtered out), bound {minid:d} to {maxid:d}. Working...\n')
 
         await DownloadWorker(
             ((v.my_id, v.my_title, v.m_rate, ds) for v in v_entries),
