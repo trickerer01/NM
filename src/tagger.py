@@ -13,7 +13,7 @@ from defs import TAGS_CONCAT_CHAR, Log, UTF8, normalize_path, prefixp, ExtraConf
 
 __all__ = (
     'filtered_tags', 'unite_separated_tags', 'get_matching_tag', 'get_or_group_matching_tag', 'is_neg_and_group_matches',
-    'register_item_tags', 'try_parse_id_or_group', 'dump_item_tags', 'extra_tag'
+    'register_item_tags', 'try_parse_id_or_group', 'dump_item_tags', 'valid_extra_tag',
 )
 
 re_replace_symbols = re_compile(
@@ -340,12 +340,14 @@ TAG_ALIASES = {
 }
 
 
-def extra_tag(tag: str) -> str:
+def valid_extra_tag(tag: str) -> str:
     try:
         if tag[0] == '(':
             assert_valid_or_group(tag)
         elif tag.startswith('-('):
             validate_neg_and_group(tag)
+        else:
+            pass
         return tag.lower().replace(' ', '_')
     except Exception:
         Log.fatal(f'Fatal: invalid tags group: \'{tag}\'!')

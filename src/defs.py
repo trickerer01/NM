@@ -31,7 +31,6 @@ class BaseConfig(object):
         self.extra_tags = None  # type: Optional[List[str]]
         self.naming_flags = 0
         self.logging_flags = 0
-        self.validate_tags = True
 
     def read_params(self, params: Namespace) -> None:
         self.dest_base = params.path
@@ -44,7 +43,6 @@ class BaseConfig(object):
         self.extra_tags = params.extra_tags
         self.naming_flags = params.naming
         self.logging_flags = params.log_level
-        self.validate_tags = (not getattr(params, 'no_validation')) if hasattr(params, 'no_validation') else self.validate_tags
 
     @property
     def uvp(self) -> Optional[str]:
@@ -63,9 +61,10 @@ class BaseConfig(object):
 ExtraConfig = BaseConfig()
 
 SITE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
-SITE_PAGE_REQUEST_BASE = b64decode(
+SITE_PAGE_REQUEST_PAGE = b64decode(
     'aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcz9vPW1yJnNlYXJjaF9xdWVyeT0lcyZwYWdlPSVk').decode()
-"""Params required: (str, int). Ex. SITE_PAGE_REQUEST_BASE % ('', 1)"""
+"""Params required: **search**, **page** - **str**, **int**.\n
+Ex. SITE_AJAX_REQUEST_PAGE % ('sfw', 1)"""
 SITE_ITEM_REQUEST_BASE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdmlkZW8vJWQv').decode()
 """Params required: (int). Ex. SITE_ITEM_REQUEST_BASE % (69999)"""
 
@@ -171,7 +170,7 @@ HELP_ARG_IDSEQUENCE = (
     ' extra tags. Sequence structure: (id=<id1>~id=<id2>~id=<id3>~...~id=<idN>)'
 )
 HELP_PATH = 'Download destination. Default is current folder'
-HELP_SEARCH = 'If you want to only traverse pages matching some search query. Spaces must be replced with \'+\', ex. \'side+view\''
+HELP_SEARCH_STR = 'Native search using string query (matching all words). Spaces must be replced with \'+\'. Ex. \'back+view\''
 HELP_QUALITY = f'Video quality. Default is \'{DEFAULT_QUALITY}\'. If not found, anything less is used'
 HELP_ARG_PROXY = 'Proxy to use. Example: http://127.0.0.1:222'
 HELP_ARG_UVPOLICY = (
@@ -180,8 +179,8 @@ HELP_ARG_UVPOLICY = (
 )
 HELP_ARG_DMMODE = 'Download (file creation) mode'
 HELP_ARG_EXTRA_TAGS = (
-    'All remaining \'args\' and \'-args\' count as tags to exclude / require.'
-    ' Videos containing any of \'-tags\', or not containing all of \'tags\' will be skipped.'
+    'All remaining \'args\' and \'-args\' count as tags to exclude / require. All spaces must be replaced with \'_\'.'
+    ' Videos containing any of \'-tags\', or not containing all of \'tags\' will be skipped. Wildcards are supported'
 )
 HELP_ARG_DWN_SCENARIO = (
     'Download scenario. This allows to scan for tags and sort videos accordingly in a single pass.'

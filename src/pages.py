@@ -15,7 +15,7 @@ from aiohttp import ClientSession, TCPConnector
 
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
 from defs import (
-    Log, MAX_VIDEOS_QUEUE_SIZE, ExtraConfig, SITE_PAGE_REQUEST_BASE, SLASH,
+    Log, MAX_VIDEOS_QUEUE_SIZE, ExtraConfig, SITE_PAGE_REQUEST_PAGE, SLASH,
     HelpPrintExitException,
 )
 from download import DownloadWorker, at_interrupt
@@ -88,7 +88,7 @@ async def main() -> None:
                 break
             Log.info(f'page {pi:d}...{" (this is the last page!)" if 0 < maxpage == pi else ""}')
 
-            a_html = await fetch_html(SITE_PAGE_REQUEST_BASE % (search_str, pi), session=s)
+            a_html = await fetch_html(SITE_PAGE_REQUEST_PAGE % (search_str, pi), session=s)
             if not a_html:
                 Log.error(f'Error: cannot get html for page {pi:d}')
                 continue

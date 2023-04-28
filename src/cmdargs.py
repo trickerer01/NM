@@ -12,14 +12,13 @@ from re import sub as re_sub
 from typing import Optional, List
 
 from defs import (
-    Log, HELP_PATH, HELP_PAGES, HELP_STOP_ID, HELP_SEARCH, QUALITIES, DEFAULT_QUALITY, HELP_QUALITY, HELP_ARG_PROXY, HELP_BEGIN_ID,
+    Log, HELP_PATH, HELP_PAGES, HELP_STOP_ID, HELP_SEARCH_STR, QUALITIES, DEFAULT_QUALITY, HELP_QUALITY, HELP_ARG_PROXY, HELP_BEGIN_ID,
     HELP_ARG_EXTRA_TAGS, HELP_ARG_UVPOLICY, UVIDEO_POLICIES, DOWNLOAD_POLICY_DEFAULT, DOWNLOAD_MODES, DOWNLOAD_MODE_DEFAULT,
     NAMING_FLAGS_DEFAULT, LOGGING_FLAGS_DEFAULT, HELP_ARG_DMMODE, HELP_ARG_DWN_SCENARIO, HELP_ARG_MINSCORE, HELP_ARG_CMDFILE,
-    HELP_ARG_NAMING, HELP_ARG_LOGGING, HELP_ARG_IDSEQUENCE,
-    ACTION_STORE_TRUE, UTF8, HelpPrintExitException,
+    HELP_ARG_NAMING, HELP_ARG_LOGGING, HELP_ARG_IDSEQUENCE, ACTION_STORE_TRUE, UTF8, HelpPrintExitException,
 )
 from scenario import DownloadScenario
-from tagger import extra_tag
+from tagger import valid_extra_tag
 from validators import (
     valid_int, valid_positive_nonzero_int, valid_path, valid_filepath_abs, valid_search_string, valid_proxy, naming_flags, log_level,
 )
@@ -68,14 +67,13 @@ def validate_parsed(args: List[str], default_sub: ArgumentParser) -> Namespace:
         if not is_parsed_cmdfile(parsed):
             for tag in unks:
                 try:
-                    assert extra_tag(tag)
+                    assert valid_extra_tag(tag)
                 except Exception:
-                    error_to_print = f'\nInvalid tag: \'{tag}\'\n'
+                    error_to_print = f'\nInvalid extra tag: \'{tag}\'\n'
                     raise
             parsed.extra_tags += [tag.lower().replace(' ', '_') for tag in unks]
-        # Log('parsed:', parsed)
     except (ArgumentError, TypeError, Exception):
-        # Log('\n', e)
+        # print('\n', e)
         parser.print_help()
         if error_to_print != '':
             Log.error(error_to_print)
@@ -95,8 +93,7 @@ def add_common_args(parser_or_group: ArgumentParser) -> None:
     parser_or_group.add_argument('-dmode', '--download-mode', default=DM_DEFAULT, help=HELP_ARG_DMMODE, choices=DOWNLOAD_MODES)
     parser_or_group.add_argument('-tdump', '--dump-tags', action=ACTION_STORE_TRUE, help='Save tags to text file')
     parser_or_group.add_argument('-script', '--download-scenario', default=None, help=HELP_ARG_DWN_SCENARIO, type=DownloadScenario)
-    # parser_or_group.add_argument('--no-validation', action=ACTION_STORE_TRUE, help=HELP_ARG_NO_VALIDATION)
-    parser_or_group.add_argument(dest='extra_tags', nargs=ZERO_OR_MORE, help=HELP_ARG_EXTRA_TAGS, type=extra_tag)
+    parser_or_group.add_argument(dest='extra_tags', nargs=ZERO_OR_MORE, help=HELP_ARG_EXTRA_TAGS, type=valid_extra_tag)
 
 
 def prepare_arglist_ids(args: List[str]) -> Namespace:
@@ -118,7 +115,7 @@ def prepare_arglist_ids(args: List[str]) -> Namespace:
 
     add_common_args(par_cmd)
 
-    [p.add_argument('--help', action='help', help='Print this message') for p in [parser, par_file, par_cmd]]
+    [p.add_argument('--help', action='help', help='Print this message') for p in [par_file, par_cmd]]
 
     def finalize_ex_groups(parsed: Namespace) -> Namespace:
         if parsed.use_id_sequence:
@@ -153,11 +150,11 @@ def prepare_arglist_pages(args: List[str]) -> Namespace:
     par_cmd.add_argument('-pages', metavar='#number', required=True, help=HELP_PAGES, type=valid_positive_nonzero_int)
     par_cmd.add_argument('-stop_id', metavar='#number', default=1, help=HELP_STOP_ID, type=valid_positive_nonzero_int)
     par_cmd.add_argument('-begin_id', metavar='#number', default=1000000000, help=HELP_BEGIN_ID, type=valid_positive_nonzero_int)
-    par_cmd.add_argument('-search', metavar='#string', default='', help=HELP_SEARCH, type=valid_search_string)
+    par_cmd.add_argument('-search', metavar='#string', default='', help=HELP_SEARCH_STR, type=valid_search_string)
 
     add_common_args(par_cmd)
 
-    [p.add_argument('--help', action='help', help='Print this message') for p in [parser, par_file, par_cmd]]
+    [p.add_argument('--help', action='help', help='Print this message') for p in [par_file, par_cmd]]
 
     try:
         pparsed = validate_parsed(args, par_cmd)
