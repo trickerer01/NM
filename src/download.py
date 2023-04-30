@@ -276,8 +276,8 @@ async def download_id(idi: int, my_title: str, my_rating: str, scenario: Optiona
 
     my_dest_base = normalize_path(f'{ExtraConfig.dest_base}{my_subfolder}')
     my_score = likes if len(likes) > 0 else my_rating if len(my_rating) > 1 else 'unk'
-    extra_len = 5 + 2 + 1  # 1 underscore + 2 brackets + len('1080p') - max len of all qualities
-    fname_part2 = extract_ext(".mp4")
+    extra_len = 5 + 2 + 4  # 4 underscores + 2 brackets + len('1080p') - max len of all qualities
+    fname_part2 = extract_ext('.mp4')
     fname_part1 = (
         f'{prefixp() if has_naming_flag(NamingFlags.NAMING_FLAG_PREFIX) else ""}'
         f'{idi:d}'
@@ -295,7 +295,8 @@ async def download_id(idi: int, my_title: str, my_rating: str, scenario: Optiona
     ret_vals = []  # type: List[int]
     for i in range(QUALITIES.index(my_quality), len(QUALITIES)):
         link = f'{SITE}/media/videos/{QUALITY_STARTS[i]}{idi:d}{QUALITY_ENDS[i]}.{fname_part2}'
-        filename = f'{fname_part1}_{QUALITIES[i]}.{fname_part2}'
+        my_quality = f'_{QUALITIES[i]}' if has_naming_flag(NamingFlags.NAMING_FLAG_QUALITY) else ''
+        filename = f'{fname_part1}{my_quality}.{fname_part2}'
         res = await download_file(idi, filename, my_dest_base, link, my_subfolder)
         if res not in [DownloadResult.DOWNLOAD_SUCCESS, DownloadResult.DOWNLOAD_FAIL_ALREADY_EXISTS]:
             ret_vals.append(res)
