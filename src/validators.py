@@ -13,7 +13,7 @@ from re import match as re_match
 
 from defs import (
     normalize_path, unquote, Log, NamingFlags, LoggingFlags, SLASH, NON_SEARCH_SYMBOLS, NAMING_FLAGS, LOGGING_FLAGS, ExtraConfig,
-    DOWNLOAD_POLICY_DEFAULT,
+    DOWNLOAD_POLICY_DEFAULT, DEFAULT_QUALITY,
 )
 
 
@@ -36,6 +36,9 @@ def find_and_resolve_config_conflicts(pages: bool, has_scenario: bool) -> bool:
                 delay_for_message = True
             if len(ExtraConfig.extra_tags) > 0:
                 Log.info(f'Info: running download script: outer extra tags: {str(ExtraConfig.extra_tags)}')
+                delay_for_message = True
+            if ExtraConfig.quality != DEFAULT_QUALITY:
+                Log.info('Info: running download script, outer quality setting will be ignored')
                 delay_for_message = True
     return delay_for_message
 
@@ -83,7 +86,7 @@ def valid_filepath_abs(pathstr: str) -> str:
 
 def valid_search_string(search_str: str) -> str:
     try:
-        if len(search_str) > 0 and re_match(r'^.*' + NON_SEARCH_SYMBOLS + '.*$', search_str):
+        if len(search_str) > 0 and re_match(fr'^.*{NON_SEARCH_SYMBOLS}.*$', search_str):
             raise ValueError
     except Exception:
         raise ArgumentError

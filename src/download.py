@@ -9,17 +9,17 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from asyncio import sleep, as_completed, get_running_loop, Queue as AsyncQueue
 from os import path, stat, remove, makedirs
 from random import uniform as frand
-from re import match
+from re import match, search
 from typing import List, Optional, Union, Coroutine, Tuple
 
 from aiofile import async_open
 from aiohttp import ClientSession, TCPConnector, ClientTimeout, ClientResponse
 
 from defs import (
-    CONNECT_RETRIES_ITEM, MAX_VIDEOS_QUEUE_SIZE, TAGS_CONCAT_CHAR, SITE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS, SITE_ITEM_REQUEST_BASE,
+    CONNECT_RETRIES_ITEM, MAX_VIDEOS_QUEUE_SIZE, TAGS_CONCAT_CHAR, SITE_ITEM_REQUEST_VIDEO, SITE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
     DownloadResult, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH, DOWNLOAD_STATUS_CHECK_TIMER, NamingFlags, calc_sleep_time, has_naming_flag,
-    Log, ExtraConfig, normalize_path, normalize_filename, get_elapsed_time_s, get_elapsed_time_i, prefixp, LoggingFlags,
-    re_nmfile, re_pdanger,
+    Log, ExtraConfig, normalize_path, normalize_filename, get_elapsed_time_s, get_elapsed_time_i, prefixp, LoggingFlags, extract_ext,
+    re_nmfile,
 )
 from fetch_html import fetch_html, wrap_request
 from path_util import file_exists_in_folder
@@ -46,8 +46,8 @@ class DownloadWorker:
     params_second_type = params_first_type
     sequence_type = Tuple[Union[params_first_type, params_second_type]]  # Tuple here makes sure argument is not an empty list
 
-    def __init__(self, my_sequence: sequence_type, session: ClientSession = None) -> None:
-        self._func = download_id
+    def __init__(self, my_sequence: sequence_type, by_id: bool, session: ClientSession = None) -> None:
+        self._func = download_id if by_id is True else download_file
         self._seq = list(my_sequence)
         self._queue = AsyncQueue(MAX_VIDEOS_QUEUE_SIZE)  # type: AsyncQueue[Tuple[int, Coroutine]]
         self.session = session
@@ -130,8 +130,8 @@ class DownloadWorker:
 
 
 def is_filtered_out_by_extra_tags(idi: int, tags_raw: List[str], extra_tags: List[str], subfolder: str) -> bool:
-    sname = f'{prefixp()}{idi:d}.mp4'
     suc = True
+    sname = f'{prefixp()}{idi:d}.mp4'
     if len(extra_tags) > 0:
         for extag in extra_tags:
             if extag[0] == '(':
@@ -180,11 +180,11 @@ async def download_id(idi: int, my_title: str, my_rating: str, scenario: Optiona
     my_quality = ExtraConfig.quality
     my_tags = 'no_tags'
     likes = ''
-    i_html = await fetch_html(SITE_ITEM_REQUEST_BASE % idi, session=download_worker.session)
+    i_html = await fetch_html(SITE_ITEM_REQUEST_VIDEO % idi, session=download_worker.session)
     if i_html:
         if any('Error' in [d.string, d.text] for d in i_html.find_all('legend')):
             Log.error(f'Warning: Got error 404 for {sname} (may be unlisted), author/likes will not be extracted...')
-        elif any(re_pdanger.match(d.text) for d in i_html.find_all('div', class_='text-danger')):
+        elif any(search(r'^This is a private video\..*?$', d.text) for d in i_html.find_all('div', class_='text-danger')):
             Log.warn(f'Warning: Got private video error for {sname}, likes/extra_title will not be extracted...')
 
         try:
@@ -270,14 +270,14 @@ async def download_id(idi: int, my_title: str, my_rating: str, scenario: Optiona
     #
     # for i in range(qs.index(quality), len(qs)):
     #     link = SITE + '/media/videos/' + qss[i] + str(idi) + qes[i] + '.mp4'
-    #     filename = 'nm_' + str(idi) + ('_' + my_title if my_title != '' else '') + '_' + qs[i] + '_pydw.mp4'
+    #     filename = 'nm_' + str(idi) + ('_' + my_title if my_title != '' else '') + '_' + qs[i] + '.mp4'
     #     if await download_file(idi, filename, dest_base, link, session):
     #         return
 
     my_dest_base = normalize_path(f'{ExtraConfig.dest_base}{my_subfolder}')
     my_score = likes if len(likes) > 0 else my_rating if len(my_rating) > 1 else 'unk'
-    extra_len = 5 + 3 + 2  # 3 underscores + 2 brackets + len('1080p') - max len of all qualities
-    fname_part2 = 'pydw.mp4'
+    extra_len = 5 + 2 + 1  # 1 underscore + 2 brackets + len('1080p') - max len of all qualities
+    fname_part2 = extract_ext(".mp4")
     fname_part1 = (
         f'{prefixp() if has_naming_flag(NamingFlags.NAMING_FLAG_PREFIX) else ""}'
         f'{idi:d}'
@@ -294,8 +294,8 @@ async def download_id(idi: int, my_title: str, my_rating: str, scenario: Optiona
 
     ret_vals = []  # type: List[int]
     for i in range(QUALITIES.index(my_quality), len(QUALITIES)):
-        link = f'{SITE}/media/videos/{QUALITY_STARTS[i]}{idi:d}{QUALITY_ENDS[i]}.mp4'
-        filename = f'{fname_part1}_{QUALITIES[i]}_{fname_part2}'
+        link = f'{SITE}/media/videos/{QUALITY_STARTS[i]}{idi:d}{QUALITY_ENDS[i]}.{fname_part2}'
+        filename = f'{fname_part1}_{QUALITIES[i]}.{fname_part2}'
         res = await download_file(idi, filename, my_dest_base, link, my_subfolder)
         if res not in [DownloadResult.DOWNLOAD_SUCCESS, DownloadResult.DOWNLOAD_FAIL_ALREADY_EXISTS]:
             ret_vals.append(res)
@@ -342,6 +342,7 @@ async def download_file(idi: int, filename: str, my_dest_base: str, link: str, s
                 break
 
             r = None
+            # timeout must be relatively long, this is a timeout for actual download, not just connection
             async with await wrap_request(download_worker.session, 'GET', link, timeout=CTOD, headers={'Referer': link}) as r:
                 if r.status == 404:
                     Log.error(f'Got 404 for {prefixp()}{idi:d}.mp4...!')
@@ -365,7 +366,7 @@ async def download_file(idi: int, filename: str, my_dest_base: str, link: str, s
                 file_size = stat(dest).st_size
                 if expected_size and file_size != expected_size:
                     Log.error(f'Error: file size mismatch for {sfilename}: {file_size:d} / {expected_size:d}')
-                    raise IOError
+                    raise IOError(link)
                 break
         except Exception:
             import sys

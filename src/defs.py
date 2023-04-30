@@ -61,12 +61,12 @@ class BaseConfig(object):
 ExtraConfig = BaseConfig()
 
 SITE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
-SITE_PAGE_REQUEST_PAGE = b64decode(
+SITE_ITEM_REQUEST_PAGE = b64decode(
     'aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcz9vPW1yJnNlYXJjaF9xdWVyeT0lcyZwYWdlPSVk').decode()
 """Params required: **search**, **page** - **str**, **int**.\n
 Ex. SITE_AJAX_REQUEST_PAGE % ('sfw', 1)"""
-SITE_ITEM_REQUEST_BASE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdmlkZW8vJWQv').decode()
-"""Params required: (int). Ex. SITE_ITEM_REQUEST_BASE % (69999)"""
+SITE_ITEM_REQUEST_VIDEO = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdmlkZW8vJWQv').decode()
+"""Params required: (int). Ex. SITE_ITEM_REQUEST_VIDEO % (69999)"""
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux i686; rv:102.0) Gecko/20100101 Firefox/102.0'
 DEFAULT_HEADERS = {'User-Agent': USER_AGENT, 'Referer': SITE}
@@ -315,9 +315,9 @@ def normalize_filename(filename: str, base_path: str) -> str:
 
 def extract_ext(href: str) -> str:
     try:
-        return search(r'(\.[^&]{3,5})&', href).group(1)
+        return search(r'\.([^&]{3,5})&', href).group(1)
     except Exception:
-        return '.mp4'
+        return 'mp4'
 
 
 def has_naming_flag(flag: int) -> bool:
@@ -340,8 +340,7 @@ class HelpPrintExitException(Exception):
     pass
 
 
-re_nmfile = re_compile(fr'^(?:nm_)?([^_]+)_.*?({"|".join(QUALITIES)})_py.+?$')
-re_pdanger = re_compile(r'^This is a private video\..*?$')
+re_nmfile = re_compile(fr'^(?:{prefixp()})?(\d+)_.*?({"|".join(QUALITIES)})?(?:_py(?:dw|pv))?\..+?$')
 
 #
 #

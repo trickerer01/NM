@@ -60,7 +60,7 @@ def file_exists_in_folder(base_folder: str, idi: int, quality: str, check_subfol
                 f_match = match(re_nmfile, fname)
                 f_id = f_match.group(1)
                 f_quality = f_match.group(2)
-                if str(idi) == f_id and quality == f_quality:
+                if str(idi) == f_id and (quality is None or quality == f_quality):
                     return True
             except Exception:
                 continue
@@ -72,7 +72,7 @@ def prefilter_existing_items(id_sequence: List[int]) -> None:
     This function scans dest folder saving existing files in it and 1 level below to a list for later checks
     but only filters out existing items with desired quality\n\n
     (which may sometimes be inaccessible).\n\n
-    This function may only be called once!
+    This function must be called exactly once!
     """
     assert len(found_filenames_all) == 0
     scan_dest_folder()

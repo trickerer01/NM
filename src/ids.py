@@ -76,7 +76,7 @@ async def main() -> None:
 
     Log.info(f'\nOk! {len(id_sequence):d} ids in queue (+{removed_count:d} filtered out), bound {minid:d} to {maxid:d}. Working...\n')
 
-    await DownloadWorker(((idi, '', 'unk', ds) for idi in id_sequence)).run()
+    await DownloadWorker(((idi, '', 'unk', ds) for idi in id_sequence), True).run()
 
 
 async def run_main() -> None:

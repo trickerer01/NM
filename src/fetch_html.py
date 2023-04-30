@@ -47,6 +47,7 @@ async def wrap_request(s: ClientSession, method: str, url: str, **kwargs) -> Cli
     """Queues request, updating headers/proxies beforehand, and returns the response"""
     await RequestQueue.until_ready(url)
     s.headers.update(DEFAULT_HEADERS.copy())
+    # s.cookie_jar.update_cookies({'kt_rt_popAccess': '1', 'kt_tcookie': '1'}, http_parser.URL(HOST))
     kwargs.update(proxy=ExtraConfig.proxy)
     r = await s.request(method, url, **kwargs)
     return r
