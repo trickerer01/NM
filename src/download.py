@@ -296,7 +296,7 @@ async def download_id(idi: int, my_title: str, my_rating: str, scenario: Optiona
     for i in range(QUALITIES.index(my_quality), len(QUALITIES)):
         link = f'{SITE}/media/videos/{QUALITY_STARTS[i]}{idi:d}{QUALITY_ENDS[i]}.{fname_part2}'
         my_quality = f'_{QUALITIES[i]}' if has_naming_flag(NamingFlags.NAMING_FLAG_QUALITY) else ''
-        filename = f'{fname_part1}{my_quality}.{fname_part2}'
+        filename = f'{fname_part1}{my_quality}{fname_part2}'
         res = await download_file(idi, filename, my_dest_base, link, my_subfolder)
         if res not in [DownloadResult.DOWNLOAD_SUCCESS, DownloadResult.DOWNLOAD_FAIL_ALREADY_EXISTS]:
             ret_vals.append(res)
