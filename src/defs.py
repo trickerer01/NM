@@ -215,6 +215,7 @@ CONNECT_RETRIES_PAGE = 50
 CONNECT_RETRIES_ITEM = 50
 CONNECT_REQUEST_DELAY = 1.0
 
+MAX_DEST_SCAN_SUB_DEPTH = 1
 MAX_VIDEOS_QUEUE_SIZE = 6
 DOWNLOAD_STATUS_CHECK_TIMER = 120.0
 
@@ -346,7 +347,7 @@ class HelpPrintExitException(Exception):
     pass
 
 
-re_nmfile = re_compile(fr'^(?:{prefixp()})?(\d+).*?(?:_({"|".join(QUALITIES)}))?(?:_py(?:dw|pv))?\..+?$')
+re_nmfile = re_compile(fr'^(?:{prefixp()})?(\d+).*?(?:_({"|".join(QUALITIES)}))?(?:_py(?:dw|pv))?\..{{3,4}}$')
 
 #
 #
