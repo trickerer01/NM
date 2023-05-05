@@ -38,7 +38,7 @@ re_tags_to_exclude = re_compile(
     r's(?:ian.*?|s(?:ault|job)?)|thlet.*?|udi[bo].*?)|'  # a
     r'b(?:a(?:be.*?|ck.*?|ll.*?|re.*?|th.*?)|e(?:hind|lly)|i(?:g(?:[^j].+?)?|kin.+?)|l(?:end.*?|o(?:nd.*?|w[^j].*?)|ue.*?)|'  # b
     r'o(?:d[iy].*?|o[bt].*?|ss.*?|ttom.*?|unc.+?)|r(?:e(?:ast.*?|ed.*?)|o[tw].*?|unet.+?)|u(?:kk.*?|lg.+?|nny.*?|st.*?|tt.*?))|'  # b
-    r'c(?:a(?:ge.*?|ni.+?|p(?:i?tai?n|tur.+?)|r[rt].*?|v[ei].*?)|e(?:lebr.+?|nsor.+?)|'  # c
+    r'c(?:a(?:ge.*?|ni(?:d|ne|s)|p(?:i?tai?n|tur.+?)|r[rt].*?|v[ei].*?)|e(?:lebr.+?|nsor.+?)|'  # c
     r'h(?:a(?:ir|lleng.*?|mbers?|ract.+?|t.*?)|eat.*?|ines.*?|ok.*?|ub.+?)|ity|l(?:ap.*?|im.+?|o(?:n.+?|th.*?|wn.*?))|'  # c
     r'o(?:ck.*?|lor.*?|m[ip].+?|n(?:[dv].+?|sens.*?)|uch|w.+?)|r(?:e[as].+?|ing.*?|o(?:ss.*?|uch.*?))|'  # c
     r'u(?:lt.*?|m.+?|nn?[ai].*?|rv.+?|t[ei].*?))|'  # c
@@ -161,6 +161,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(silent),(hill)(?:,(0?\d))'): r'\1 \2 \3',
     re_compile(r'(soft),(core)'): r'\1\2',
     re_compile(r'(soul),(calibur|eater)'): r'\1 \2',
+    re_compile(r'(spider),(man)'): r'\1 \2',
     re_compile(r'(star),(wars)(?:,(0?\d))'): r'\1 \2 \3',
     re_compile(r'(stomach),(bulge)'): r'\1 \2',
     re_compile(r'(street),(fighter)'): r'\1 \2',

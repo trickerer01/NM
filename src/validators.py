@@ -17,10 +17,10 @@ from defs import (
 )
 
 
-def find_and_resolve_config_conflicts(pages: bool, has_scenario: bool) -> bool:
+def find_and_resolve_config_conflicts(pages: bool) -> bool:
     delay_for_message = False
     if pages:
-        if has_scenario is True:
+        if ExtraConfig.scenario is not None:
             if ExtraConfig.uvp != DOWNLOAD_POLICY_DEFAULT:
                 Log.info('Info: running download script, outer unlisted policy will be ignored')
                 ExtraConfig.uvp = DOWNLOAD_POLICY_DEFAULT
@@ -29,7 +29,7 @@ def find_and_resolve_config_conflicts(pages: bool, has_scenario: bool) -> bool:
                 Log.info(f'Info: running download script: outer extra tags: {str(ExtraConfig.extra_tags)}')
                 delay_for_message = True
     else:
-        if has_scenario is True:
+        if ExtraConfig.scenario is not None:
             if ExtraConfig.uvp != DOWNLOAD_POLICY_DEFAULT:
                 Log.info('Info: running download script, outer unlisted policy will be ignored')
                 ExtraConfig.uvp = DOWNLOAD_POLICY_DEFAULT

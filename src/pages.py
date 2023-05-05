@@ -9,7 +9,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import sys
 from asyncio import run as run_async, sleep
 from re import search as re_search, compile as re_compile
-from typing import Optional, Any
 
 from aiohttp import ClientSession, TCPConnector
 
@@ -21,12 +20,9 @@ from defs import (
 from download import DownloadWorker, at_interrupt
 from path_util import prefilter_existing_items, scan_dest_folder
 from fetch_html import fetch_html
-from scenario import DownloadScenario
 from validators import find_and_resolve_config_conflicts
 
 __all__ = ()
-
-PAGE_ENTRY_RE = re_compile(r'^/video/(\d+)/[^/]+?$')
 
 
 class VideoEntryBase:
@@ -47,10 +43,6 @@ class VideoEntryFull(VideoEntryBase):
         return f'{self.my_id:d}: {self.my_title}'
 
 
-def extract_id(aref: Any) -> int:
-    return int(re_search(PAGE_ENTRY_RE, str(aref.get('href'))).group(1))
-
-
 async def main() -> None:
     try:
         arglist = prepare_arglist_pages(sys.argv[1:])
@@ -69,11 +61,11 @@ async def main() -> None:
         stop_id = arglist.stop_id  # type: int
         begin_id = arglist.begin_id  # type: int
         search_str = arglist.search  # type: str
-        ds = arglist.download_scenario  # type: Optional[DownloadScenario]
 
         full_download = True
+        page_entry_re = re_compile(r'^/video/(\d+)/[^/]+?$')
 
-        if find_and_resolve_config_conflicts(True, ds is not None) is True:
+        if find_and_resolve_config_conflicts(True) is True:
             await sleep(3.0)
     except Exception:
         Log.fatal('\nError reading parsed arglist!')
@@ -107,12 +99,12 @@ async def main() -> None:
                     Log.info('Could not extract max page, assuming single page search')
                     maxpage = 1
 
-            arefs = a_html.find_all('a', href=PAGE_ENTRY_RE)
+            arefs = a_html.find_all('a', href=page_entry_re)
             rrefs = a_html.find_all('b', string=re_compile(r'^(?:\d{1,3}%|-)$'))
             trefs = a_html.find_all('span', class_='video-title title-truncate m-t-5')
             assert len(arefs) == len(rrefs) == len(trefs)
             for refpair in zip(arefs, rrefs, trefs):
-                cur_id = extract_id(refpair[0])
+                cur_id = int(re_search(page_entry_re, str(refpair[0].get('href'))).group(1))
                 if cur_id < stop_id:
                     Log.trace(f'skipping {cur_id:d} < {stop_id:d}')
                     continue
@@ -130,7 +122,7 @@ async def main() -> None:
 
         if len(v_entries) > 0:
             scan_dest_folder()
-            removed_ids = prefilter_existing_items([v.my_id for v in v_entries], ds)
+            removed_ids = prefilter_existing_items([v.my_id for v in v_entries])
             for i in reversed(range(len(v_entries))):
                 if v_entries[i].my_id in removed_ids:
                     del v_entries[i]
@@ -147,7 +139,7 @@ async def main() -> None:
         minid, maxid = min(v_entries, key=lambda x: x.my_id).my_id, max(v_entries, key=lambda x: x.my_id).my_id
         Log.info(f'\nOk! {len(v_entries):d} videos found (+{removed_count:d} filtered out), bound {minid:d} to {maxid:d}. Working...\n')
 
-        params = tuple((v.my_id, v.my_title, v.m_rate, ds)
+        params = tuple((v.my_id, v.my_title, v.m_rate)
                        for v in v_entries)
         await DownloadWorker(params, full_download, removed_count, s).run()
 
