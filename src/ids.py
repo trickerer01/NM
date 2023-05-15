@@ -78,7 +78,7 @@ async def main() -> None:
     minid, maxid = min(id_sequence), max(id_sequence)
     Log.info(f'\nOk! {len(id_sequence):d} ids in queue (+{removed_count:d} filtered out), bound {minid:d} to {maxid:d}. Working...\n')
 
-    params = tuple((idi, '', 'unk') for idi in id_sequence)
+    params = [(idi, '', 'unk') for idi in id_sequence]
     await DownloadWorker(params, True, removed_count).run()
 
 
