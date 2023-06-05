@@ -32,10 +32,10 @@ class VideoEntryBase:
 
 
 class VideoEntryFull(VideoEntryBase):
-    def __init__(self, m_id: int, m_title: str, my_rating: str) -> None:
+    def __init__(self, m_id: int, m_title: str, m_rating: str) -> None:
         super().__init__(m_id)
         self.my_title = m_title or ''
-        self.m_rate = my_rating or ''
+        self.my_rating = m_rating or ''
 
     def __str__(self) -> str:
         return f'{self.my_id:d}: {self.my_title}'
@@ -63,7 +63,7 @@ async def main() -> None:
         full_download = True
         page_entry_re = re_compile(r'^/video/(\d+)/[^/]+?$')
 
-        if find_and_resolve_config_conflicts(True) is True:
+        if find_and_resolve_config_conflicts() is True:
             await sleep(3.0)
     except Exception:
         Log.fatal('\nError reading parsed arglist!')
@@ -113,6 +113,7 @@ async def main() -> None:
                 tref = str(refpair[2].text)
                 my_title = tref if tref != '' else href_rel[href_rel.rfind(SLASH) + 1:] if href_rel != '' else ''
                 my_rating = str(refpair[1].text)
+                my_rating = '' if my_rating in ['0%', ''] else my_rating[:-1]  # 0% rating doesn't mean all votes are dislikes necessarily
                 v_entries.append(VideoEntryFull(cur_id, my_title, my_rating))
 
         orig_count = len(v_entries)
@@ -137,7 +138,7 @@ async def main() -> None:
         minid, maxid = min(v_entries, key=lambda x: x.my_id).my_id, max(v_entries, key=lambda x: x.my_id).my_id
         Log.info(f'\nOk! {len(v_entries):d} videos found (+{removed_count:d} filtered out), bound {minid:d} to {maxid:d}. Working...\n')
 
-        params = [(v.my_id, v.my_title, v.m_rate) for v in v_entries]
+        params = [(v.my_id, v.my_title, v.my_rating) for v in v_entries]
         await DownloadWorker(params, full_download, removed_count, s).run()
 
 

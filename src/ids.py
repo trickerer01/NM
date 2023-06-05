@@ -46,7 +46,7 @@ async def main() -> None:
                 Log.fatal(f'\nError: start ({start_id:d}) > end ({end_id:d})')
                 raise ValueError
 
-        if find_and_resolve_config_conflicts(False) is True:
+        if find_and_resolve_config_conflicts() is True:
             await sleep(3.0)
     except Exception:
         Log.fatal('\nError reading parsed arglist!')
@@ -78,7 +78,7 @@ async def main() -> None:
     minid, maxid = min(id_sequence), max(id_sequence)
     Log.info(f'\nOk! {len(id_sequence):d} ids in queue (+{removed_count:d} filtered out), bound {minid:d} to {maxid:d}. Working...\n')
 
-    params = [(idi, '', 'unk') for idi in id_sequence]
+    params = [(idi, '', '') for idi in id_sequence]
     await DownloadWorker(params, True, removed_count).run()
 
 

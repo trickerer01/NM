@@ -21,6 +21,7 @@ class BaseConfig(object):
     def __init__(self) -> None:
         self.dest_base = None  # type: Optional[str]
         self.proxy = None  # type: Optional[str]
+        self.min_rating = None  # type: Optional[int]
         self.min_score = None  # type: Optional[int]
         self.quality = None  # type: Optional[str]
         self.un_video_policy = None  # type: Optional[str]
@@ -34,6 +35,7 @@ class BaseConfig(object):
     def read_params(self, params: Namespace) -> None:
         self.dest_base = params.path
         self.proxy = params.proxy
+        self.min_rating = params.minimum_rating
         self.min_score = params.minimum_score
         self.quality = params.quality
         self.un_video_policy = params.unlist_video_policy
@@ -180,6 +182,7 @@ HELP_ARG_DMMODE = 'Download (file creation) mode'
 HELP_ARG_EXTRA_TAGS = (
     'All remaining \'args\' and \'-args\' count as tags to exclude / require. All spaces must be replaced with \'_\'.'
     ' Videos containing any of \'-tags\', or not containing all of \'tags\' will be skipped. Wildcards are supported'
+
 )
 HELP_ARG_DWN_SCENARIO = (
     'Download scenario. This allows to scan for tags and sort videos accordingly in a single pass.'
@@ -190,6 +193,10 @@ HELP_ARG_DWN_SCENARIO = (
     ' Example:'
     ' \'python ids.py -path ... -start ... -end ... --download-scenario'
     ' "1g: 1girl -1monster -quality 480p; 2g: 2girls -1girl -1monster -quality 720p -minscore 150 -uvp always"\''
+)
+HELP_ARG_MINRATING = (
+    'Rating percentage filter for videos, 0-100.'
+    ' Videos having rating below this value will be skipped, unless rating extraction fails - in that case video always gets a pass'
 )
 HELP_ARG_MINSCORE = (
     'Score filter for videos (likes minus dislikes).'
