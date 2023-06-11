@@ -241,9 +241,9 @@ async def download_id(idi: int, my_title: str, page_rating: str) -> DownloadResu
             Log.warn(f'Warning: cannot extract author for {sname}.')
             my_author = ''
         try:
-            keywords = str(i_html.find('meta', attrs={'name': 'keywords'}).get('content'))
-            keywords = unite_separated_tags(keywords.replace(', ', TAGS_CONCAT_CHAR).lower())
-            tags_raw = [tag.replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR)]
+            kwdiv = i_html.find('meta', attrs={'name': 'keywords'})
+            keywords = unite_separated_tags((str(kwdiv.get('content')) if kwdiv else '').replace(', ', TAGS_CONCAT_CHAR).lower())
+            tags_raw = [tag.replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR) if len(tag) > 0]
             for add_tag in [ca for ca in [my_author] if len(ca) > 0]:
                 if add_tag not in tags_raw:
                     tags_raw.append(add_tag)
