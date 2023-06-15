@@ -38,7 +38,7 @@ class BaseConfig(object):
         self.min_rating = params.minimum_rating
         self.min_score = params.minimum_score
         self.quality = params.quality
-        self.un_video_policy = params.unlist_video_policy
+        self.un_video_policy = params.untag_video_policy
         self.download_mode = params.download_mode
         self.save_tags = params.dump_tags
         self.extra_tags = params.extra_tags
@@ -88,7 +88,7 @@ QUALITY_ENDS = ['_1080p', '_720p', '_hi', '_480p', '_360p', '_SD', '']
 DEFAULT_QUALITY = QUALITIES[4]
 """360p"""
 
-# unlisted videos download policy
+# untagged videos download policy
 DOWNLOAD_POLICY_NOFILTERS = 'nofilters'
 DOWNLOAD_POLICY_ALWAYS = 'always'
 UVIDEO_POLICIES = [DOWNLOAD_POLICY_NOFILTERS, DOWNLOAD_POLICY_ALWAYS]
@@ -175,7 +175,7 @@ HELP_SEARCH_STR = 'Native search using string query (matching all words). Spaces
 HELP_QUALITY = f'Video quality. Default is \'{DEFAULT_QUALITY}\'. If not found, anything less is used'
 HELP_ARG_PROXY = 'Proxy to use. Example: http://127.0.0.1:222'
 HELP_ARG_UVPOLICY = (
-    'Unlisted videos download policy. By default these videos are ignored if you use extra \'tags\' / \'-tags\'. Use'
+    'Untagged videos download policy. By default these videos are ignored if you use extra \'tags\' / \'-tags\'. Use'
     f' \'{DOWNLOAD_POLICY_ALWAYS}\' to override'
 )
 HELP_ARG_DMMODE = 'Download (file creation) mode'

@@ -21,7 +21,7 @@ def find_and_resolve_config_conflicts() -> bool:
     delay_for_message = False
     if ExtraConfig.scenario is not None:
         if ExtraConfig.uvp != DOWNLOAD_POLICY_DEFAULT:
-            Log.info('Info: running download script, outer unlisted policy will be ignored')
+            Log.info('Info: running download script, outer untagged policy will be ignored')
             ExtraConfig.uvp = DOWNLOAD_POLICY_DEFAULT
             delay_for_message = True
         if len(ExtraConfig.extra_tags) > 0:

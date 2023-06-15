@@ -32,12 +32,12 @@ class SubQueryParams(object):
         self.quality = quality or ''  # type: str
         self.minrating = minrating or 0  # type: int
         self.minscore = minscore  # type: Optional[int]
-        self.unlist_video_policy = uvp or ''  # type: str
+        self.untag_video_policy = uvp or ''  # type: str
         self.use_id_sequence = use_id_sequence or False  # type: bool
 
     @property
     def uvp(self) -> str:
-        return self.unlist_video_policy
+        return self.untag_video_policy
 
     def __repr__(self) -> str:
         return (
@@ -62,7 +62,7 @@ class DownloadScenario(object):
         parser.add_argument('-quality', default=DEFAULT_QUALITY, help=HELP_QUALITY, choices=QUALITIES)
         parser.add_argument('-minrating', '--minimum-rating', metavar='#0-100', default=0, help=HELP_ARG_MINRATING, type=valid_rating)
         parser.add_argument('-minscore', '--minimum-score', metavar='#score', default=None, help=HELP_ARG_MINSCORE, type=valid_int)
-        parser.add_argument('-uvp', '--unli-video-policy', default=UVP_DEFAULT, help=HELP_ARG_UVPOLICY, choices=UVIDEO_POLICIES)
+        parser.add_argument('-uvp', '--untag-video-policy', default=UVP_DEFAULT, help=HELP_ARG_UVPOLICY, choices=UVIDEO_POLICIES)
         parser.add_argument(dest='extra_tags', nargs=ZERO_OR_MORE, help=HELP_ARG_EXTRA_TAGS, type=valid_extra_tag)
 
         for query_raw in fmt_str.split('; '):
@@ -80,12 +80,12 @@ class DownloadScenario(object):
                         error_to_print = f'\nInvalid extra tag: \'{tag}\'\n'
                         raise
                 parsed.extra_tags += [tag.lower().replace(' ', '_') for tag in unks]
-                if parsed.unli_video_policy == UVP_ALWAYS and self.has_subquery(uvp=UVP_ALWAYS):
-                    error_to_print = f'Scenario can only have one subquery with unlisted video policy \'{UVP_ALWAYS}\'!'
+                if parsed.untag_video_policy == UVP_ALWAYS and self.has_subquery(uvp=UVP_ALWAYS):
+                    error_to_print = f'Scenario can only have one subquery with untagged video policy \'{UVP_ALWAYS}\'!'
                     raise ValueError
                 self.add_subquery(SubQueryParams(
                     subfolder, parsed.extra_tags, parsed.quality, parsed.minimum_score, parsed.minimum_rating,
-                    parsed.unli_video_policy, parsed.use_id_sequence
+                    parsed.untag_video_policy, parsed.use_id_sequence
                 ))
             except (ArgumentError, TypeError, Exception):
                 if error_to_print != '':

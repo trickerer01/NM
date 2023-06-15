@@ -217,9 +217,9 @@ async def download_id(idi: int, my_title: str, page_rating: str) -> DownloadResu
     i_html = await fetch_html(SITE_ITEM_REQUEST_VIDEO % idi, session=download_worker.session)
     if i_html:
         if any('Error' in [d.string, d.text] for d in i_html.find_all('legend')):
-            Log.error(f'Warning: Got error 404 for {sname} (may be unlisted), author/score will not be extracted...')
+            Log.error(f'Warning: Got error 404 for {sname} (probably unlisted), author/score will not be extracted...')
         elif any(search(r'^This is a private video\..*?$', d.text) for d in i_html.find_all('div', class_='text-danger')):
-            Log.warn(f'Warning: Got private video error for {sname}, score/extra_title will not be extracted...')
+            Log.warn(f'Warning: Got private video error for {sname}, score(likes)/extra_title will not be extracted...')
 
         try:
             my_title = i_html.find('meta', attrs={'name': 'description'}).get('content')
@@ -240,55 +240,51 @@ async def download_id(idi: int, my_title: str, page_rating: str) -> DownloadResu
         except Exception:
             Log.warn(f'Warning: cannot extract author for {sname}.')
             my_author = ''
-        try:
-            kwdiv = i_html.find('meta', attrs={'name': 'keywords'})
-            keywords = unite_separated_tags((str(kwdiv.get('content')) if kwdiv else '').replace(', ', TAGS_CONCAT_CHAR).lower())
-            tags_raw = [tag.replace(' ', '_') for tag in keywords.split(TAGS_CONCAT_CHAR) if len(tag) > 0]
-            for add_tag in [ca for ca in [my_author] if len(ca) > 0]:
-                if add_tag not in tags_raw:
-                    tags_raw.append(add_tag)
-            if is_filtered_out_by_extra_tags(idi, tags_raw, ExtraConfig.extra_tags, False, my_subfolder):
-                Log.info(f'Info: video {sname} is filtered out by outer extra tags, skipping...')
-                return DownloadResult.DOWNLOAD_FAIL_SKIPPED
-            if len(score) > 0 and ExtraConfig.min_score is not None:
-                try:
-                    if int(score) < ExtraConfig.min_score:
-                        Log.info(f'Info: video {sname} has low score \'{score}\' (required {ExtraConfig.min_score:d}), skipping...')
-                        return DownloadResult.DOWNLOAD_FAIL_SKIPPED
-                except Exception:
-                    pass
-            if len(rating) > 0:
-                try:
-                    if int(rating) < ExtraConfig.min_rating:
-                        Log.info(f'Info: video {sname} has low rating \'{rating}%\' (required {ExtraConfig.min_rating:d}%), skipping...')
-                        return DownloadResult.DOWNLOAD_FAIL_SKIPPED
-                except Exception:
-                    pass
-            if scenario is not None:
-                sub_idx = get_matching_scenario_subquery_idx(idi, tags_raw, score, rating, scenario)
-                if sub_idx == -1:
-                    Log.info(f'Info: unable to find matching scenario subquery for {sname}, skipping...')
+        tdiv = i_html.find('meta', attrs={'name': 'keywords'})
+        if tdiv is None:
+            Log.info(f'Warning: video {sname} has no tags!')
+        tags = unite_separated_tags((str(tdiv.get('content')) if tdiv else '').replace(', ', TAGS_CONCAT_CHAR).lower())
+        tags_raw = [tag.replace(' ', '_') for tag in tags.split(TAGS_CONCAT_CHAR) if len(tag) > 0]
+        for add_tag in [ca for ca in [my_author] if len(ca) > 0]:
+            if add_tag not in tags_raw:
+                tags_raw.append(add_tag)
+        if is_filtered_out_by_extra_tags(idi, tags_raw, ExtraConfig.extra_tags, False, my_subfolder):
+            Log.info(f'Info: video {sname} is filtered out by{" outer" if scenario is not None else ""} extra tags, skipping...')
+            return DownloadResult.DOWNLOAD_FAIL_SKIPPED
+        if len(score) > 0 and ExtraConfig.min_score is not None:
+            try:
+                if int(score) < ExtraConfig.min_score:
+                    Log.info(f'Info: video {sname} has low score \'{score}\' (required {ExtraConfig.min_score:d}), skipping...')
                     return DownloadResult.DOWNLOAD_FAIL_SKIPPED
+            except Exception:
+                pass
+        if len(rating) > 0:
+            try:
+                if int(rating) < ExtraConfig.min_rating:
+                    Log.info(f'Info: video {sname} has low rating \'{rating}%\' (required {ExtraConfig.min_rating:d}%), skipping...')
+                    return DownloadResult.DOWNLOAD_FAIL_SKIPPED
+            except Exception:
+                pass
+        if scenario is not None:
+            sub_idx = get_matching_scenario_subquery_idx(idi, tags_raw, score, rating, scenario)
+            uvp_idx = scenario.get_uvp_always_subquery_idx() if tdiv is None else -1
+            if sub_idx != -1:
                 my_subfolder = scenario.queries[sub_idx].subfolder
                 my_quality = scenario.queries[sub_idx].quality
-            if ExtraConfig.save_tags:
-                register_item_tags(idi, ' '.join(tag.replace(' ', '_') for tag in tags_raw), my_subfolder)
-            tags_str = filtered_tags(tags_raw)
-            if tags_str != '':
-                my_tags = tags_str
-        except Exception:
-            if scenario is not None:
-                uvp_idx = scenario.get_uvp_always_subquery_idx()
-                if uvp_idx == -1:
-                    Log.warn(f'Warning: could not extract tags from {sname}, '
-                             f'skipping (no \'{DOWNLOAD_POLICY_ALWAYS}\' unlisted videos download policy scenario subquery)...')
-                    return DownloadResult.DOWNLOAD_FAIL_SKIPPED
+            elif uvp_idx != -1:
                 my_subfolder = scenario.queries[uvp_idx].subfolder
                 my_quality = scenario.queries[uvp_idx].quality
-            elif len(ExtraConfig.extra_tags) > 0 and ExtraConfig.uvp != DOWNLOAD_POLICY_ALWAYS:
-                Log.warn(f'Warning: could not extract tags from {sname}, skipping due to unlisted videos download policy...')
+            else:
+                Log.info(f'Info: unable to find matching or uvp scenario subquery for {sname}, skipping...')
                 return DownloadResult.DOWNLOAD_FAIL_SKIPPED
-            Log.warn(f'Warning: could not extract tags from {sname}...')
+        elif tdiv is None and len(ExtraConfig.extra_tags) > 0 and ExtraConfig.uvp != DOWNLOAD_POLICY_ALWAYS:
+            Log.warn(f'Warning: could not extract tags from {sname}, skipping due to untagged videos download policy...')
+            return DownloadResult.DOWNLOAD_FAIL_SKIPPED
+        if ExtraConfig.save_tags:
+            register_item_tags(idi, ' '.join(tag.replace(' ', '_') for tag in tags_raw), my_subfolder)
+        tags_str = filtered_tags(tags_raw)
+        if tags_str != '':
+            my_tags = tags_str
     else:
         Log.error(f'Error: unable to retreive html for {sname}! Aborted!')
         return DownloadResult.DOWNLOAD_FAIL_RETRIES
