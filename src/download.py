@@ -9,7 +9,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from asyncio import sleep, as_completed, get_running_loop, Queue as AsyncQueue, Task, CancelledError
 from os import path, stat, remove, makedirs
 from random import uniform as frand
-from re import match, search
 from typing import Any, List, Optional, Coroutine, Tuple
 
 from aiofile import async_open
@@ -19,7 +18,7 @@ from defs import (
     CONNECT_RETRIES_ITEM, MAX_VIDEOS_QUEUE_SIZE, TAGS_CONCAT_CHAR, SITE_ITEM_REQUEST_VIDEO, SITE, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
     VideoInfo, Log, ExtraConfig, DownloadResult, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH, DOWNLOAD_STATUS_CHECK_TIMER,
     NamingFlags, calc_sleep_time, has_naming_flag, get_elapsed_time_s, get_elapsed_time_i, prefixp, LoggingFlags, extract_ext,
-    re_nmfile,
+    re_nmfile, re_private_video,
 )
 from fetch_html import make_session, fetch_html, wrap_request
 from path_util import file_already_exists
@@ -214,7 +213,7 @@ async def download_id(vi: VideoInfo) -> DownloadResult:
     if i_html:
         if any('Error' in [d.string, d.text] for d in i_html.find_all('legend')):
             Log.error(f'Warning: Got error 404 for {sname} (probably unlisted), author/score will not be extracted...')
-        elif any(search(r'^This is a private video\..*?$', d.text) for d in i_html.find_all('div', class_='text-danger')):
+        elif any(re_private_video.search(d.text) for d in i_html.find_all('div', class_='text-danger')):
             Log.warn(f'Warning: Got private video error for {sname}, score(likes)/extra_title will not be extracted...')
 
         try:
@@ -358,7 +357,7 @@ async def download_file(vi: VideoInfo) -> DownloadResult:
         except Exception:
             raise IOError(f'ERROR: Unable to create subfolder \'{vi.my_folder}\'!')
     else:
-        nm_match = match(re_nmfile, vi.my_filename)
+        nm_match = re_nmfile.match(vi.my_filename)
         nm_quality = nm_match.group(2)
         if file_already_exists(vi.my_id, nm_quality):
             Log.info(f'{vi.my_filename} (or similar) already exists. Skipped.')

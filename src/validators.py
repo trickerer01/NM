@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from argparse import ArgumentError
 from ipaddress import IPv4Address
 from os import path
-from re import match as re_match
+from re import compile as re_compile
 
 from defs import (
     normalize_path, unquote, Log, NamingFlags, LoggingFlags, SLASH, NON_SEARCH_SYMBOLS, NAMING_FLAGS, LOGGING_FLAGS, ExtraConfig,
@@ -92,7 +92,8 @@ def valid_filepath_abs(pathstr: str) -> str:
 
 def valid_search_string(search_str: str) -> str:
     try:
-        if len(search_str) > 0 and re_match(fr'^.*{NON_SEARCH_SYMBOLS}.*$', search_str):
+        re_invalid_search_string = re_compile(fr'^.*{NON_SEARCH_SYMBOLS}.*$')
+        if len(search_str) > 0 and re_invalid_search_string.match(search_str):
             raise ValueError
     except Exception:
         raise ArgumentError

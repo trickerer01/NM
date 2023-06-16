@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import sys
 from asyncio import run as run_async, sleep
-from re import search as re_search, compile as re_compile
+from re import compile as re_compile
 
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
 from defs import (
@@ -43,7 +43,7 @@ async def main() -> None:
         search_str = arglist.search  # type: str
 
         full_download = True
-        page_entry_re = re_compile(r'^/video/(\d+)/[^/]+?$')
+        re_page_entry = re_compile(r'^/video/(\d+)/[^/]+?$')
 
         if find_and_resolve_config_conflicts() is True:
             await sleep(3.0)
@@ -79,12 +79,12 @@ async def main() -> None:
                     Log.info('Could not extract max page, assuming single page search')
                     maxpage = 1
 
-            arefs = a_html.find_all('a', href=page_entry_re)
+            arefs = a_html.find_all('a', href=re_page_entry)
             rrefs = a_html.find_all('b', string=re_compile(r'^(?:\d{1,3}%|-)$'))
             trefs = a_html.find_all('span', class_='video-title title-truncate m-t-5')
             assert len(arefs) == len(rrefs) == len(trefs)
             for refpair in zip(arefs, rrefs, trefs):
-                cur_id = int(re_search(page_entry_re, str(refpair[0].get('href'))).group(1))
+                cur_id = int(re_page_entry.search(str(refpair[0].get('href'))).group(1))
                 if cur_id < stop_id:
                     Log.trace(f'skipping {cur_id:d} < {stop_id:d}')
                     continue
