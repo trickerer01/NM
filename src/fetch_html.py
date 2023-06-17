@@ -71,6 +71,7 @@ async def fetch_html(url: str, *, tries: int = None, session: ClientSession) -> 
 
     r = None
     retries = 0
+    retries_403_local = 0
     while retries < tries:
         try:
             async with await wrap_request(
@@ -79,6 +80,8 @@ async def fetch_html(url: str, *, tries: int = None, session: ClientSession) -> 
                 if r.status != 404:
                     r.raise_for_status()
                 content = await r.read()
+                if retries_403_local > 0:
+                    Log.trace(f'fetch_html success: took {retries_403_local:d} tries...')
                 return BeautifulSoup(content, 'html.parser', from_encoding=UTF8)
         except Exception:
             if r is not None and str(r.url).find('404.') != -1:
@@ -86,7 +89,10 @@ async def fetch_html(url: str, *, tries: int = None, session: ClientSession) -> 
                 assert False
             elif r is not None:
                 Log.error(f'fetch_html exception: status {r.status:d}')
-            retries += 1
+            if r is None or r.status != 403:
+                retries += 1
+            elif r is not None and r.status == 403:
+                retries_403_local += 1
             if retries < tries:
                 await sleep(frand(1.0, 7.0))
             continue
