@@ -72,8 +72,8 @@ SITE_ITEM_REQUEST_VIDEO = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20
 """Params required: (int). Ex. SITE_ITEM_REQUEST_VIDEO % (69999)"""
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.2 Firefox/102.0 PaleMoon/32.2.0'
-DEFAULT_HEADERS = {'User-Agent': USER_AGENT, 'Referer': SITE}
 HOST = urlparse(SITE).netloc
+DEFAULT_HEADERS = {'User-Agent': USER_AGENT, 'Referer': SITE, 'Host': HOST}
 
 # language=PythonRegExp
 REPLACE_SYMBOLS = r'[^0-9a-zA-Z.,_+%\-()\[\] ]+'
