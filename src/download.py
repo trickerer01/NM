@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from asyncio import sleep, get_running_loop, Task, CancelledError
 from os import path, stat, remove, makedirs
 from random import uniform as frand
-from typing import List, Optional
+from typing import Optional, MutableSequence
 
 from aiofile import async_open
 from aiohttp import ClientSession, ClientTimeout, ClientResponse
@@ -33,7 +33,7 @@ CTOD = ClientTimeout(total=7200, connect=10)
 download_worker = None  # type: Optional[DownloadWorker]
 
 
-async def download(sequence: List[VideoInfo], by_id: bool, filtered_count: int, session: ClientSession = None) -> None:
+async def download(sequence: MutableSequence[VideoInfo], by_id: bool, filtered_count: int, session: ClientSession = None) -> None:
     global download_worker
     download_functions = (download_file, download_id)
     download_worker = DownloadWorker(sequence, download_functions[by_id], filtered_count, session)
