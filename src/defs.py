@@ -83,9 +83,9 @@ NON_SEARCH_SYMBOLS = r'[^\da-zA-Z._+\-\[\]]'
 SLASH = '/'
 UTF8 = 'utf-8'
 
-QUALITIES = ['1080p', '720p', 'hi', '480p', '360p', 'SD', 'low']
-QUALITY_STARTS = ['h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/']
-QUALITY_ENDS = ['_1080p', '_720p', '_hi', '_480p', '_360p', '_SD', '']
+QUALITIES = ('1080p', '720p', 'hi', '480p', '360p', 'SD', 'low')
+QUALITY_STARTS = ('h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/')
+QUALITY_ENDS = ('_1080p', '_720p', '_hi', '_480p', '_360p', '_SD', '')
 
 DEFAULT_QUALITY = QUALITIES[4]
 """360p"""
@@ -93,7 +93,7 @@ DEFAULT_QUALITY = QUALITIES[4]
 # untagged videos download policy
 DOWNLOAD_POLICY_NOFILTERS = 'nofilters'
 DOWNLOAD_POLICY_ALWAYS = 'always'
-UVIDEO_POLICIES = [DOWNLOAD_POLICY_NOFILTERS, DOWNLOAD_POLICY_ALWAYS]
+UVIDEO_POLICIES = (DOWNLOAD_POLICY_NOFILTERS, DOWNLOAD_POLICY_ALWAYS)
 """['nofilters','always']"""
 DOWNLOAD_POLICY_DEFAULT = DOWNLOAD_POLICY_NOFILTERS
 """'nofilters'"""
@@ -101,7 +101,7 @@ DOWNLOAD_POLICY_DEFAULT = DOWNLOAD_POLICY_NOFILTERS
 # download (file creation) mode
 DOWNLOAD_MODE_FULL = 'full'
 DOWNLOAD_MODE_TOUCH = 'touch'
-DOWNLOAD_MODES = [DOWNLOAD_MODE_FULL, DOWNLOAD_MODE_TOUCH]
+DOWNLOAD_MODES = (DOWNLOAD_MODE_FULL, DOWNLOAD_MODE_TOUCH)
 """['full','touch']"""
 DOWNLOAD_MODE_DEFAULT = DOWNLOAD_MODE_FULL
 """'full'"""

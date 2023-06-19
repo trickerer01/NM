@@ -48,7 +48,7 @@ async def download_id(vi: VideoInfo) -> DownloadResult:
     score = ''
     i_html = await fetch_html(SITE_ITEM_REQUEST_VIDEO % vi.my_id, session=download_worker.session)
     if i_html:
-        if any('Error' in [d.string, d.text] for d in i_html.find_all('legend')):
+        if any('Error' in (d.string, d.text) for d in i_html.find_all('legend')):
             Log.error(f'Warning: Got error 404 for {sname} (probably unlisted), author/score will not be extracted...')
         elif any(re_private_video.search(d.text) for d in i_html.find_all('div', class_='text-danger')):
             Log.warn(f'Warning: Got private video error for {sname}, score(likes)/extra_title will not be extracted...')
@@ -147,7 +147,7 @@ async def download_id(vi: VideoInfo) -> DownloadResult:
         fname_mid = f'_{QUALITIES[i]}' if has_naming_flag(NamingFlags.NAMING_FLAG_QUALITY) else ''
         vi.my_filename = f'{fname_part1}{fname_mid}{fname_part2}'
         res = await download_file(vi)
-        if res not in [DownloadResult.DOWNLOAD_SUCCESS, DownloadResult.DOWNLOAD_FAIL_ALREADY_EXISTS]:
+        if res not in (DownloadResult.DOWNLOAD_SUCCESS, DownloadResult.DOWNLOAD_FAIL_ALREADY_EXISTS):
             ret_vals.append(res)
         else:
             return res
@@ -169,7 +169,7 @@ async def check_item_download_status(idi: int, dest: str, resp: ClientResponse) 
                 Log.error(f'{sname} status checker is still running for finished download!')
                 break
             file_size = stat(dest).st_size if path.isfile(dest) else 0
-            if file_size in [0, last_size]:
+            if file_size in (0, last_size):
                 Log.error(f'{sname} status check failed (download stalled at {file_size:d})! Interrupting current try...')
                 resp.connection.transport.abort()  # abort download task (forcefully - close connection)
                 break
