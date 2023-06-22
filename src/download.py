@@ -141,7 +141,7 @@ async def download_id(vi: VideoInfo) -> DownloadResult:
     if len(my_tags) == 0 and len(fname_part1) > max(0, 240 - (len(vi.my_folder) + len(fname_part2) + extra_len)):
         fname_part1 = fname_part1[:max(0, 240 - (len(vi.my_folder) + len(fname_part2) + extra_len))]
 
-    ret_vals = []
+    ret_vals = list()
     for i in range(QUALITIES.index(vi.my_quality), len(QUALITIES)):
         vi.my_link = f'{SITE}/media/videos/{QUALITY_STARTS[i]}{vi.my_id:d}{QUALITY_ENDS[i]}{fname_part2}'
         fname_mid = f'_{QUALITIES[i]}' if has_naming_flag(NamingFlags.NAMING_FLAG_QUALITY) else ''
