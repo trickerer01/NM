@@ -73,7 +73,7 @@ SITE_ITEM_REQUEST_VIDEO = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.2 Firefox/102.0 PaleMoon/32.2.0'
 HOST = urlparse(SITE).netloc
-DEFAULT_HEADERS = {'User-Agent': USER_AGENT, 'Referer': SITE, 'Host': HOST}
+DEFAULT_HEADERS = {'User-Agent': USER_AGENT, 'Referer': SITE}
 
 # language=PythonRegExp
 REPLACE_SYMBOLS = r'[^0-9a-zA-Z.,_+%\-()\[\] ]+'
@@ -375,7 +375,7 @@ class VideoInfo:
 
     def __repr__(self) -> str:
         return (
-            f'{self.done and "[DONE] "}\'{prefixp()}{self.my_id}_{self.my_title}.mp4\' ({self.my_quality})'
+            f'{"[DONE] " if self.done else ""}\'{prefixp()}{self.my_id}_{self.my_title}.mp4\' ({self.my_quality})'
             f'\nDest: {self.my_fullpath}\nLink: {self.my_link}'
         )
 
