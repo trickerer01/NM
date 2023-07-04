@@ -46,6 +46,8 @@ async def download_id(vi: VideoInfo) -> DownloadResult:
     my_tags = 'no_tags'
     rating = vi.my_rating
     score = ''
+
+    vi.set_state(VideoInfo.VIState.ACTIVE)
     i_html = await fetch_html(SITE_ITEM_REQUEST_VIDEO % vi.my_id, session=download_worker.session)
     if i_html:
         if any('Error' in (d.string, d.text) for d in i_html.find_all('legend')):
@@ -98,14 +100,14 @@ async def download_id(vi: VideoInfo) -> DownloadResult:
             except Exception:
                 pass
         if scenario is not None:
-            sub_idx = scenario.get_matching_scenario_subquery_idx(vi.my_id, tags_raw, score, rating)
-            uvp_idx = scenario.get_uvp_always_subquery_idx() if tdiv is None else -1
-            if sub_idx != -1:
-                vi.my_subfolder = scenario.queries[sub_idx].subfolder
-                vi.my_quality = scenario.queries[sub_idx].quality
-            elif uvp_idx != -1:
-                vi.my_subfolder = scenario.queries[uvp_idx].subfolder
-                vi.my_quality = scenario.queries[uvp_idx].quality
+            matching_sq = scenario.get_matching_subquery(vi.my_id, tags_raw, score, rating)
+            uvpalways_sq = scenario.get_uvp_always_subquery() if tdiv is None else None
+            if matching_sq:
+                vi.my_subfolder = matching_sq.subfolder
+                vi.my_quality = matching_sq.quality
+            elif uvpalways_sq:
+                vi.my_subfolder = uvpalways_sq.subfolder
+                vi.my_quality = uvpalways_sq.quality
             else:
                 Log.info(f'Info: unable to find matching or uvp scenario subquery for {sname}, skipping...')
                 return DownloadResult.DOWNLOAD_FAIL_SKIPPED
@@ -152,6 +154,7 @@ async def download_id(vi: VideoInfo) -> DownloadResult:
         else:
             return res
 
+    vi.set_state(VideoInfo.VIState.FAILED)
     if DownloadResult.DOWNLOAD_FAIL_NOT_FOUND not in ret_vals:
         return DownloadResult.DOWNLOAD_FAIL_RETRIES
     else:
@@ -188,6 +191,7 @@ async def download_file(vi: VideoInfo) -> DownloadResult:
     ret = DownloadResult.DOWNLOAD_SUCCESS
     status_checker = None  # type: Optional[Task]
 
+    vi.set_state(VideoInfo.VIState.DOWNLOADING)
     if not path.isdir(vi.my_folder):
         try:
             makedirs(vi.my_folder)
@@ -222,6 +226,7 @@ async def download_file(vi: VideoInfo) -> DownloadResult:
                 Log.info(f'Saving {(r.content_length / 1024**2) if r.content_length else 0.0:.2f} Mb to {sfilename}')
 
                 download_worker.writes_active.append(vi.my_fullpath)
+                vi.set_state(VideoInfo.VIState.WRITING)
                 status_checker = get_running_loop().create_task(check_item_download_status(vi.my_id, vi.my_fullpath, r))
                 async with async_open(vi.my_fullpath, 'wb') as outf:
                     async for chunk in r.content.iter_chunked(2**20):
@@ -233,6 +238,8 @@ async def download_file(vi: VideoInfo) -> DownloadResult:
                 if expected_size and file_size != expected_size:
                     Log.error(f'Error: file size mismatch for {sfilename}: {file_size:d} / {expected_size:d}')
                     raise IOError(vi.my_link)
+
+                vi.set_state(VideoInfo.VIState.DONE)
                 break
         except Exception:
             import sys
@@ -250,6 +257,7 @@ async def download_file(vi: VideoInfo) -> DownloadResult:
             if status_checker is not None:
                 status_checker.cancel()
             if retries < CONNECT_RETRIES_ITEM:
+                vi.set_state(VideoInfo.VIState.DOWNLOADING)
                 await sleep(frand(1.0, 7.0))
 
     ret = (ret if ret == DownloadResult.DOWNLOAD_FAIL_NOT_FOUND else
