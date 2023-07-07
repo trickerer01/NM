@@ -30,17 +30,13 @@ __all__ = ('download', 'at_interrupt')
 CTOD = ClientTimeout(total=7200, connect=10)
 """Client timeout (download)"""
 
-download_worker = None  # type: Optional[DownloadWorker]
-
 
 async def download(sequence: MutableSequence[VideoInfo], by_id: bool, filtered_count: int, session: ClientSession = None) -> None:
-    global download_worker
-    download_functions = (download_file, download_id)
-    download_worker = DownloadWorker(sequence, download_functions[by_id], filtered_count, session)
-    return await download_worker.run()
+    return await DownloadWorker(sequence, (download_file, download_id)[by_id], filtered_count, session).run()
 
 
 async def download_id(vi: VideoInfo) -> DownloadResult:
+    dwn = DownloadWorker.get()
     scenario = ExtraConfig.scenario  # type: Optional[DownloadScenario]
     sname = f'{prefixp()}{vi.my_id:d}.mp4'
     my_tags = 'no_tags'
@@ -48,7 +44,7 @@ async def download_id(vi: VideoInfo) -> DownloadResult:
     score = ''
 
     vi.set_state(VideoInfo.VIState.ACTIVE)
-    i_html = await fetch_html(SITE_ITEM_REQUEST_VIDEO % vi.my_id, session=download_worker.session)
+    i_html = await fetch_html(SITE_ITEM_REQUEST_VIDEO % vi.my_id, session=dwn.session)
     if i_html:
         if any('Error' in (d.string, d.text) for d in i_html.find_all('legend')):
             Log.error(f'Warning: Got error 404 for {sname} (probably unlisted), author/score will not be extracted...')
@@ -162,13 +158,14 @@ async def download_id(vi: VideoInfo) -> DownloadResult:
 
 
 async def check_item_download_status(idi: int, dest: str, resp: ClientResponse) -> None:
+    dwn = DownloadWorker.get()
     sname = f'{prefixp()}{idi:d}.mp4'
     try:
         # Log.trace(f'{sname} status check started...')
         last_size = -1
         while True:
             await sleep(DOWNLOAD_STATUS_CHECK_TIMER)
-            if dest not in download_worker.writes_active:  # finished already
+            if dest not in dwn.writes_active:  # finished already
                 Log.error(f'{sname} status checker is still running for finished download!')
                 break
             file_size = stat(dest).st_size if path.isfile(dest) else 0
@@ -184,6 +181,7 @@ async def check_item_download_status(idi: int, dest: str, resp: ClientResponse) 
 
 
 async def download_file(vi: VideoInfo) -> DownloadResult:
+    dwn = DownloadWorker.get()
     sname = f'{prefixp()}{vi.my_id:d}.mp4'
     sfilename = f'{f"{vi.my_subfolder}/" if len(vi.my_subfolder) > 0 else ""}{vi.my_filename}'
     file_size = 0
@@ -213,7 +211,7 @@ async def download_file(vi: VideoInfo) -> DownloadResult:
                 break
 
             r = None
-            async with await wrap_request(download_worker.session, 'GET', vi.my_link, timeout=CTOD) as r:
+            async with await wrap_request(dwn.session, 'GET', vi.my_link, timeout=CTOD) as r:
                 if r.status == 404:
                     Log.error(f'Got 404 for {sname}...!')
                     retries = CONNECT_RETRIES_ITEM - 1
@@ -225,14 +223,14 @@ async def download_file(vi: VideoInfo) -> DownloadResult:
                 expected_size = r.content_length
                 Log.info(f'Saving {(r.content_length / 1024**2) if r.content_length else 0.0:.2f} Mb to {sfilename}')
 
-                download_worker.writes_active.append(vi.my_fullpath)
+                dwn.writes_active.append(vi.my_fullpath)
                 vi.set_state(VideoInfo.VIState.WRITING)
                 status_checker = get_running_loop().create_task(check_item_download_status(vi.my_id, vi.my_fullpath, r))
                 async with async_open(vi.my_fullpath, 'wb') as outf:
                     async for chunk in r.content.iter_chunked(2**20):
                         await outf.write(chunk)
                 status_checker.cancel()
-                download_worker.writes_active.remove(vi.my_fullpath)
+                dwn.writes_active.remove(vi.my_fullpath)
 
                 file_size = stat(vi.my_fullpath).st_size
                 if expected_size and file_size != expected_size:
@@ -252,8 +250,8 @@ async def download_file(vi: VideoInfo) -> DownloadResult:
             if path.isfile(vi.my_fullpath):
                 remove(vi.my_fullpath)
             # Network error may be thrown before item is added to active downloads
-            if vi.my_fullpath in download_worker.writes_active:
-                download_worker.writes_active.remove(vi.my_fullpath)
+            if vi.my_fullpath in dwn.writes_active:
+                dwn.writes_active.remove(vi.my_fullpath)
             if status_checker is not None:
                 status_checker.cancel()
             if retries < CONNECT_RETRIES_ITEM:
@@ -267,12 +265,13 @@ async def download_file(vi: VideoInfo) -> DownloadResult:
 
 
 def at_interrupt() -> None:
-    if download_worker is None:
+    dwn = DownloadWorker.get()
+    if dwn is None:
         return
 
-    if len(download_worker.writes_active) > 0:
-        Log.debug(f'at_interrupt: cleaning {len(download_worker.writes_active):d} unfinished files...')
-        for unfinished in sorted(download_worker.writes_active):
+    if len(dwn.writes_active) > 0:
+        Log.debug(f'at_interrupt: cleaning {len(dwn.writes_active):d} unfinished files...')
+        for unfinished in sorted(dwn.writes_active):
             Log.debug(f'at_interrupt: trying to remove \'{unfinished}\'...')
             if path.isfile(unfinished):
                 remove(unfinished)
