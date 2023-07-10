@@ -109,6 +109,7 @@ DOWNLOAD_MODE_DEFAULT = DOWNLOAD_MODE_FULL
 
 
 class NamingFlags:
+    NAMING_FLAG_NONE = 0x00
     NAMING_FLAG_PREFIX = 0x01
     NAMING_FLAG_SCORE = 0x02
     NAMING_FLAG_TITLE = 0x04
@@ -119,6 +120,7 @@ class NamingFlags:
 
 
 NAMING_FLAGS = {
+    'none': f'0x{NamingFlags.NAMING_FLAG_NONE:02X}',
     'prefix': f'0x{NamingFlags.NAMING_FLAG_PREFIX:02X}',
     'score': f'0x{NamingFlags.NAMING_FLAG_SCORE:02X}',
     'title': f'0x{NamingFlags.NAMING_FLAG_TITLE:02X}',
@@ -126,7 +128,10 @@ NAMING_FLAGS = {
     'quality': f'0x{NamingFlags.NAMING_FLAG_QUALITY:02X}',
     'full': f'0x{NamingFlags.NAMING_FLAGS_ALL:02X}'
 }
-"""{\n\n'prefix': '0x01',\n\n'score': '0x02',\n\n'title': '0x04',\n\n'tags': '0x08',\n\n'quality': '0x10',\n\n'full': '0x1F',\n\n}"""
+"""
+{\n\n'none': '0x00',\n\n'prefix': '0x01',\n\n'score': '0x02',\n\n'title': '0x04',\n\n'tags': '0x08',\n\n'quality': '0x10',
+\n\n'full': '0x1F',\n\n}
+"""
 NAMING_FLAGS_DEFAULT = NamingFlags.NAMING_FLAGS_ALL
 """0x1F"""
 
@@ -174,7 +179,7 @@ HELP_ARG_IDSEQUENCE = (
     ' extra tags. Sequence structure: (id=<id1>~id=<id2>~id=<id3>~...~id=<idN>)'
 )
 HELP_PATH = 'Download destination. Default is current folder'
-HELP_SEARCH_STR = 'Native search using string query (matching all words). Spaces must be replced with \'+\'. Ex. \'back+view\''
+HELP_SEARCH_STR = 'Native search using string query (matching all words). Spaces must be replced with \'+\'. Ex. \'after+hours\''
 HELP_QUALITY = f'Video quality. Default is \'{DEFAULT_QUALITY}\'. If not found, anything less is used'
 HELP_ARG_PROXY = 'Proxy to use. Example: http://127.0.0.1:222'
 HELP_ARG_UVPOLICY = (
@@ -183,8 +188,9 @@ HELP_ARG_UVPOLICY = (
 )
 HELP_ARG_DMMODE = 'Download (file creation) mode'
 HELP_ARG_EXTRA_TAGS = (
-    'All remaining \'args\' and \'-args\' count as tags to exclude / require. All spaces must be replaced with \'_\'.'
-    ' Videos containing any of \'-tags\', or not containing all of \'tags\' will be skipped. Wildcards are supported'
+    'All remaining \'args\' and \'-args\' count as tags to require or exclude. All spaces must be replaced with \'_\'.'
+    ' Videos containing any of \'-tags\', or not containing all of \'tags\' will be skipped.'
+    ' Supports wildcards, \'or\' groups and \'negative\' groups (check README for more info)'
 
 )
 HELP_ARG_DWN_SCENARIO = (
