@@ -89,7 +89,7 @@ QUALITY_STARTS = ('h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/')
 QUALITY_ENDS = ('_1080p', '_720p', '_hi', '_480p', '_360p', '_SD', '')
 
 DEFAULT_QUALITY = QUALITIES[4]
-"""360p"""
+"""'360p'"""
 
 # untagged videos download policy
 DOWNLOAD_POLICY_NOFILTERS = 'nofilters'
