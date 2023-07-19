@@ -95,7 +95,7 @@ DEFAULT_QUALITY = QUALITIES[4]
 DOWNLOAD_POLICY_NOFILTERS = 'nofilters'
 DOWNLOAD_POLICY_ALWAYS = 'always'
 UVIDEO_POLICIES = (DOWNLOAD_POLICY_NOFILTERS, DOWNLOAD_POLICY_ALWAYS)
-"""['nofilters','always']"""
+"""('nofilters','always')"""
 DOWNLOAD_POLICY_DEFAULT = DOWNLOAD_POLICY_NOFILTERS
 """'nofilters'"""
 
@@ -103,7 +103,7 @@ DOWNLOAD_POLICY_DEFAULT = DOWNLOAD_POLICY_NOFILTERS
 DOWNLOAD_MODE_FULL = 'full'
 DOWNLOAD_MODE_TOUCH = 'touch'
 DOWNLOAD_MODES = (DOWNLOAD_MODE_FULL, DOWNLOAD_MODE_TOUCH)
-"""['full','touch']"""
+"""('full','touch')"""
 DOWNLOAD_MODE_DEFAULT = DOWNLOAD_MODE_FULL
 """'full'"""
 
@@ -130,7 +130,7 @@ NAMING_FLAGS = {
 }
 """
 {\n\n'none': '0x00',\n\n'prefix': '0x01',\n\n'score': '0x02',\n\n'title': '0x04',\n\n'tags': '0x08',\n\n'quality': '0x10',
-\n\n'full': '0x1F',\n\n}
+\n\n'full': '0x1F'\n\n}
 """
 NAMING_FLAGS_DEFAULT = NamingFlags.NAMING_FLAGS_ALL
 """0x1F"""
@@ -165,6 +165,7 @@ LOGGING_FLAGS = {
     'debug': f'0x{LoggingFlags.LOGGING_DEBUG.value:03X}',
     'trace': f'0x{LoggingFlags.LOGGING_TRACE.value:03X}',
 }
+"""{\n\n'error': '0x010',\n\n'warn': '0x008',\n\n'info': '0x004',\n\n'debug': '0x002',\n\n'trace': '0x001'\n\n}"""
 LOGGING_FLAGS_DEFAULT = LoggingFlags.LOGGING_INFO
 """0x004"""
 
@@ -216,12 +217,13 @@ HELP_ARG_CMDFILE = (
     ' Windows: ~32000, MinGW: ~4000 to ~32000, Linux: ~127000+'
 )
 HELP_ARG_NAMING = (
-    f'File naming flags: {str(NAMING_FLAGS)}.'
+    f'File naming flags: {str(NAMING_FLAGS).replace(" ", "").replace(":", "=")}.'
     f' You can combine them via names \'prefix|score|title\', otherwise it has to be an int or a hex number.'
     f' Default is \'full\''
 )
 HELP_ARG_LOGGING = (
-    f'Logging level: {str(list(LOGGING_FLAGS.keys()))}. All messages equal or above this level will be logged. Default is \'info\''
+    f'Logging level: {{{str(list(LOGGING_FLAGS.keys())).replace(" ", "")[1:-1]}}}.'
+    f' All messages equal or above this level will be logged. Default is \'info\''
 )
 
 CONNECT_RETRIES_PAGE = 50
@@ -267,7 +269,6 @@ class Log:
         try:
             print(text)
         except UnicodeError:
-            # print(f'message was: {bytearray(map(ord, text))}')
             try:
                 print(text.encode(UTF8).decode())
             except Exception:
