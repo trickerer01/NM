@@ -41,6 +41,7 @@ async def main() -> None:
         stop_id = arglist.stop_id  # type: int
         begin_id = arglist.begin_id  # type: int
         search_str = arglist.search  # type: str
+        session_id = ''  # type: str
 
         full_download = True
         re_page_entry = re_compile(r'^/video/(\d+)/[^/]+?$')
@@ -55,7 +56,7 @@ async def main() -> None:
     maxpage = 0
 
     pi = start_page
-    async with await make_session() as s:
+    async with await make_session(session_id) as s:
         while pi < start_page + pages_count:
             if pi > maxpage > 0:
                 Log.info('reached parsed max page, page scan completed')

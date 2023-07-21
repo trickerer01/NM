@@ -141,7 +141,7 @@ def prepare_arglist_pages(args: Sequence[str]) -> Namespace:
     par_cmd.add_argument('-start', metavar='#number', default=1, help="Start page number. Default is '1'", type=valid_positive_nonzero_int)
     par_cmd.add_argument('-pages', metavar='#number', required=True, help=HELP_PAGES, type=valid_positive_nonzero_int)
     par_cmd.add_argument('-stop_id', metavar='#number', default=1, help=HELP_STOP_ID, type=valid_positive_nonzero_int)
-    par_cmd.add_argument('-begin_id', metavar='#number', default=1000000000, help=HELP_BEGIN_ID, type=valid_positive_nonzero_int)
+    par_cmd.add_argument('-begin_id', metavar='#number', default=10**9, help=HELP_BEGIN_ID, type=valid_positive_nonzero_int)
     par_cmd.add_argument('-search', metavar='#string', default='', help=HELP_SEARCH_STR, type=valid_search_string)
     # par_cmd.add_argument('-search_tag', metavar='#tag[,tag...]', default='', help='', type=valid_tags)
     # par_cmd.add_argument('-search_art', metavar='#artist[,artist...]', default='', help='', type=valid_artists)
@@ -149,6 +149,7 @@ def prepare_arglist_pages(args: Sequence[str]) -> Namespace:
     # par_cmd.add_argument('-search_rule_tag', default=SEARCH_RULE_DEFAULT, help='', choices=SEARCH_RULES)
     # par_cmd.add_argument('-search_rule_art', default=SEARCH_RULE_DEFAULT, help='', choices=SEARCH_RULES)
     # par_cmd.add_argument('-search_rule_cat', default=SEARCH_RULE_DEFAULT, help=HELP_SEARCH_RULE, choices=SEARCH_RULES)
+    # par_cmd.add_argument('-session_id', default='', help=HELP_SESSIONID, type=valid_sessionid)
     # par_cmd.epilog = 'Note that search obeys \'AND\' rule: (ANY/ALL tag(s)) AND (ANY/ALL artist(s)) AND (ANY/ALL category(ies))'
 
     add_common_args(par_cmd)
