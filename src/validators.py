@@ -46,7 +46,7 @@ def valid_int(val: str) -> int:
         raise ArgumentError
 
 
-def valid_positive_nonzero_int(val: str) -> int:
+def positive_nonzero_int(val: str) -> int:
     try:
         val = int(val)
         assert val > 0

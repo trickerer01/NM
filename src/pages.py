@@ -35,16 +35,16 @@ async def main() -> None:
         return
 
     try:
-        ExtraConfig.read_params(arglist)
-        start_page = arglist.start  # type: int
-        pages_count = arglist.pages  # type: int
-        stop_id = arglist.stop_id  # type: int
-        begin_id = arglist.begin_id  # type: int
+        ExtraConfig.read_params(arglist, True)
         search_str = arglist.search  # type: str
         session_id = ''  # type: str
 
         full_download = True
         re_page_entry = re_compile(r'^/video/(\d+)/[^/]+?$')
+
+        if ExtraConfig.start_id > ExtraConfig.end_id:
+            Log.fatal(f'\nError: invalid video id bounds: start ({ExtraConfig.start_id:d}) > end ({ExtraConfig.end_id:d})')
+            raise ValueError
 
         if find_and_resolve_config_conflicts() is True:
             await sleep(3.0)
@@ -52,12 +52,21 @@ async def main() -> None:
         Log.fatal('\nError reading parsed arglist!')
         return
 
+    def check_id_bounds(video_id: int) -> bool:
+        if video_id > ExtraConfig.end_id:
+            Log.trace(f'skipping {video_id:d} > {ExtraConfig.end_id:d}')
+            return False
+        if video_id < ExtraConfig.start_id:
+            Log.trace(f'skipping {video_id:d} < {ExtraConfig.start_id:d}')
+            return False
+        return True
+
     v_entries = list()
     maxpage = 0
 
-    pi = start_page
+    pi = ExtraConfig.start
     async with await make_session(session_id) as s:
-        while pi < start_page + pages_count:
+        while pi <= ExtraConfig.end:
             if pi > maxpage > 0:
                 Log.info('reached parsed max page, page scan completed')
                 break
@@ -86,11 +95,7 @@ async def main() -> None:
             assert len(arefs) == len(rrefs) == len(trefs)
             for refpair in zip(arefs, rrefs, trefs):
                 cur_id = int(re_page_entry.search(str(refpair[0].get('href'))).group(1))
-                if cur_id < stop_id:
-                    Log.trace(f'skipping {cur_id:d} < {stop_id:d}')
-                    continue
-                if cur_id > begin_id:
-                    Log.trace(f'skipping {cur_id:d} > {begin_id:d}')
+                if check_id_bounds(cur_id) is False:
                     continue
                 href_rel = str(refpair[0].get('href'))
                 tref = str(refpair[2].text)
