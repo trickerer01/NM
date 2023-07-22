@@ -12,7 +12,7 @@ from re import compile as re_compile
 
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
 from defs import (
-    VideoInfo, Log, ExtraConfig, SITE_ITEM_REQUEST_PAGE, SLASH,
+    VideoInfo, Log, Config, SITE_ITEM_REQUEST_PAGE, SLASH,
     HelpPrintExitException,
 )
 from download import download, at_interrupt
@@ -35,15 +35,15 @@ async def main() -> None:
         return
 
     try:
-        ExtraConfig.read_params(arglist, True)
+        Config.read(arglist, True)
         search_str = arglist.search  # type: str
         session_id = ''  # type: str
 
         full_download = True
         re_page_entry = re_compile(r'^/video/(\d+)/[^/]+?$')
 
-        if ExtraConfig.start_id > ExtraConfig.end_id:
-            Log.fatal(f'\nError: invalid video id bounds: start ({ExtraConfig.start_id:d}) > end ({ExtraConfig.end_id:d})')
+        if Config.start_id > Config.end_id:
+            Log.fatal(f'\nError: invalid video id bounds: start ({Config.start_id:d}) > end ({Config.end_id:d})')
             raise ValueError
 
         if find_and_resolve_config_conflicts() is True:
@@ -53,20 +53,20 @@ async def main() -> None:
         return
 
     def check_id_bounds(video_id: int) -> bool:
-        if video_id > ExtraConfig.end_id:
-            Log.trace(f'skipping {video_id:d} > {ExtraConfig.end_id:d}')
+        if video_id > Config.end_id:
+            Log.trace(f'skipping {video_id:d} > {Config.end_id:d}')
             return False
-        if video_id < ExtraConfig.start_id:
-            Log.trace(f'skipping {video_id:d} < {ExtraConfig.start_id:d}')
+        if video_id < Config.start_id:
+            Log.trace(f'skipping {video_id:d} < {Config.start_id:d}')
             return False
         return True
 
     v_entries = list()
     maxpage = 0
 
-    pi = ExtraConfig.start
+    pi = Config.start
     async with await make_session(session_id) as s:
-        while pi <= ExtraConfig.end:
+        while pi <= Config.end:
             if pi > maxpage > 0:
                 Log.info('reached parsed max page, page scan completed')
                 break

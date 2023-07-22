@@ -12,28 +12,28 @@ from os import path
 from re import compile as re_compile
 
 from defs import (
-    normalize_path, unquote, Log, NamingFlags, LoggingFlags, SLASH, NON_SEARCH_SYMBOLS, NAMING_FLAGS, LOGGING_FLAGS, ExtraConfig,
+    normalize_path, unquote, Log, NamingFlags, LoggingFlags, SLASH, NON_SEARCH_SYMBOLS, NAMING_FLAGS, LOGGING_FLAGS, Config,
     DOWNLOAD_POLICY_DEFAULT, DEFAULT_QUALITY,
 )
 
 
 def find_and_resolve_config_conflicts() -> bool:
     delay_for_message = False
-    if ExtraConfig.scenario is not None:
-        if ExtraConfig.uvp != DOWNLOAD_POLICY_DEFAULT:
+    if Config.scenario is not None:
+        if Config.uvp != DOWNLOAD_POLICY_DEFAULT:
             Log.info('Info: running download script, outer untagged policy will be ignored')
-            ExtraConfig.uvp = DOWNLOAD_POLICY_DEFAULT
+            Config.uvp = DOWNLOAD_POLICY_DEFAULT
             delay_for_message = True
-        if len(ExtraConfig.extra_tags) > 0:
-            Log.info(f'Info: running download script: outer extra tags: {str(ExtraConfig.extra_tags)}')
+        if len(Config.extra_tags) > 0:
+            Log.info(f'Info: running download script: outer extra tags: {str(Config.extra_tags)}')
             delay_for_message = True
-        if ExtraConfig.min_score is not None:
-            Log.info(f'Info: running download script: outer minimum score: {ExtraConfig.min_score:d}')
+        if Config.min_score is not None:
+            Log.info(f'Info: running download script: outer minimum score: {Config.min_score:d}')
             delay_for_message = True
-        if ExtraConfig.min_rating > 0:
-            Log.info(f'Info: running download script: outer minimum rating: {ExtraConfig.min_rating:d}')
+        if Config.min_rating > 0:
+            Log.info(f'Info: running download script: outer minimum rating: {Config.min_rating:d}')
             delay_for_message = True
-        if ExtraConfig.quality != DEFAULT_QUALITY:
+        if Config.quality != DEFAULT_QUALITY:
             Log.info('Info: running download script, outer quality setting will be ignored')
             delay_for_message = True
     return delay_for_message
