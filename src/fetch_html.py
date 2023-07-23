@@ -63,7 +63,8 @@ async def make_session(session_id: str = None) -> ClientSession:
 
 async def wrap_request(s: ClientSession, method: str, url: str, **kwargs) -> ClientResponse:
     """Queues request, updating headers/proxies beforehand, and returns the response"""
-    await RequestQueue.until_ready(url)
+    if Config.nodelay is False:
+        await RequestQueue.until_ready(url)
     s.headers.update(DEFAULT_HEADERS.copy())
     r = await s.request(method, url, **kwargs)
     return r
