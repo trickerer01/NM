@@ -23,7 +23,10 @@ from downloader import DownloadWorker
 from fetch_html import fetch_html, wrap_request
 from path_util import file_already_exists
 from scenario import DownloadScenario
-from tagger import filtered_tags, register_item_tags, is_filtered_out_by_extra_tags, unite_separated_tags
+from tagger import (
+    filtered_tags, register_item_tags, register_item_description, register_item_comments, is_filtered_out_by_extra_tags,
+    unite_separated_tags,
+)
 
 __all__ = ('download', 'at_interrupt')
 
@@ -108,6 +111,24 @@ async def download_id(vi: VideoInfo) -> DownloadResult:
         return DownloadResult.DOWNLOAD_FAIL_SKIPPED
     if Config.save_tags:
         register_item_tags(vi.my_id, ' '.join(tag.replace(' ', '_') for tag in tags_raw), vi.my_subfolder)
+    if Config.save_descriptions or Config.save_comments:
+        cidivs = i_html.find_all('div', class_='comment-info')
+        cudivs = [cidiv.find('a') for cidiv in cidivs]
+        cbdivs = i_html.find_all('div', class_='comment-body overflow-hidden')
+        if cudivs and cbdivs:
+            assert len(cbdivs) == len(cudivs)
+            has_description = cudivs[-1].text.lower() == my_author  # first comment by uploader
+            if Config.save_descriptions:
+                desc_comment = f'{cudivs[-1].text}:\n{cbdivs[-1].text}' if has_description else ''
+                register_item_description(vi.my_id, f'\n{desc_comment}\n' if desc_comment else '', vi.my_subfolder)
+            if Config.save_comments:
+                comments_list = [f'{cudivs[i].text}:\n{cbdivs[i].text}' for i in range(len(cbdivs) - (1 if has_description else 0))]
+                register_item_comments(vi.my_id, ('\n' + '\n\n'.join(comments_list) + '\n') if comments_list else '', vi.my_subfolder)
+        else:
+            if Config.save_descriptions:
+                register_item_description(vi.my_id, '', vi.my_subfolder)
+            if Config.save_comments:
+                register_item_comments(vi.my_id, '', vi.my_subfolder)
     tags_str = filtered_tags(tags_raw)
     if tags_str != '':
         my_tags = tags_str
