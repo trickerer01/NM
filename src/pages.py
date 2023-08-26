@@ -38,7 +38,6 @@ async def main(args: Sequence[str]) -> None:
     try:
         Config.read(arglist, True)
         search_str = arglist.search  # type: str
-        session_id = ''  # type: str
 
         full_download = True
         re_page_entry = re_compile(r'^/video/(\d+)/[^/]+?$')
@@ -66,7 +65,7 @@ async def main(args: Sequence[str]) -> None:
     maxpage = 0
 
     pi = Config.start
-    async with await make_session(session_id) as s:
+    async with await make_session() as s:
         while pi <= Config.end:
             if pi > maxpage > 0:
                 Log.info('reached parsed max page, page scan completed')

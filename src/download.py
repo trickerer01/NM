@@ -114,20 +114,16 @@ async def download_id(vi: VideoInfo) -> DownloadResult:
         cidivs = i_html.find_all('div', class_='comment-info')
         cudivs = [cidiv.find('a') for cidiv in cidivs]
         cbdivs = i_html.find_all('div', class_='comment-body overflow-hidden')
+        has_description = (cudivs[-1].text.lower() == my_author) if (cudivs and cbdivs) else False  # first comment by uploader
         if cudivs and cbdivs:
             assert len(cbdivs) == len(cudivs)
-            has_description = cudivs[-1].text.lower() == my_author  # first comment by uploader
-            if Config.save_descriptions:
-                desc_comment = f'{cudivs[-1].text}:\n{cbdivs[-1].text}' if has_description else ''
-                register_item_description(vi.my_id, f'\n{desc_comment}\n' if desc_comment else '', vi.my_subfolder)
-            if Config.save_comments:
-                comments_list = [f'{cudivs[i].text}:\n{cbdivs[i].text}' for i in range(len(cbdivs) - (1 if has_description else 0))]
-                register_item_comments(vi.my_id, ('\n' + '\n\n'.join(comments_list) + '\n') if comments_list else '', vi.my_subfolder)
-        else:
-            if Config.save_descriptions:
-                register_item_description(vi.my_id, '', vi.my_subfolder)
-            if Config.save_comments:
-                register_item_comments(vi.my_id, '', vi.my_subfolder)
+        if Config.save_descriptions:
+            desc_comment = f'{cudivs[-1].text}:\n' + cbdivs[-1].get_text('\n').strip() if has_description else ''
+            desc_text = f'\n{desc_comment}\n' if desc_comment else ''
+            register_item_description(vi.my_id, desc_text, vi.my_subfolder)
+        if Config.save_comments:
+            comments_list = [f'{cudivs[i].text}:\n' + cbdivs[i].get_text('\n').strip() for i in range(len(cbdivs) - int(has_description))]
+            register_item_comments(vi.my_id, ('\n' + '\n\n'.join(comments_list) + '\n') if comments_list else '', vi.my_subfolder)
     tags_str = filtered_tags(tags_raw)
     if tags_str != '':
         my_tags = tags_str
