@@ -23,10 +23,8 @@ from downloader import DownloadWorker
 from fetch_html import fetch_html, wrap_request
 from path_util import file_already_exists
 from scenario import DownloadScenario
-from tagger import (
-    filtered_tags, register_item_tags, register_item_description, register_item_comments, is_filtered_out_by_extra_tags,
-    unite_separated_tags,
-)
+from tagger import filtered_tags, is_filtered_out_by_extra_tags, unite_separated_tags
+from export import export_item_info, register_item_tags, register_item_description, register_item_comments
 
 __all__ = ('download', 'at_interrupt')
 
@@ -35,7 +33,8 @@ CTOD = ClientTimeout(total=None, connect=10)
 
 
 async def download(sequence: MutableSequence[VideoInfo], by_id: bool, filtered_count: int, session: ClientSession = None) -> None:
-    return await DownloadWorker(sequence, (download_file, download_id)[by_id], filtered_count, session).run()
+    await DownloadWorker(sequence, (download_file, download_id)[by_id], filtered_count, session).run()
+    export_item_info()
 
 
 async def download_id(vi: VideoInfo) -> DownloadResult:

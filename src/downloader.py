@@ -15,11 +15,8 @@ from typing import List, Tuple, Coroutine, Any, Callable, MutableSequence, Optio
 
 from aiohttp import ClientSession
 
-from defs import (
-    MAX_VIDEOS_QUEUE_SIZE, VideoInfo, Log, DownloadResult, prefixp, calc_sleep_time, get_elapsed_time_i, get_elapsed_time_s,
-)
+from defs import MAX_VIDEOS_QUEUE_SIZE, VideoInfo, Log, DownloadResult, prefixp, calc_sleep_time, get_elapsed_time_i, get_elapsed_time_s
 from fetch_html import make_session
-from tagger import dump_item_info
 
 __all__ = ('DownloadWorker',)
 
@@ -115,7 +112,6 @@ class DownloadWorker:
                 self._write_queue_size_last = write_count
 
     async def _after_download(self) -> None:
-        dump_item_info()
         newline = '\n'
         Log.info(f'\nDone. {self.downloaded_count:d} / {self.orig_count:d}+{self.filtered_count_pre:d} files downloaded, '
                  f'{self.filtered_count_after:d}+{self.filtered_count_pre:d} already existed, '
