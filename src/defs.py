@@ -87,9 +87,12 @@ SITE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
 SITE_ITEM_REQUEST_PAGE = b64decode(
     'aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcz9vPW1yJnNlYXJjaF9xdWVyeT0lcyZwYWdlPSVk').decode()
 """Params required: **search**, **page** - **str**, **int**.\n
-Ex. SITE_AJAX_REQUEST_PAGE % ('sfw', 1)"""
+Ex. SITE_ITEM_REQUEST_PAGE % ('sfw', 1)"""
 SITE_ITEM_REQUEST_VIDEO = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdmlkZW8vJWQv').decode()
 """Params required: (int). Ex. SITE_ITEM_REQUEST_VIDEO % (69999)"""
+SITE_ITEM_REQUEST_PLAYLIST_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdXNlci8lcy9wbGF5bGlzdD9wYWdlPSVk').decode()
+"""Params required: **username**, **page** - **str**, **int**.\n
+Ex. SITE_ITEM_REQUEST_PLAYLIST_PAGE % ('anonymous', 1)"""
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.2 Firefox/102.0 PaleMoon/32.2.0'
 HOST = urlparse(SITE).netloc
@@ -196,6 +199,7 @@ HELP_ARG_IDSEQUENCE = (
     ' extra tags. Sequence structure: (id=<id1>~id=<id2>~id=<id3>~...~id=<idN>)'
 )
 HELP_PATH = 'Download destination. Default is current folder'
+HELP_PLAYLIST = 'Playlist to download (filters still apply)'
 HELP_SEARCH_STR = 'Native search using string query (matching all words). Spaces must be replced with \'+\'. Ex. \'after+hours\''
 HELP_QUALITY = f'Video quality. Default is \'{DEFAULT_QUALITY}\'. If not found, anything less is used'
 HELP_ARG_PROXY = 'Proxy to use. Example: http://127.0.0.1:222'

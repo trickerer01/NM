@@ -14,7 +14,7 @@ from typing import Sequence
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
 from defs import (
     VideoInfo, Log, Config, SITE_ITEM_REQUEST_PAGE, SLASH, prefixp, LoggingFlags,
-    HelpPrintExitException,
+    HelpPrintExitException, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
 )
 from download import download, at_interrupt
 from path_util import prefilter_existing_items
@@ -38,9 +38,16 @@ async def main(args: Sequence[str]) -> None:
     try:
         Config.read(arglist, True)
         search_str = arglist.search  # type: str
+        playlist_name = arglist.playlist_name  # type: str
 
         full_download = True
         re_page_entry = re_compile(r'^/video/(\d+)/[^/]+?$')
+        re_page_rating = re_compile(r'^(?:\d{1,3}%|-)$')
+        re_page_title = re_compile(r'^video-title title-truncate.*$')
+
+        if playlist_name and search_str:
+            Log.fatal('\nError: cannot search within playlist! Please use one or the other')
+            raise ValueError
 
         if Config.get_maxid:
             Config.logging_flags = LoggingFlags.LOGGING_FATAL
@@ -76,7 +83,11 @@ async def main(args: Sequence[str]) -> None:
                 break
             Log.info(f'page {pi:d}...{" (this is the last page!)" if (0 < maxpage == pi) else ""}')
 
-            a_html = await fetch_html(SITE_ITEM_REQUEST_PAGE % (search_str, pi), session=s)
+            page_addr = (
+                (SITE_ITEM_REQUEST_PLAYLIST_PAGE % (playlist_name, pi)) if playlist_name else
+                (SITE_ITEM_REQUEST_PAGE % (search_str, pi))
+            )
+            a_html = await fetch_html(page_addr, session=s)
             if not a_html:
                 Log.error(f'Error: cannot get html for page {pi:d}')
                 continue
@@ -84,6 +95,9 @@ async def main(args: Sequence[str]) -> None:
             pi += 1
 
             if maxpage == 0:
+                if playlist_name and any('Error' in (d.string, d.text) for d in a_html.find_all('legend')):
+                    Log.fatal(f'\nFatal: playlist is not found for user \'{playlist_name}\'!')
+                    return
                 for li_page in [li.find('a') for li in a_html.find_all('li', class_='hidden-xs')]:
                     try:
                         maxpage = max(maxpage, int(str(li_page.text)))
@@ -100,8 +114,8 @@ async def main(args: Sequence[str]) -> None:
                 return
 
             arefs = a_html.find_all('a', href=re_page_entry)
-            rrefs = a_html.find_all('b', string=re_compile(r'^(?:\d{1,3}%|-)$'))
-            trefs = a_html.find_all('span', class_='video-title title-truncate m-t-5')
+            rrefs = a_html.find_all('b', string=re_page_rating)
+            trefs = a_html.find_all('div' if playlist_name else 'span', class_=re_page_title)
             assert len(arefs) == len(rrefs) == len(trefs)
             for refpair in zip(arefs, rrefs, trefs):
                 cur_id = int(re_page_entry.search(str(refpair[0].get('href'))).group(1))
@@ -111,7 +125,7 @@ async def main(args: Sequence[str]) -> None:
                 tref = str(refpair[2].text)
                 my_title = tref if tref != '' else href_rel[href_rel.rfind(SLASH) + 1:] if href_rel != '' else ''
                 my_rating = str(refpair[1].text)
-                my_rating = '' if my_rating in ['0%', ''] else my_rating[:-1]  # 0% rating doesn't mean all votes are dislikes necessarily
+                my_rating = '' if my_rating in ('0%', '') else my_rating[:-1]  # 0% rating doesn't mean all votes are dislikes necessarily
                 v_entries.append(VideoInfo(cur_id, my_title, m_rating=my_rating))
 
         v_entries.reverse()
