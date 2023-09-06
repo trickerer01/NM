@@ -83,6 +83,9 @@ class BaseConfig(object):
 
 Config = BaseConfig()
 
+APP_NAME = 'NM'
+APP_VERSION = '1.6.212'
+
 SITE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
 SITE_ITEM_REQUEST_PAGE = b64decode(
     'aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcz9vPW1yJnNlYXJjaF9xdWVyeT0lcyZwYWdlPSVk').decode()
