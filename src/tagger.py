@@ -21,6 +21,8 @@ re_uscore_mult = re_compile(r'_{2,}')
 re_not_a_letter = re_compile(r'[^a-z]+')
 # re_bracketed_tag = re_compile(r'^([^(]+)\(([^)]+)\).*$')
 re_numbered_or_counted_tag = re_compile(r'^(?!rule_?\d+)(?:\d+?\+?)?([^\d]+?)(?:_\d+|s)?$')
+re_or_group = re_compile(r'^\([^~]+(?:~[^~]+)+\)$')
+re_neg_and_group = re_compile(r'^-\([^,]+(?:,[^,]+)+\)$')
 
 re_tags_to_process = re_compile(
     r'^(?:.+?_warc.+?|(?:[a-z]+?_)?elf|drae.{3}|tent[a-z]{3}es|(?:bell[a-z]|sto[a-z]{4})_bul[a-z]{2,3}|inf[a-z]{5}n|egg(?:_[a-z]{3,9}|s)?|'
@@ -110,6 +112,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(blood|d(?:ark|row)|high|night|void),(el(?:f|ves?))'): r'\1 \2',
     re_compile(r'(danny),(phantom)'): r'\1 \2',
     re_compile(r'(dat),(ass)'): r'\1 \2',
+    re_compile(r'(detroit),(become),(human)'): r'\1 \2 \3',
     re_compile(r'(dogg?y),(style)'): r'\1 \2',
     re_compile(r'(dragon),(ballz?)'): r'\1\2',
     re_compile(r'(eggs?),((?:impl|inse|lay).*?)'): r'\1 \2',
@@ -381,8 +384,7 @@ def is_non_wtag(tag: str) -> bool:
 
 
 def is_valid_neg_and_group(andgr: str) -> bool:
-    return (len(andgr) >= len('-(.,.)') and andgr.startswith('-(') and andgr.endswith(')')
-            and andgr.find(',') != -1 and len(andgr[2:-1].split(',', 1)) == 2)
+    return not not re_neg_and_group.fullmatch(andgr)
 
 
 def validate_neg_and_group(andgr: str) -> None:
@@ -390,7 +392,7 @@ def validate_neg_and_group(andgr: str) -> None:
 
 
 def is_valid_or_group(orgr: str) -> bool:
-    return len(orgr) >= len('(.~.)') and orgr[0] == '(' and orgr[-1] == ')' and orgr.find('~') != -1 and len(orgr[1:-1].split('~', 1)) == 2
+    return not not re_or_group.fullmatch(orgr)
 
 
 def assert_valid_or_group(orgr: str) -> None:
