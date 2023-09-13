@@ -96,7 +96,7 @@ SITE_ITEM_REQUEST_PLAYLIST_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbml
 """Params required: **username**, **page** - **str**, **int**\n
 Ex. SITE_ITEM_REQUEST_PLAYLIST_PAGE % ('anonymous', 1)"""
 
-USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.2 Firefox/102.0 PaleMoon/32.2.0'
+USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.3 Firefox/102.0 PaleMoon/32.4.0'
 HOST = urlparse(SITE).netloc
 DEFAULT_HEADERS = {'User-Agent': USER_AGENT}
 
@@ -192,7 +192,6 @@ LOGGING_FLAGS_DEFAULT = LoggingFlags.LOGGING_INFO
 """0x004"""
 
 ACTION_STORE_TRUE = 'store_true'
-ACTION_STORE_FALSE = 'store_false'
 
 HELP_ARG_GET_MAXID = 'Print maximum id and exit'
 HELP_BEGIN_STOP_ID = 'Video id lower / upper bounds filter to only download videos where \'begin_id >= video_id >= stop_id\''
@@ -206,7 +205,7 @@ HELP_SEARCH_STR = 'Native search using string query (matching all words). Spaces
 HELP_QUALITY = f'Video quality. Default is \'{DEFAULT_QUALITY}\'. If not found, anything less is used'
 HELP_ARG_PROXY = 'Proxy to use. Example: http://127.0.0.1:222'
 HELP_ARG_UVPOLICY = (
-    'Untagged videos download policy. By default these videos are ignored if you use extra \'tags\' / \'-tags\'. Use'
+    f'Untagged videos download policy. By default these videos are ignored if you use extra \'tags\' / \'-tags\'. Use'
     f' \'{DOWNLOAD_POLICY_ALWAYS}\' to override'
 )
 HELP_ARG_DMMODE = 'Download (file creation) mode'
@@ -220,11 +219,11 @@ HELP_ARG_DWN_SCENARIO = (
     'Download scenario. This allows to scan for tags and sort videos accordingly in a single pass.'
     ' Useful when you have several queries you need to process for same id range.'
     ' Format:'
-    ' "{SUBDIR1}: tag1 tag2; {SUBDIR2}: tag3 tag4 -tag1 -tag2".'
-    ' You can also use following arguments in each subquery: -quality, -minscore, -uvp, -seq.'
+    ' "{SUBDIR1}: tag1 tag2; {SUBDIR2}: tag3 tag4".'
+    ' You can also use following arguments in each subquery: -quality, -minscore, -minrating, -uvp, -seq.'
     ' Example:'
     ' \'python ids.py -path ... -start ... -end ... --download-scenario'
-    ' "1g: 1girl -1monster -quality 480p; 2g: 2girls -1girl -1monster -quality 720p -minscore 150 -uvp always"\''
+    ' "1g: 1girl -quality 480p; 2g: 2girls -quality 720p -minscore 150 -uvp always"\''
 )
 HELP_ARG_MINRATING = (
     'Rating percentage filter for videos, 0-100.'
@@ -235,8 +234,8 @@ HELP_ARG_MINSCORE = (
     ' Videos having score below this value will be skipped, unless score extraction fails - in that case video always gets a pass'
 )
 HELP_ARG_CMDFILE = (
-    'Full path to file containing cmdline arguments. One word per line. Useful when cmdline length exceeds maximum for your OS.'
-    ' Windows: ~32000, MinGW: ~4000 to ~32000, Linux: ~127000+'
+    'Full path to file containing cmdline arguments. Useful when cmdline length exceeds maximum for your OS.'
+    ' Windows: ~32000, MinGW: ~4000 to ~32000, Linux: ~127000+. Check README for more info'
 )
 HELP_ARG_NAMING = (
     f'File naming flags: {str(NAMING_FLAGS).replace(" ", "").replace(":", "=")}.'
@@ -399,7 +398,7 @@ class DownloadResult(IntEnum):
     DOWNLOAD_FAIL_SKIPPED = 4
 
     def __str__(self) -> str:
-        return f'{self._name_} ({self.value:03X})'
+        return f'{self._name_} (0x{self.value:d})'
 
 
 class HelpPrintExitException(Exception):
