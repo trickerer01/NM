@@ -11,11 +11,12 @@ from os import path
 from typing import List, Sequence, Tuple
 
 from defs import (
-    Log, HELP_PATH, HELP_SEARCH_STR, QUALITIES, DEFAULT_QUALITY, HELP_QUALITY, HELP_ARG_PROXY, HELP_BEGIN_STOP_ID, HELP_ARG_GET_MAXID,
-    HELP_ARG_EXTRA_TAGS, HELP_ARG_UVPOLICY, UVIDEO_POLICIES, DOWNLOAD_POLICY_DEFAULT, DOWNLOAD_MODES, DOWNLOAD_MODE_DEFAULT,
-    NAMING_FLAGS_DEFAULT, LOGGING_FLAGS_DEFAULT, HELP_ARG_DMMODE, HELP_ARG_DWN_SCENARIO, HELP_ARG_MINRATING, HELP_ARG_MINSCORE,
-    HELP_ARG_CMDFILE, HELP_ARG_NAMING, HELP_ARG_LOGGING, HELP_ARG_IDSEQUENCE, ACTION_STORE_TRUE, UTF8, HelpPrintExitException,
-    HELP_PLAYLIST, APP_NAME, APP_VERSION,
+    Log, ACTION_STORE_TRUE, HELP_ARG_PATH, HELP_ARG_SEARCH_STR, QUALITIES, DEFAULT_QUALITY, HELP_ARG_QUALITY, HELP_ARG_PROXY,
+    HELP_ARG_BEGIN_STOP_ID, HELP_ARG_GET_MAXID, HELP_ARG_EXTRA_TAGS, HELP_ARG_UVPOLICY, UVIDEO_POLICIES, DOWNLOAD_POLICY_DEFAULT,
+    DOWNLOAD_MODES, DOWNLOAD_MODE_DEFAULT, NAMING_FLAGS_DEFAULT, LOGGING_FLAGS_DEFAULT, HELP_ARG_DMMODE, HELP_ARG_DWN_SCENARIO,
+    HELP_ARG_MINRATING, HELP_ARG_MINSCORE, HELP_ARG_CMDFILE, HELP_ARG_NAMING, HELP_ARG_LOGGING, HELP_ARG_IDSEQUENCE, HELP_ARG_PLAYLIST,
+    HELP_ARG_DUMP_INFO,
+    APP_NAME, APP_VERSION, UTF8, HelpPrintExitException,
 )
 from scenario import DownloadScenario
 from tagger import valid_extra_tag
@@ -108,17 +109,17 @@ def create_parsers() -> Tuple[ArgumentParser, ArgumentParser, ArgumentParser]:
 
 
 def add_common_args(parser_or_group: ArgumentParser) -> None:
-    parser_or_group.add_argument('-path', default=valid_path(path.abspath(path.curdir)), help=HELP_PATH, type=valid_path)
-    parser_or_group.add_argument('-quality', default=DEFAULT_QUALITY, help=HELP_QUALITY, choices=QUALITIES)
+    parser_or_group.add_argument('-path', default=valid_path(path.abspath(path.curdir)), help=HELP_ARG_PATH, type=valid_path)
+    parser_or_group.add_argument('-quality', default=DEFAULT_QUALITY, help=HELP_ARG_QUALITY, choices=QUALITIES)
     parser_or_group.add_argument('-minrating', '--minimum-rating', metavar='#rating', default=0, help=HELP_ARG_MINRATING, type=valid_rating)
     parser_or_group.add_argument('-minscore', '--minimum-score', metavar='#score', default=None, help=HELP_ARG_MINSCORE, type=valid_int)
     parser_or_group.add_argument('-uvp', '--untag-video-policy', default=UVP_DEFAULT, help=HELP_ARG_UVPOLICY, choices=UVIDEO_POLICIES)
     parser_or_group.add_argument('-proxy', metavar='#type://a.d.d.r:port', default=None, help=HELP_ARG_PROXY, type=valid_proxy)
     parser_or_group.add_argument('-naming', metavar='#MASK', default=NAMING_DEFAULT, help=HELP_ARG_NAMING, type=naming_flags)
     parser_or_group.add_argument('-log', '--log-level', default=LOGGING_DEFAULT, help=HELP_ARG_LOGGING, type=log_level)
-    parser_or_group.add_argument('-tdump', '--dump-tags', action=ACTION_STORE_TRUE, help='Save tags to text file')
-    parser_or_group.add_argument('-ddump', '--dump-descriptions', action=ACTION_STORE_TRUE, help='Save descriptions to text file')
-    parser_or_group.add_argument('-cdump', '--dump-comments', action=ACTION_STORE_TRUE, help='Save comments to text file')
+    parser_or_group.add_argument('-tdump', '--dump-tags', action=ACTION_STORE_TRUE, help='')
+    parser_or_group.add_argument('-ddump', '--dump-descriptions', action=ACTION_STORE_TRUE, help='')
+    parser_or_group.add_argument('-cdump', '--dump-comments', action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_INFO)
     parser_or_group.add_argument('-sdump', '--dump-screenshots', action=ACTION_STORE_TRUE, help='Save screenshots (jpg, very slow)')
     parser_or_group.add_argument('-dmode', '--download-mode', default=DM_DEFAULT, help=HELP_ARG_DMMODE, choices=DOWNLOAD_MODES)
     # parser_or_group.add_argument('-session_id', default=None, help=HELP_SESSION_ID, type=valid_session_id)
@@ -151,11 +152,11 @@ def prepare_arglist_pages(args: Sequence[str]) -> Namespace:
     arggr_count_or_end.add_argument('-pages', metavar='#number', help='Pages count to process', type=positive_nonzero_int)
     arggr_count_or_end.add_argument('-end', metavar='#number', default=1, help='End page number', type=positive_nonzero_int)
     par_cmd.add_argument('-stop_id', metavar='#number', default=1, help='', type=positive_nonzero_int)
-    par_cmd.add_argument('-begin_id', metavar='#number', default=10**9, help=HELP_BEGIN_STOP_ID, type=positive_nonzero_int)
+    par_cmd.add_argument('-begin_id', metavar='#number', default=10**9, help=HELP_ARG_BEGIN_STOP_ID, type=positive_nonzero_int)
     arggr_playlist = par_cmd.add_mutually_exclusive_group()
-    arggr_playlist.add_argument('-playlist_name', metavar='#username', default='', help=HELP_PLAYLIST)
-    # arggr_playlist.add_argument('-playlist_id', metavar='#number', default=(0, ''), help=HELP_PLAYLIST, type=valid_playlist_id)
-    par_cmd.add_argument('-search', metavar='#string', default='', help=HELP_SEARCH_STR, type=valid_search_string)
+    arggr_playlist.add_argument('-playlist_name', metavar='#username', default='', help=HELP_ARG_PLAYLIST)
+    # arggr_playlist.add_argument('-playlist_id', metavar='#number', default=(0, ''), help=HELP_ARG_PLAYLIST, type=valid_playlist_id)
+    par_cmd.add_argument('-search', metavar='#string', default='', help=HELP_ARG_SEARCH_STR, type=valid_search_string)
     # par_cmd.add_argument('-search_tag', metavar='#tag[,tag...]', default='', help='', type=valid_tags)
     # par_cmd.add_argument('-search_art', metavar='#artist[,artist...]', default='', help='', type=valid_artists)
     # par_cmd.add_argument('-search_cat', metavar='#catergory[,category...]', default='', help=HELP_SEARCH_ACT, type=valid_categories)
