@@ -270,6 +270,10 @@ re_private_video = re_compile(r'^This is a private video\..*?$')
 
 
 class Log:
+    """
+    Basic logger supporting different log levels, colors and extra logging flags\n
+    **Static**
+    """
     COLORS = {
         LoggingFlags.LOGGING_TRACE: Fore.WHITE,
         LoggingFlags.LOGGING_DEBUG: Fore.LIGHTWHITE_EX,
