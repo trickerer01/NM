@@ -193,6 +193,7 @@ LOGGING_FLAGS_DEFAULT = LoggingFlags.LOGGING_INFO
 
 ACTION_STORE_TRUE = 'store_true'
 
+HELP_ARG_VERSION = 'Show program\'s version number and exit'
 HELP_ARG_GET_MAXID = 'Print maximum id and exit'
 HELP_ARG_BEGIN_STOP_ID = 'Video id lower / upper bounds filter to only download videos where \'begin_id >= video_id >= stop_id\''
 HELP_ARG_IDSEQUENCE = (

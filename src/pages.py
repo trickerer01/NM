@@ -44,7 +44,7 @@ async def main(args: Sequence[str]) -> None:
         full_download = True
         re_page_entry = re_compile(r'^/video/(\d+)/[^/]+?$')
         re_page_rating = re_compile(r'^(?:\d{1,3}%|-)$')
-        re_page_title = re_compile(r'^video-title title-truncate.*$')
+        re_page_title = re_compile(r'^video-title title-truncate.*?$')
 
         if playlist_name and search_str:
             Log.fatal('\nError: cannot search within playlist! Please use one or the other')
