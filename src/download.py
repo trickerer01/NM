@@ -194,7 +194,7 @@ async def download_sceenshot(vi: VideoInfo, scr_num: int) -> DownloadResult:
     sfilename = f'{f"{vi.my_subfolder}/" if len(vi.my_subfolder) > 0 else ""}{prefixp()}{vi.my_id:d}/{scr_num:02d}.jpg'
     my_folder = f'{vi.my_folder}{prefixp()}{vi.my_id:d}/'
     fullpath = f'{my_folder}{scr_num:02d}.jpg'
-    my_link = f'{SITE}/media/videos/tmb2/{vi.my_id:d}/{scr_num}.jpg'
+    my_link = f'{SITE}/media/videos/tmb2/{vi.my_id:d}/{scr_num:d}.jpg'
     ret = DownloadResult.DOWNLOAD_SUCCESS
 
     if not path.isdir(my_folder):
@@ -229,8 +229,9 @@ async def download_sceenshot(vi: VideoInfo, scr_num: int) -> DownloadResult:
 
 async def download_sceenshots(vi: VideoInfo) -> DownloadResult:
     ret = DownloadResult.DOWNLOAD_SUCCESS
-    for t in [get_running_loop().create_task(download_sceenshot(vi, scr_idx + 1)) for scr_idx in range(SCREENSHOTS_COUNT)]:
-        res = await t  # type: DownloadResult
+    for t in [get_running_loop().create_task(download_sceenshot(vi, scr_idx + 1))
+              for scr_idx in range(SCREENSHOTS_COUNT)]:  # type: Task[DownloadResult]
+        res = await t
         if res not in (DownloadResult.DOWNLOAD_SUCCESS, ret):
             ret = res
     return ret
