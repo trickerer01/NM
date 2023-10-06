@@ -262,6 +262,7 @@ CONNECT_REQUEST_DELAY = 0.5
 MAX_DEST_SCAN_SUB_DEPTH = 1
 MAX_VIDEOS_QUEUE_SIZE = 6
 DOWNLOAD_STATUS_CHECK_TIMER = 120.0
+DOWNLOAD_QUEUE_STALL_CHECK_TIMER = 30
 
 SCREENSHOTS_COUNT = 20
 
@@ -292,9 +293,13 @@ class Log:
     }
 
     @staticmethod
+    def should_log(flags: LoggingFlags) -> bool:
+        return flags >= Config.logging_flags
+
+    @staticmethod
     def log(text: str, flags: LoggingFlags) -> None:
         # if flags & LoggingFlags.LOGGING_FATAL == 0 and Config.logging_flags & flags != flags:
-        if flags < Config.logging_flags:
+        if not Log.should_log(flags):
             return
 
         for f in reversed(Log.COLORS.keys()):
