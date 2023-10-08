@@ -13,7 +13,7 @@ from typing import Sequence
 
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
 from defs import (
-    Log, Config, LoggingFlags, HelpPrintExitException, prefixp, SITE_ITEM_REQUEST_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
+    Log, Config, LoggingFlags, HelpPrintExitException, prefixp, at_startup, SITE_ITEM_REQUEST_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
     SLASH,
 )
 from download import download, at_interrupt
@@ -172,6 +172,7 @@ def main_sync(args: Sequence[str]) -> None:
 
 
 if __name__ == '__main__':
+    at_startup()
     main_sync(sys.argv[1:])
     exit(0)
 
