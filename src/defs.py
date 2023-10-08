@@ -255,8 +255,7 @@ HELP_ARG_DUMP_INFO = 'Save tags / descriptions / comments to text file (separate
 HELP_ARG_CONTINUE = 'Try to continue unfinished files, may be slower if most files already exist'
 HELP_ARG_UNFINISH = 'Do not clean up unfinished files on interrupt'
 
-CONNECT_RETRIES_PAGE = 50
-CONNECT_RETRIES_ITEM = 50
+CONNECT_RETRIES = 50
 CONNECT_REQUEST_DELAY = 0.5
 
 MAX_DEST_SCAN_SUB_DEPTH = 1
