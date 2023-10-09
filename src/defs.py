@@ -21,6 +21,9 @@ from colorama import init as colorama_init, Fore
 
 colorama_init()
 
+APP_NAME = 'NM'
+APP_VERSION = '1.6.240'
+
 CONNECT_RETRIES_BASE = 50
 CONNECT_TIMEOUT_BASE = 10
 CONNECT_REQUEST_DELAY = 0.5
@@ -105,9 +108,6 @@ class BaseConfig(object):
 
 
 Config = BaseConfig()
-
-APP_NAME = 'NM'
-APP_VERSION = '1.6.212'
 
 SITE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
 SITE_ITEM_REQUEST_PAGE = b64decode(
