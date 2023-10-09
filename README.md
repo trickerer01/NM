@@ -4,11 +4,12 @@
 NM is a video downloader with a lot of features, most of which are filters for fine tuning your search
 
 ### How to use
-##### Python 3.7 or later required
+##### Python 3.7 or greater required
 - NM is a cmdline tool, no GUI
 - It consists of 2 main download modules: `pages.py` for pages scanning, `ids.py` - for video ids traverse
 - Invoke `python pages.py --help` or `python ids.py --help` for possible arguments for each module (the differences are minimal)
 - See `requirements.txt` for additional module dependencies
+- For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/NM/issues)
 
 #### Search & filters
 - NM supports search using native website functionality
