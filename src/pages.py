@@ -107,7 +107,7 @@ async def main(args: Sequence[str]) -> None:
                     Log.info('Could not extract max page, assuming single page search')
                     maxpage = 1
                 else:
-                    Log.info(f'Extracted max page: {maxpage:d}')
+                    Log.debug(f'Extracted max page: {maxpage:d}')
 
             if Config.get_maxid:
                 miref = a_html.find('a', href=re_page_entry)
@@ -115,7 +115,7 @@ async def main(args: Sequence[str]) -> None:
                 Log.fatal(f'{prefixp()[:2].upper()}: {max_id}')
                 return
 
-            Log.info(f'page {pi:d}...{" (this is the last page!)" if (0 < maxpage == pi) else ""}')
+            Log.info(f'page {pi - 1:d}...{" (this is the last page!)" if (0 < maxpage == pi - 1) else ""}')
 
             arefs = a_html.find_all('a', href=re_page_entry)
             rrefs = a_html.find_all('b', string=re_page_rating)
