@@ -151,6 +151,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(merle),(nyalentine)'): r'\1 \2',
     re_compile(r'(mia),(winters?)'): r'\1 \2',
     re_compile(r'(milk),(factory)'): r'\1 \2',
+    re_compile(r'(mind),(break)'): r'\1 \2',
     re_compile(r'(monster),(girls?|hunter)'): r'\1 \2',
     re_compile(r'(mortal),([ck]ombat)'): r'\1 \2',
     re_compile(r'(my),(life),(as),(?:(a),)?([^,]+),([^,]+)'): r'\1 \2 \3 \4 \5 \6',
