@@ -14,7 +14,7 @@ from typing import Sequence
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
 from defs import (
     Log, Config, LoggingFlags, HelpPrintExitException, prefixp, at_startup, SITE_ITEM_REQUEST_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
-    SLASH,
+    SITE_ITEM_REQUEST_UPLOADER_PAGE, SLASH,
 )
 from download import download, at_interrupt
 from path_util import prefilter_existing_items
@@ -40,6 +40,7 @@ async def main(args: Sequence[str]) -> None:
         Config.read(arglist, True)
         search_str = arglist.search  # type: str
         playlist_name = arglist.playlist_name  # type: str
+        uploader_name = arglist.uploader  # type: str
 
         full_download = True
         re_page_entry = re_compile(r'^/video/(\d+)/[^/]+?$')
@@ -47,7 +48,11 @@ async def main(args: Sequence[str]) -> None:
         re_page_title = re_compile(r'^video-title title-truncate.*?$')
 
         if playlist_name and search_str:
-            Log.fatal('\nError: cannot search within playlist! Please use one or the other')
+            Log.fatal('\nError: cannot use search within playlist! Please use one or the other')
+            raise ValueError
+
+        if uploader_name and search_str:
+            Log.fatal('\nError: cannot use search within uploader\'s videos! Please use one or the other')
             raise ValueError
 
         if Config.get_maxid:
@@ -85,6 +90,7 @@ async def main(args: Sequence[str]) -> None:
 
             page_addr = (
                 (SITE_ITEM_REQUEST_PLAYLIST_PAGE % (playlist_name, pi)) if playlist_name else
+                (SITE_ITEM_REQUEST_UPLOADER_PAGE % (uploader_name, pi)) if uploader_name else
                 (SITE_ITEM_REQUEST_PAGE % (search_str, pi))
             )
             a_html = await fetch_html(page_addr, session=s)
@@ -94,7 +100,8 @@ async def main(args: Sequence[str]) -> None:
 
             pi += 1
 
-            if maxpage == 0:
+            if maxpage == 0 or (uploader_name and pi - 1 == maxpage):
+                old_maxpage = maxpage
                 if playlist_name and any('Error' in (d.string, d.text) for d in a_html.find_all('legend')):
                     Log.fatal(f'\nFatal: playlist is not found for user \'{playlist_name}\'!')
                     return
@@ -106,8 +113,10 @@ async def main(args: Sequence[str]) -> None:
                 if maxpage == 0:
                     Log.info('Could not extract max page, assuming single page search')
                     maxpage = 1
-                else:
+                elif old_maxpage == 0:
                     Log.debug(f'Extracted max page: {maxpage:d}')
+                elif old_maxpage < maxpage:
+                    Log.debug(f'Extracted new max page: {maxpage:d}')
 
             if Config.get_maxid:
                 miref = a_html.find('a', href=re_page_entry)
@@ -119,7 +128,11 @@ async def main(args: Sequence[str]) -> None:
 
             arefs = a_html.find_all('a', href=re_page_entry)
             rrefs = a_html.find_all('b', string=re_page_rating)
-            trefs = a_html.find_all('div' if playlist_name else 'span', class_=re_page_title)
+            trefs = a_html.find_all('div' if playlist_name or uploader_name else 'span', class_=re_page_title)
+            if len(arefs) == len(rrefs) * 2:
+                for i in reversed(range(len(arefs))):
+                    if not (i % 2):
+                        del arefs[i]
             assert len(arefs) == len(rrefs) == len(trefs)
             for refpair in zip(arefs, rrefs, trefs):
                 cur_id = int(re_page_entry.search(str(refpair[0].get('href'))).group(1))

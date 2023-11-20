@@ -120,6 +120,9 @@ Ex. SITE_ITEM_REQUEST_VIDEO % (69999)"""
 SITE_ITEM_REQUEST_PLAYLIST_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdXNlci8lcy9wbGF5bGlzdD9wYWdlPSVk').decode()
 """Params required: **username**, **page** - **str**, **int**\n
 Ex. SITE_ITEM_REQUEST_PLAYLIST_PAGE % ('anonymous', 1)"""
+SITE_ITEM_REQUEST_UPLOADER_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdXNlci8lcy92aWRlb3M/cGFnZT0lZA==').decode()
+"""Params required: **username**, **page** - **str**, **int**\n
+Ex. SITE_ITEM_REQUEST_UPLOADER_PAGE % ('anonymous', 1)"""
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.5 Firefox/102.0 PaleMoon/32.5.0'
 HOST = urlparse(SITE).netloc
@@ -276,6 +279,7 @@ HELP_ARG_DUMP_INFO = 'Save tags / descriptions / comments to text file (separate
 HELP_ARG_CONTINUE = 'Try to continue unfinished files, may be slower if most files already exist'
 HELP_ARG_UNFINISH = 'Do not clean up unfinished files on interrupt'
 HELP_ARG_TIMEOUT = 'Connection timeout (in seconds)'
+HELP_ARG_UPLOADER = 'Uploader username (filters still apply)'
 
 re_media_filename = re_compile(fr'^(?:nm_)?(\d+).*?(?:_({"|".join(QUALITIES)}))?(?:_py(?:dw|pv))?\.(?:{"|".join(EXTENSIONS_V)})$')
 re_replace_symbols = re_compile(REPLACE_SYMBOLS)
