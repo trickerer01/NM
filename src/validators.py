@@ -18,6 +18,20 @@ from defs import (
 
 
 def find_and_resolve_config_conflicts() -> bool:
+    if Config.playlist_name and Config.search:
+        Log.fatal('\nError: cannot use search within playlist! Please use one or the other')
+        raise ValueError
+    if Config.uploader and Config.search:
+        Log.fatal('\nError: cannot use search within uploader\'s videos! Please use one or the other')
+        raise ValueError
+    if Config.use_id_sequence in (False, None) and Config.start_id > Config.end_id:
+        Log.fatal(f'\nError: invalid video id bounds: start ({Config.start_id:d}) > end ({Config.end_id:d})')
+        raise ValueError
+
+    if Config.get_maxid:
+        Config.logging_flags = LoggingFlags.LOGGING_FATAL
+        Config.start = Config.end = Config.start_id = Config.end_id = 1
+
     delay_for_message = False
     if Config.scenario is not None:
         if Config.uvp != DOWNLOAD_POLICY_DEFAULT:

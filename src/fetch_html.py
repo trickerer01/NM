@@ -55,9 +55,8 @@ async def make_session() -> ClientSession:
         connector = TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE)
     s = ClientSession(connector=connector, read_bufsize=Mem.MB)
     # s.cookie_jar.update_cookies({})
-    if Config.session_id:
-        # s.cookie_jar.update_cookies({'PHPSESSID': Config.session_id, 'kt_member': '1'})
-        pass
+    # if Config.session_id:
+    #     s.cookie_jar.update_cookies({'PHPSESSID': Config.session_id, 'kt_member': '1'})
     return s
 
 

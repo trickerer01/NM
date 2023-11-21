@@ -11,9 +11,9 @@ from asyncio import run as run_async, sleep
 from re import compile as re_compile
 from typing import Sequence
 
-from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
+from cmdargs import prepare_arglist_pages
 from defs import (
-    Log, Config, LoggingFlags, HelpPrintExitException, prefixp, at_startup, SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
+    Log, Config, HelpPrintExitException, prefixp, at_startup, SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
     SITE_ITEM_REQUEST_UPLOADER_PAGE, SLASH,
 )
 from download import download, at_interrupt
@@ -28,8 +28,6 @@ __all__ = ('main_sync',)
 async def main(args: Sequence[str]) -> None:
     try:
         arglist = prepare_arglist_pages(args)
-        while is_parsed_cmdfile(arglist):
-            arglist = prepare_arglist_pages(read_cmdfile(arglist.path))
     except HelpPrintExitException:
         return
     except Exception:
@@ -38,30 +36,12 @@ async def main(args: Sequence[str]) -> None:
 
     try:
         Config.read(arglist, True)
-        search_str = arglist.search  # type: str
-        playlist_name = arglist.playlist_name  # type: str
-        uploader_name = arglist.uploader  # type: str
 
         full_download = True
         re_page_entry = re_compile(r'^/video/(\d+)/[^/]+?$')
         re_page_rating = re_compile(r'^(?:\d{1,3}%|-)$')
         re_page_title = re_compile(r'^video-title title-truncate.*?$')
-
-        if playlist_name and search_str:
-            Log.fatal('\nError: cannot use search within playlist! Please use one or the other')
-            raise ValueError
-
-        if uploader_name and search_str:
-            Log.fatal('\nError: cannot use search within uploader\'s videos! Please use one or the other')
-            raise ValueError
-
-        if Config.get_maxid:
-            Config.logging_flags = LoggingFlags.LOGGING_FATAL
-            Config.start = Config.end = Config.start_id = Config.end_id = 1
-
-        if Config.start_id > Config.end_id:
-            Log.fatal(f'\nError: invalid video id bounds: start ({Config.start_id:d}) > end ({Config.end_id:d})')
-            raise ValueError
+        #
 
         if find_and_resolve_config_conflicts() is True:
             await sleep(3.0)
@@ -89,9 +69,9 @@ async def main(args: Sequence[str]) -> None:
                 break
 
             page_addr = (
-                (SITE_ITEM_REQUEST_PLAYLIST_PAGE % (playlist_name, pi)) if playlist_name else
-                (SITE_ITEM_REQUEST_UPLOADER_PAGE % (uploader_name, pi)) if uploader_name else
-                (SITE_ITEM_REQUEST_SEARCH_PAGE % (search_str, pi))
+                (SITE_ITEM_REQUEST_PLAYLIST_PAGE % (Config.playlist_name, pi)) if Config.playlist_name else
+                (SITE_ITEM_REQUEST_UPLOADER_PAGE % (Config.uploader, pi)) if Config.uploader else
+                (SITE_ITEM_REQUEST_SEARCH_PAGE % (Config.search, pi))
             )
             a_html = await fetch_html(page_addr, session=s)
             if not a_html:
@@ -100,10 +80,10 @@ async def main(args: Sequence[str]) -> None:
 
             pi += 1
 
-            if maxpage == 0 or (uploader_name and pi - 1 == maxpage):
+            if maxpage == 0 or (Config.uploader and pi - 1 == maxpage):
                 old_maxpage = maxpage
-                if playlist_name and any('Error' in (d.string, d.text) for d in a_html.find_all('legend')):
-                    Log.fatal(f'\nFatal: playlist is not found for user \'{playlist_name}\'!')
+                if Config.playlist_name and any('Error' in (d.string, d.text) for d in a_html.find_all('legend')):
+                    Log.fatal(f'\nFatal: playlist is not found for user \'{Config.playlist_name}\'!')
                     return
                 for li_page in [li.find('a') for li in a_html.find_all('li', class_='hidden-xs')]:
                     try:
@@ -128,7 +108,7 @@ async def main(args: Sequence[str]) -> None:
 
             arefs = a_html.find_all('a', href=re_page_entry)
             rrefs = a_html.find_all('b', string=re_page_rating)
-            trefs = a_html.find_all('div' if playlist_name or uploader_name else 'span', class_=re_page_title)
+            trefs = a_html.find_all('div' if Config.playlist_name or Config.uploader else 'span', class_=re_page_title)
             if len(arefs) == len(rrefs) * 2:
                 for i in reversed(range(len(arefs))):
                     if not (i % 2):
