@@ -110,10 +110,10 @@ class BaseConfig(object):
 Config = BaseConfig()
 
 SITE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
-SITE_ITEM_REQUEST_PAGE = b64decode(
+SITE_ITEM_REQUEST_SEARCH_PAGE = b64decode(
     'aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcz9vPW1yJnNlYXJjaF9xdWVyeT0lcyZwYWdlPSVk').decode()
 """Params required: **search**, **page** - **str**, **int**\n
-Ex. SITE_ITEM_REQUEST_PAGE % ('sfw', 1)"""
+Ex. SITE_ITEM_REQUEST_SEARCH_PAGE % ('sfw', 1)"""
 SITE_ITEM_REQUEST_VIDEO = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdmlkZW8vJWQv').decode()
 """Params required: **video_id** - **int**\n
 Ex. SITE_ITEM_REQUEST_VIDEO % (69999)"""

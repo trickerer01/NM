@@ -13,7 +13,7 @@ from typing import Sequence
 
 from cmdargs import prepare_arglist_pages, read_cmdfile, is_parsed_cmdfile
 from defs import (
-    Log, Config, LoggingFlags, HelpPrintExitException, prefixp, at_startup, SITE_ITEM_REQUEST_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
+    Log, Config, LoggingFlags, HelpPrintExitException, prefixp, at_startup, SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
     SITE_ITEM_REQUEST_UPLOADER_PAGE, SLASH,
 )
 from download import download, at_interrupt
@@ -91,7 +91,7 @@ async def main(args: Sequence[str]) -> None:
             page_addr = (
                 (SITE_ITEM_REQUEST_PLAYLIST_PAGE % (playlist_name, pi)) if playlist_name else
                 (SITE_ITEM_REQUEST_UPLOADER_PAGE % (uploader_name, pi)) if uploader_name else
-                (SITE_ITEM_REQUEST_PAGE % (search_str, pi))
+                (SITE_ITEM_REQUEST_SEARCH_PAGE % (search_str, pi))
             )
             a_html = await fetch_html(page_addr, session=s)
             if not a_html:
