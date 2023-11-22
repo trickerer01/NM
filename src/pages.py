@@ -13,9 +13,12 @@ from typing import Sequence
 
 from cmdargs import prepare_arglist_pages
 from defs import (
-    Log, Config, HelpPrintExitException, prefixp, at_startup, SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
-    SITE_ITEM_REQUEST_UPLOADER_PAGE, SLASH,
+    HelpPrintExitException, PREFIX, SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE, SITE_ITEM_REQUEST_UPLOADER_PAGE,
+    SLASH,
 )
+from config import Config
+from util import at_startup
+from logger import Log
 from download import download, at_interrupt
 from path_util import prefilter_existing_items
 from fetch_html import make_session, fetch_html
@@ -101,7 +104,7 @@ async def main(args: Sequence[str]) -> None:
             if Config.get_maxid:
                 miref = a_html.find('a', href=re_page_entry)
                 max_id = re_page_entry.search(str(miref.get('href'))).group(1)
-                Log.fatal(f'{prefixp()[:2].upper()}: {max_id}')
+                Log.fatal(f'{PREFIX[:2].upper()}: {max_id}')
                 return
 
             Log.info(f'page {pi - 1:d}...{" (this is the last page!)" if (0 < maxpage == pi - 1) else ""}')
