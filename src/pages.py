@@ -8,7 +8,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import sys
 from asyncio import run as run_async, sleep
-from re import compile as re_compile
 from typing import Sequence
 
 from cmdargs import prepare_arglist_pages
@@ -17,6 +16,7 @@ from defs import (
     SLASH,
 )
 from config import Config
+from rex import re_page_entry, re_page_rating, re_page_title
 from util import at_startup
 from logger import Log
 from download import download, at_interrupt
@@ -34,22 +34,23 @@ async def main(args: Sequence[str]) -> None:
     except HelpPrintExitException:
         return
     except Exception:
-        Log.fatal(f'\nUnable to parse cmdline. Exiting.\n{sys.exc_info()[0]}: {sys.exc_info()[1]}')
+        import traceback
+        traceback.print_exc()
+        Log.fatal('\nUnable to parse cmdline. Exiting.')
         return
 
     try:
         Config.read(arglist, True)
 
         full_download = True
-        re_page_entry = re_compile(r'^/video/(\d+)/[^/]+?$')
-        re_page_rating = re_compile(r'^(?:\d{1,3}%|-)$')
-        re_page_title = re_compile(r'^video-title title-truncate.*?$')
-        #
+        # vid_ref_class was here
 
         if find_and_resolve_config_conflicts() is True:
             await sleep(3.0)
     except Exception:
-        Log.fatal(f'\nError reading parsed arglist!\n{sys.exc_info()[0]}: {sys.exc_info()[1]}')
+        import traceback
+        traceback.print_exc()
+        Log.fatal('\nError reading parsed arglist!')
         return
 
     def check_id_bounds(video_id: int) -> bool:

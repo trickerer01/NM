@@ -9,7 +9,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from base64 import b64decode
 from datetime import datetime
 from enum import IntEnum
-from re import compile as re_compile
 
 APP_NAME = 'NM'
 APP_VERSION = '1.6.240'
@@ -202,11 +201,6 @@ HELP_ARG_CONTINUE = 'Try to continue unfinished files, may be slower if most fil
 HELP_ARG_UNFINISH = 'Do not clean up unfinished files on interrupt'
 HELP_ARG_TIMEOUT = 'Connection timeout (in seconds)'
 HELP_ARG_UPLOADER = 'Uploader username (filters still apply)'
-
-re_media_filename = re_compile(fr'^(?:nm_)?(\d+).*?(?:_({"|".join(QUALITIES)}))?(?:_py(?:dw|pv))?\.(?:{"|".join(EXTENSIONS_V)})$')
-re_replace_symbols = re_compile(REPLACE_SYMBOLS)
-re_ext = re_compile(r'(\.[^&]{3,5})&')
-re_private_video = re_compile(r'^This is a private video\..*?$')
 
 
 class DownloadResult(IntEnum):

@@ -9,13 +9,10 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from argparse import ArgumentError
 from ipaddress import IPv4Address
 from os import path
-from re import compile as re_compile
 
-from defs import (
-    NamingFlags, LoggingFlags, SLASH, NON_SEARCH_SYMBOLS, NAMING_FLAGS, LOGGING_FLAGS, DOWNLOAD_POLICY_DEFAULT,
-    DEFAULT_QUALITY,
-)
+from defs import NamingFlags, LoggingFlags, SLASH, NAMING_FLAGS, LOGGING_FLAGS, DOWNLOAD_POLICY_DEFAULT, DEFAULT_QUALITY
 from config import Config
+from rex import re_non_search_symbols
 from util import unquote, normalize_path
 from logger import Log
 
@@ -109,8 +106,7 @@ def valid_filepath_abs(pathstr: str) -> str:
 
 def valid_search_string(search_str: str) -> str:
     try:
-        re_invalid_search_string = re_compile(NON_SEARCH_SYMBOLS)
-        if len(search_str) > 0 and re_invalid_search_string.search(search_str):
+        if len(search_str) > 0 and re_non_search_symbols.search(search_str):
             raise ValueError
     except Exception:
         raise ArgumentError
