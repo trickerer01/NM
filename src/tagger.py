@@ -371,9 +371,9 @@ TAG_ALIASES = {
 def valid_extra_tag(tag: str) -> str:
     try:
         if tag[0] == '(':
-            assert_valid_or_group(tag)
+            assert is_valid_or_group(tag)
         elif tag.startswith('-('):
-            validate_neg_and_group(tag)
+            assert is_valid_neg_and_group(tag)
         else:
             pass
         return tag.lower().replace(' ', '_')
@@ -390,16 +390,8 @@ def is_valid_neg_and_group(andgr: str) -> bool:
     return not not re_neg_and_group.fullmatch(andgr)
 
 
-def validate_neg_and_group(andgr: str) -> None:
-    assert is_valid_neg_and_group(andgr)
-
-
 def is_valid_or_group(orgr: str) -> bool:
     return not not re_or_group.fullmatch(orgr)
-
-
-def assert_valid_or_group(orgr: str) -> None:
-    assert is_valid_or_group(orgr)
 
 
 def normalize_wtag(wtag: str) -> str:
@@ -419,7 +411,6 @@ def get_matching_tag(wtag: str, mtags: Iterable[str]) -> Optional[str]:
 
 
 def get_or_group_matching_tag(orgr: str, mtags: Iterable[str]) -> Optional[str]:
-    assert_valid_or_group(orgr)
     for tag in orgr[1:-1].split('~'):
         mtag = get_matching_tag(tag, mtags)
         if mtag:
@@ -428,14 +419,11 @@ def get_or_group_matching_tag(orgr: str, mtags: Iterable[str]) -> Optional[str]:
 
 
 def is_neg_and_group_matches(andgr: str, mtags: Iterable[str]) -> bool:
-    validate_neg_and_group(andgr)
     return all(get_matching_tag(wtag, mtags) is not None for wtag in andgr[2:-1].split(','))
 
 
 def is_valid_id_or_group(orgr: str) -> bool:
-    if is_valid_or_group(orgr):
-        return all(re_idval.fullmatch(tag) for tag in orgr[1:-1].split('~'))
-    return False
+    return is_valid_or_group(orgr) and all(re_idval.fullmatch(tag) for tag in orgr[1:-1].split('~'))
 
 
 def try_parse_id_or_group(ex_tags: Sequence[str]) -> List[int]:
