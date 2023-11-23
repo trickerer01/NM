@@ -169,6 +169,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(nier),(automata)'): r'\1 \2',
     re_compile(r'(no),([^,]+)'): r'\1 \2',
     re_compile(r'(one),(p(?:iece|unch))'): r'\1 \2',
+    re_compile(r'(queen),(nualia|oph?ali?a)'): r'\1 \2',
     re_compile(r'(rachel),(roth)'): r'\1 \2',
     re_compile(r'(resident),(evil)(?:,(village|0?\d))?'): r'\1 \2 \3',
     re_compile(r'(rey),(skywalker)'): r'\1 \2',
