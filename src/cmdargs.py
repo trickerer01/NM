@@ -94,7 +94,7 @@ def execute_parser(parser: ArgumentParser, default_sub: ArgumentParser, args: Se
                 elif parsed.end < parsed.start + parsed.count - 1:
                     parsed.end = parsed.start + parsed.count - 1
         while is_parsed_cmdfile(parsed):
-            parsed = prepare_arglist_pages(read_cmdfile(parsed.path))
+            parsed = (prepare_arglist_pages if pages else prepare_arglist_ids)(read_cmdfile(parsed.path))
         return parsed
     except SystemExit:
         raise HelpPrintExitException
