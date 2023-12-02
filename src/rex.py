@@ -9,11 +9,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from re import compile as re_compile
 from typing import Pattern
 
-from defs import QUALITIES, EXTENSIONS_V, REPLACE_SYMBOLS, NON_SEARCH_SYMBOLS
+from defs import QUALITIES, EXTENSIONS_V
 
 # common
 re_media_filename = re_compile(fr'^(?:nm_)?(\d+).*?(?:_({"|".join(QUALITIES)}))?(?:_py(?:dw|pv))?\.(?:{"|".join(EXTENSIONS_V)})$')
-re_replace_symbols = re_compile(REPLACE_SYMBOLS)
+re_replace_symbols = re_compile(r'[^0-9a-zA-Z.,_+%\-()\[\] ]+')
 re_ext = re_compile(r'(\.[^&]{3,5})&')
 re_private_video = re_compile(r'^This is a private video\..*?$')
 # pages
@@ -21,7 +21,7 @@ re_page_entry = re_compile(r'^/video/(\d+)/[^/]+?$')
 re_page_rating = re_compile(r'^(?:\d{1,3}%|-)$')
 re_page_title = re_compile(r'^video-title title-truncate.*?$')
 # validators
-re_non_search_symbols = re_compile(NON_SEARCH_SYMBOLS)
+re_non_search_symbols = re_compile(r'[^\da-zA-Z._+\-\[\]]')
 re_session_id = re_compile(r'[a-z0-9]{26}')
 # tagger
 re_wtag = re_compile(r'^[^?*]*[?*].*?$')
@@ -94,6 +94,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'([^,]+),(man)'): r'\1 \2',
     re_compile(r'([^\d,]+),(0?\d)'): r'\1 \2',
     re_compile(r'(ada),(wong)'): r'\1 \2',
+    re_compile(r'(against),(?:(the),)?(wall)'): r'\1 the \3',
     re_compile(r'(all),(fours?)'): r'\1 \2',
     re_compile(r'(all),(the),(way),(thr(?:ough|u))'): r'\1 \2 \3 \4',
     re_compile(r'(alyx),(vance)'): r'\1 \2',

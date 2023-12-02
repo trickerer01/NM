@@ -36,23 +36,23 @@ SITE_ITEM_REQUEST_SEARCH_PAGE = b64decode(
     'aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcz9vPW1yJnNlYXJjaF9xdWVyeT0lcyZwYWdlPSVk').decode()
 """Params required: **search**, **page** - **str**, **int**\n
 Ex. SITE_ITEM_REQUEST_SEARCH_PAGE % ('sfw', 1)"""
+#
 SITE_ITEM_REQUEST_VIDEO = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdmlkZW8vJWQv').decode()
 """Params required: **video_id** - **int**\n
 Ex. SITE_ITEM_REQUEST_VIDEO % (69999)"""
 SITE_ITEM_REQUEST_PLAYLIST_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdXNlci8lcy9wbGF5bGlzdD9wYWdlPSVk').decode()
 """Params required: **username**, **page** - **str**, **int**\n
 Ex. SITE_ITEM_REQUEST_PLAYLIST_PAGE % ('anonymous', 1)"""
+#
+#
 SITE_ITEM_REQUEST_UPLOADER_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdXNlci8lcy92aWRlb3M/cGFnZT0lZA==').decode()
 """Params required: **username**, **page** - **str**, **int**\n
 Ex. SITE_ITEM_REQUEST_UPLOADER_PAGE % ('anonymous', 1)"""
+#
+#
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.5 Firefox/102.0 PaleMoon/32.5.0'
 DEFAULT_HEADERS = {'User-Agent': USER_AGENT}
-
-# language=PythonRegExp
-REPLACE_SYMBOLS = r'[^0-9a-zA-Z.,_+%\-()\[\] ]+'
-# language=PythonRegExp
-NON_SEARCH_SYMBOLS = r'[^\da-zA-Z._+\-\[\]]'
 
 QUALITIES = ('1080p', '720p', 'hi', '480p', '360p', 'SD', 'low')
 QUALITY_STARTS = ('h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/')
@@ -77,6 +77,14 @@ DOWNLOAD_MODES = (DOWNLOAD_MODE_FULL, DOWNLOAD_MODE_TOUCH, DOWNLOAD_MODE_SKIP)
 """('full','touch','skip')"""
 DOWNLOAD_MODE_DEFAULT = DOWNLOAD_MODE_FULL
 """'full'"""
+
+# # search args combination logic rules
+# SEARCH_RULE_ALL = 'all'
+# SEARCH_RULE_ANY = 'any'
+# SEARCH_RULES = (SEARCH_RULE_ALL, SEARCH_RULE_ANY)
+# """('all','any')"""
+# SEARCH_RULE_DEFAULT = SEARCH_RULE_ALL
+# """'all'"""
 
 
 class NamingFlags:
@@ -150,6 +158,19 @@ HELP_ARG_IDSEQUENCE = (
     ' extra tags. Sequence structure: (id=<id1>~id=<id2>~id=<id3>~...~id=<idN>)'
 )
 HELP_ARG_PATH = 'Download destination. Default is current folder'
+# HELP_ARG_SESSION_ID = (
+#     '\'PHPSESSID\' cookie. Comments as well as some tags to search for are hidden behind login wall.'
+#     ' Using this cookie from logged in account resolves that problem'
+# )
+# HELP_ARG_SEARCH_RULE = (
+#     f'Multiple search args of the same type combine logic. Default is \'{SEARCH_RULE_DEFAULT}\'.'
+#     f' Example: while searching for tags \'sfw,side_view\','
+#     f' \'{SEARCH_RULE_ANY}\' will search for any of those tags, \'{SEARCH_RULE_ALL}\' will only return results matching both'
+# )
+# HELP_ARG_SEARCH_ACT = (
+#     'Native search by tag(s) / artist(s) / category(ies). Spaces must be replced with \'_\', concatenate with \',\'.'
+#     ' Example: \'-search_tag 1girl,side_view -search_art artist_name -search_cat category_name\''
+# )
 HELP_ARG_PLAYLIST = 'Playlist to download (filters still apply)'
 HELP_ARG_SEARCH_STR = 'Native search using string query (matching all words). Spaces must be replced with \'+\'. Ex. \'after+hours\''
 HELP_ARG_QUALITY = f'Video quality. Default is \'{DEFAULT_QUALITY}\'. If not found, anything less is used'
