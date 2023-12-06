@@ -10,12 +10,12 @@ from typing import List, Optional, Collection, Iterable, Sequence
 
 from bigstrings import TAG_ALIASES
 from defs import TAGS_CONCAT_CHAR, LoggingFlags, PREFIX
+from logger import Log
 from rex import (
     re_replace_symbols, re_wtag, re_idval, re_uscore_mult, re_not_a_letter, re_numbered_or_counted_tag, re_or_group,
     re_neg_and_group, re_tags_to_process, re_tags_to_exclude, RAW_TAGS_REPLACEMENTS,
     prepare_regex_fullmatch,
 )
-from logger import Log
 
 __all__ = (
     'filtered_tags', 'get_matching_tag', 'try_parse_id_or_group', 'valid_extra_tag', 'is_filtered_out_by_extra_tags',
@@ -37,8 +37,8 @@ def valid_extra_tag(tag: str) -> str:
         raise ValueError
 
 
-def is_non_wtag(tag: str) -> bool:
-    return not re_wtag.fullmatch(tag)
+def is_wtag(tag: str) -> bool:
+    return not not re_wtag.fullmatch(tag)
 
 
 def is_valid_neg_and_group(andgr: str) -> bool:
@@ -56,7 +56,7 @@ def normalize_wtag(wtag: str) -> str:
 
 
 def get_matching_tag(wtag: str, mtags: Iterable[str]) -> Optional[str]:
-    if is_non_wtag(wtag):
+    if not is_wtag(wtag):
         return wtag if wtag in mtags else None
     pat = prepare_regex_fullmatch(normalize_wtag(wtag))
     for htag in mtags:
@@ -153,12 +153,11 @@ def filtered_tags(tags_list: Collection[str]) -> str:
 
     for tag in tags_list:
         tag = re_replace_symbols.sub('_', tag)
-        if TAG_ALIASES.get(tag) is None and re_tags_to_process.match(tag) is None:
+        alias = TAG_ALIASES.get(tag)
+        if alias is None and re_tags_to_process.match(tag) is None:
             continue
 
-        alias = TAG_ALIASES.get(tag)
-        if alias:
-            tag = alias
+        tag = alias or tag
 
         if re_tags_to_exclude.match(tag):
             continue

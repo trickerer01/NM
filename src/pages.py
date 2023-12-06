@@ -11,17 +11,17 @@ from asyncio import run as run_async, sleep
 from typing import Sequence
 
 from cmdargs import prepare_arglist
+from config import Config
 from defs import (
     HelpPrintExitException, PREFIX, SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE, SITE_ITEM_REQUEST_UPLOADER_PAGE,
     SLASH,
 )
-from config import Config
+from download import download, at_interrupt
+from fetch_html import make_session, fetch_html
+from logger import Log
+from path_util import prefilter_existing_items
 from rex import re_page_entry, re_page_rating, re_page_title
 from util import at_startup
-from logger import Log
-from download import download, at_interrupt
-from path_util import prefilter_existing_items
-from fetch_html import make_session, fetch_html
 from validators import find_and_resolve_config_conflicts
 from vinfo import VideoInfo
 
