@@ -140,6 +140,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(high),(heels?)'): r'\1 \2',
     re_compile(r'(highschool),(dxd)'): r'\1 \2',
     re_compile(r'(high),(school),(dxd)'): r'\1\2 \3',
+    re_compile(r'(honey),(select)'): r'\1 \2',
     re_compile(r'(horse),(cock)'): r'\1 \2',
     re_compile(r'(hotel),(tran.+)'): r'\1 \2',
     re_compile(r'(jaina),(proudmoore)'): r'\1 \2',
