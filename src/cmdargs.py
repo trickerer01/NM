@@ -20,7 +20,7 @@ from defs import (
 )
 from logger import Log
 from scenario import DownloadScenario
-from tagger import valid_extra_tag
+from tagger import valid_extra_tag, valid_playlist_name
 from validators import (
     valid_int, positive_nonzero_int, valid_rating, valid_path, valid_filepath_abs, valid_search_string, valid_proxy, naming_flags,
     log_level,
@@ -39,7 +39,7 @@ LOGGING_DEFAULT = LOGGING_FLAGS_DEFAULT
 
 PARSER_TITLE_FILE = 'file'
 PARSER_TITLE_CMD = 'cmd'
-EXISTING_PARSERS = {PARSER_TITLE_FILE, PARSER_TITLE_CMD}
+EXISTING_PARSERS = {PARSER_TITLE_CMD, PARSER_TITLE_FILE}
 """'file','cmd'"""
 
 
@@ -122,14 +122,14 @@ def add_common_args(parser_or_group: ArgumentParser) -> None:
     parser_or_group.add_argument('-timeout', metavar='#seconds', default=0, help=HELP_ARG_TIMEOUT, type=positive_nonzero_int)
     parser_or_group.add_argument('-continue', '--continue-mode', action=ACTION_STORE_TRUE, help=HELP_ARG_CONTINUE)
     parser_or_group.add_argument('-unfinish', '--keep-unfinished', action=ACTION_STORE_TRUE, help=HELP_ARG_UNFINISH)
-    parser_or_group.add_argument('-naming', metavar='#MASK', default=NAMING_DEFAULT, help=HELP_ARG_NAMING, type=naming_flags)
+    parser_or_group.add_argument('-naming', default=NAMING_DEFAULT, help=HELP_ARG_NAMING, type=naming_flags)
     parser_or_group.add_argument('-log', '--log-level', default=LOGGING_DEFAULT, help=HELP_ARG_LOGGING, type=log_level)
     parser_or_group.add_argument('-tdump', '--dump-tags', action=ACTION_STORE_TRUE, help='')
     parser_or_group.add_argument('-ddump', '--dump-descriptions', action=ACTION_STORE_TRUE, help='')
     parser_or_group.add_argument('-cdump', '--dump-comments', action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_INFO)
     parser_or_group.add_argument('-sdump', '--dump-screenshots', action=ACTION_STORE_TRUE, help='Save screenshots (jpg, very slow)')
     parser_or_group.add_argument('-dmode', '--download-mode', default=DM_DEFAULT, help=HELP_ARG_DMMODE, choices=DOWNLOAD_MODES)
-    # parser_or_group.add_argument('-session_id', default=None, help=HELP_SESSION_ID, type=valid_session_id)
+    # parser_or_group.add_argument('-session_id', default=None, help=HELP_ARG_SESSION_ID, type=valid_session_id)
     parser_or_group.add_argument('-script', '--download-scenario', default=None, help=HELP_ARG_DWN_SCENARIO, type=DownloadScenario)
     parser_or_group.add_argument(dest='extra_tags', nargs=ZERO_OR_MORE, help=HELP_ARG_EXTRA_TAGS, type=valid_extra_tag)
 
@@ -161,16 +161,16 @@ def prepare_arglist_pages(args: Sequence[str]) -> Namespace:
     par_cmd.add_argument('-stop_id', metavar='#number', default=1, help='', type=positive_nonzero_int)
     par_cmd.add_argument('-begin_id', metavar='#number', default=10**9, help=HELP_ARG_BEGIN_STOP_ID, type=positive_nonzero_int)
     arggr_pl_upl = par_cmd.add_mutually_exclusive_group()
-    arggr_pl_upl.add_argument('-playlist_name', metavar='#username', default='', help=HELP_ARG_PLAYLIST)
-    # arggr_playlist.add_argument('-playlist_id', metavar='#number', default=(0, ''), help=HELP_ARG_PLAYLIST, type=valid_playlist_id)
+    arggr_pl_upl.add_argument('-playlist_name', metavar='#name', default=(0, ''), help=HELP_ARG_PLAYLIST, type=valid_playlist_name)
+    # arggr_pl_upl.add_argument('-playlist_id', metavar='#number', default=(0, ''), help=HELP_ARG_PLAYLIST, type=valid_playlist_id)
     arggr_pl_upl.add_argument('-uploader', metavar='#username', default='', help=HELP_ARG_UPLOADER)
     par_cmd.add_argument('-search', metavar='#string', default='', help=HELP_ARG_SEARCH_STR, type=valid_search_string)
     # par_cmd.add_argument('-search_tag', metavar='#tag[,tag...]', default='', help='', type=valid_tags)
     # par_cmd.add_argument('-search_art', metavar='#artist[,artist...]', default='', help='', type=valid_artists)
-    # par_cmd.add_argument('-search_cat', metavar='#catergory[,category...]', default='', help=HELP_SEARCH_ACT, type=valid_categories)
+    # par_cmd.add_argument('-search_cat', metavar='#catergory[,category...]', default='', help=HELP_ARG_SEARCH_ACT, type=valid_categories)
     # par_cmd.add_argument('-search_rule_tag', default=SEARCH_RULE_DEFAULT, help='', choices=SEARCH_RULES)
     # par_cmd.add_argument('-search_rule_art', default=SEARCH_RULE_DEFAULT, help='', choices=SEARCH_RULES)
-    # par_cmd.add_argument('-search_rule_cat', default=SEARCH_RULE_DEFAULT, help=HELP_SEARCH_RULE, choices=SEARCH_RULES)
+    # par_cmd.add_argument('-search_rule_cat', default=SEARCH_RULE_DEFAULT, help=HELP_ARG_SEARCH_RULE, choices=SEARCH_RULES)
     # par_cmd.epilog = 'Note that search obeys \'AND\' rule: (ANY/ALL tag(s)) AND (ANY/ALL artist(s)) AND (ANY/ALL category(ies))'
 
     add_common_args(par_cmd)

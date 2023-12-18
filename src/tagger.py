@@ -6,7 +6,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-from typing import List, Optional, Collection, Iterable, Sequence
+from typing import List, Optional, Collection, Iterable, Sequence, Tuple
 
 from bigstrings import TAG_ALIASES
 from defs import TAGS_CONCAT_CHAR, LoggingFlags, PREFIX
@@ -19,8 +19,16 @@ from rex import (
 
 __all__ = (
     'filtered_tags', 'get_matching_tag', 'try_parse_id_or_group', 'valid_extra_tag', 'is_filtered_out_by_extra_tags',
-    'unite_separated_tags',
+    'valid_playlist_name', 'unite_separated_tags',
 )
+
+
+def valid_playlist_name(plist: str) -> Tuple[int, str]:
+    try:
+        plist_name, plist_numb = plist, 0
+        return (plist_numb, plist_name)
+    except Exception:
+        raise ValueError
 
 
 def valid_extra_tag(tag: str) -> str:
@@ -152,7 +160,7 @@ def filtered_tags(tags_list: Collection[str]) -> str:
     tags_list_final = list()  # type: List[str]
 
     for tag in tags_list:
-        tag = re_replace_symbols.sub('_', tag)
+        tag = re_replace_symbols.sub('_', tag.replace('-', '').replace('\'', '').replace('.', ''))
         alias = TAG_ALIASES.get(tag)
         if alias is None and re_tags_to_process.match(tag) is None:
             continue
