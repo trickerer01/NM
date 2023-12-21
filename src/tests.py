@@ -31,10 +31,10 @@ from path_util import found_filenames_dict
 from util import normalize_path
 
 
-def set_up_test() -> None:
+def set_up_test(log=False) -> None:
     DownloadWorker._instance = None
     found_filenames_dict.clear()
-    Log._disabled = True
+    Log._disabled = not log
 
 
 class CmdTests(TestCase):
