@@ -14,12 +14,13 @@ NM is a video downloader with a lot of features, most of which are filters for f
 #### Search & filters
 - NM supports search using native website functionality
 - Search (pages only) is performed using search string (see help for more info), comparing every word against title or tags, partial match required: searching for 'all' will match titles containing 'tall', 'call' and so on
-- Initial search results / ids list can be then filtered further using *extra tags* (see help for additional info)
+- Initial search results / ids list can be then filtered further using `extra tags` (see help for additional info)
 
 #### Tags
-- There is no list of existing tags. Tags videos have are completely on uploaders. So, better utilize...
-- Wildcards. In any kind of tag you can use symbols `?` and `*` for 'any symbol' and 'any number of any symbols' repectively.
-- Tags ~~containing wildcards~~ aren't validated, they can be anything
+- There is no list of existing tags. Video tagging is completely on uploaders. So better utilize...
+- Wildcards. In any `extra tag` you can use symbols `?` and `*` for `any symbol` and `any number of any symbols` repectively
+- `extra tags` aren't validated, they can be anything
+- What makes `extra tags` different from search string is `tags` or `-tags` are being used as filters instead of search params, search string is passed using its own search argument (see full help) and all unknown arguments are automatically considered `extra tags`
 
 #### Additional info
 1. `OR` / `AND` groups:
@@ -32,17 +33,17 @@ NM is a video downloader with a lot of features, most of which are filters for f
     - negative `AND` group are for filtering out videos having this undesired **tags combination**
 
 2. `--download-scenario` explained in detail:
-   - Syntax: `--download-scenario SCRIPT` / `-script SCRIPT`
-   - Scenario (script) is used to separate videos matching different sets of tags into different folders in a single pass
-   - *SCRIPT* is a semicolon-separated sequence of '*\<subfolder>*<NOTHING>**:** *\<args...>*' groups (subqueries)
-   - *SCRIPT* always contains spaces hence has to be escaped by quotes:
-     - python ids.py \<args>... -script ***"***<NOTHING>sub1: tags1; sub2: tags2 ...***"***
-   - Typically each next subquery is better exclude all required tags from previous one and retain excluded tags, so you know exactly what file goes where. But excluding previous required tags is optional - first matching subquery is used and if some item didn't match previous sub there is no point checking those tags again. **Subquery order matters**. Also, `-tags` contained in each subquery can be safely moved outside of script. Example:
-     - ... -script "s1: a b (c\~d) **-e**; s2: **-a -b -c -d -e** f g (h\~i); s3: **-a -b -c -d -e -f -g -h -i** k" `<< full script`
-     - ... -script "s1: a b (c\~d) **-e**; s2: **f g (h\~i) -e**; s3: **k -e**" `<< no redundant excludes`
-     - ... **-e** -script "s1: **a b (c\~d)**; s2: **f g (h\~i)**; s3: **k**" `<< "-e" moved outside of script`
-   - Besides tags, each subquery can also have `-quality` set, which will be used to download files matching that subquery. You can also set `-uvp always` for **one** subquery
-   - Instead of pure tags subquery can also use `--use-id-sequence:` / `-seq` (see below) so instead of checking tags subquery will match ids. Such a subquery is better be first in script
+  - Syntax: `--download-scenario SCRIPT` / `-script SCRIPT`
+  - Scenario (script) is used to separate videos matching different sets of tags into different folders in a single pass
+  - *SCRIPT* is a semicolon-separated sequence of '*\<subfolder>*<NOTHING>**:** *\<args...>*' groups (subqueries)
+  - *SCRIPT* always contains spaces hence has to be escaped by quotes:
+    - python ids.py \<args>... -script ***"***<NOTHING>sub1: tags1; sub2: tags2 ...***"***
+  - Typically each next subquery is better exclude all required tags from previous one and retain excluded tags, so you know exactly what file goes where. But excluding previous required tags is optional - first matching subquery is used and if some item didn't match previous sub there is no point checking those tags again. **Subquery order matters**. Also, `-tags` contained in each subquery can be safely moved outside of script. Example:
+    - ... -script "s1: a b (c\~d) **-e**; s2: **-a -b -c -d -e** f g (h\~i); s3: **-a -b -c -d -e -f -g -h -i** k" `<< full script`
+    - ... -script "s1: a b (c\~d) **-e**; s2: **f g (h\~i) -e**; s3: **k -e**" `<< no redundant excludes`
+    - ... **-e** -script "s1: **a b (c\~d)**; s2: **f g (h\~i)**; s3: **k**" `<< "-e" moved outside of script`
+  - Besides tags, each subquery can also have `-quality` set, which will be used to download files matching that subquery. You can also set `-utp always` for **one** subquery
+  - Instead of pure tags subquery can also use `--use-id-sequence:` / `-seq` (see below) so instead of checking tags subquery will match ids. Such a subquery is better be first in script
 
 3. `--use-id-sequence`:
   - Syntax: `--use-id-sequence SEQUENCE` / `-seq SEQUENCE`, ***ids.py*** only
@@ -50,11 +51,11 @@ NM is a video downloader with a lot of features, most of which are filters for f
   - *SEQUENCE* is an `OR` group of ids:
     - **(id=\<id1>\~id=\<id2>\~...\~id=\<idN>)**
   - Id sequence is used **INSTEAD** of id range, you can't use both
-    - python ids.py \<args>... -seq (id=1337\~id=9999\~id=1001)
+    - `python ids.py <args>... -seq (id=1337~id=9999~id=1001)`
 
 4. File naming
   - File names are generated based on video *title* and *tags*:
-  - Base template: ***nm\_\<video_id>\_\<score>\_\<title>\_(\<tags>).\<ext>***. It can adjusted it using `-naming` argument
+  - Base template: ***nm\_\<video_id>\_\<score>\_\<title>\_(\<tags>).\<ext>***. It can be adjusted it using `-naming` argument
   - Non-descriptive or way-too-long tags will be dropped
   - If resulting file full path is too long to fit into 240 symbols, first the tags will be gradually dropped; if not enough, title will be shrunk to fit; general advice: do not download to folders way too deep down the folder tree
 
@@ -85,3 +86,20 @@ NM is a video downloader with a lot of features, most of which are filters for f
   - By default, when app manages to exit gracefully, all unfinished files get deleted, and all existing files are automatically considered completed
   - To check and resume existing unfinished files use `--continue-mode` (or `-continue`). This may be slower for non-empty folders due to additional network requests but safer in case of complex queries
   - To keep unfinished files use `--keep-unfinished` (or `-unfinish`). It acts as `--continue-mode` helper so it's recommended to use either both or none at all
+
+#### Examples
+1. Pages
+  - Minimal example - all videos matching search string:
+    - `python pages.py -pages 9999 -search STRING`
+  - Up to 36 recent videos matching 2 words in 1080p, save to a custom location:
+    - `python pages.py -pages 2 -path PATH -quality 1080p -search STRING1+STRING2`
+  - All videos from user's playlist:
+    - `python pages.py -pages 9999 -path PATH -quality 1080p -playlist_name USER_NAME`
+  - All videos uploaded by a user, if matches either of 2 desired tags, in best quality, sorted into subfolders by several desired (known) authors, putting remaining videos into a separate folder:
+    - `python pages.py -pages 9999 -path PATH -quality 1080p -uploader USER_NAME (TAG1~TAG2) -script "name1: AUTHOR1; name2: AUTHOR2; name3: AUTHOR3; rest: * -utp always"`
+
+2. Ids
+  - Minimal example - all existing videos in range:
+    - `python ids.py -start 75000 -count 100`
+    - `python ids.py -start 75000 -end 75099`
+  - You can use the majority of arguments from `pages` examples. The only argument that is unique to `ids` module is `--use-id-sequence` (`-seq`), see above where it's explained in detail

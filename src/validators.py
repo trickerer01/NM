@@ -34,9 +34,9 @@ def find_and_resolve_config_conflicts() -> bool:
 
     delay_for_message = False
     if Config.scenario is not None:
-        if Config.uvp != DOWNLOAD_POLICY_DEFAULT:
+        if Config.utp != DOWNLOAD_POLICY_DEFAULT:
             Log.info('Info: running download script, outer untagged policy will be ignored')
-            Config.uvp = DOWNLOAD_POLICY_DEFAULT
+            Config.utp = DOWNLOAD_POLICY_DEFAULT
             delay_for_message = True
         if len(Config.extra_tags) > 0:
             Log.info(f'Info: running download script: outer extra tags: {str(Config.extra_tags)}')
@@ -142,9 +142,7 @@ def naming_flags(flags: str) -> int:
             intflags = int(flags, base=16 if flags.startswith('0x') else 10)
             assert intflags & ~NamingFlags.ALL == 0
         else:
-            intflags = 0
-            for fname in flags.split('|'):
-                intflags |= int(NAMING_FLAGS[fname], base=16)
+            intflags = sum(int(NAMING_FLAGS[fname], base=16) for fname in flags.split('|'))
         return intflags
     except Exception:
         raise ArgumentError

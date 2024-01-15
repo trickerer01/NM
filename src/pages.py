@@ -54,7 +54,7 @@ async def main(args: Sequence[str]) -> None:
     maxpage = Config.end if Config.start == Config.end else 0
 
     pi = Config.start
-    async with await make_session() as s:
+    async with make_session() as s:
         while pi <= Config.end:
             if pi > maxpage > 0:
                 Log.info('reached parsed max page, page scan completed')
@@ -120,13 +120,13 @@ async def main(args: Sequence[str]) -> None:
         v_entries.reverse()
         orig_count = len(v_entries)
 
-        if len(v_entries) > 0:
+        if orig_count > 0:
             prefilter_existing_items(v_entries)
 
         removed_count = orig_count - len(v_entries)
 
-        if len(v_entries) == 0:
-            if 0 < orig_count == removed_count:
+        if orig_count == removed_count:
+            if orig_count > 0:
                 Log.fatal(f'\nAll {orig_count:d} videos already exist. Aborted.')
             else:
                 Log.fatal('\nNo videos found. Aborted.')

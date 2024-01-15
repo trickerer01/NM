@@ -112,6 +112,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(blood|d(?:ark|row)|high|night|void),(el(?:f|ves?))'): r'\1 \2',
     re_compile(r'(blue),(archive)'): r'\1 \2',
     re_compile(r'(breasts?|clit|dick|hyper|muscles?|penis),(expansion|growth|inflation)'): r'\1 \2',
+    re_compile(r'(cammy),(white)'): r'\1 \2',
     re_compile(r'(carlos),(oliveira)'): r'\1 \2',
     re_compile(r'(cassie),(cage)'): r'\1 \2',
     re_compile(r'(claire),(redfield)'): r'\1 \2',

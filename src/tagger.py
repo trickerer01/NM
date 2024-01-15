@@ -6,7 +6,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-from typing import List, Optional, Collection, Iterable, Sequence, Tuple
+from typing import List, Optional, Collection, Iterable, Sequence, Tuple, Union
 
 from bigstrings import TAG_ALIASES
 from defs import TAGS_CONCAT_CHAR, LoggingFlags, PREFIX
@@ -31,9 +31,9 @@ def valid_playlist_name(plist: str) -> Tuple[int, str]:
         raise ValueError
 
 
-def valid_extra_tag(tag: str) -> str:
+def valid_extra_tag(tag: str, log=True) -> str:
     try:
-        if tag[0] == '(':
+        if tag.startswith('('):
             assert is_valid_or_group(tag)
         elif tag.startswith('-('):
             assert is_valid_neg_and_group(tag)
@@ -41,7 +41,8 @@ def valid_extra_tag(tag: str) -> str:
             pass
         return tag.lower().replace(' ', '_')
     except Exception:
-        Log.fatal(f'Fatal: invalid extra tag or group: \'{tag}\'!')
+        if log:
+            Log.fatal(f'Fatal: invalid extra tag or group: \'{tag}\'!')
         raise ValueError
 
 
@@ -101,23 +102,20 @@ def trim_undersores(base_str: str) -> str:
     return re_uscore_mult.sub('_', base_str).strip('_')
 
 
-def is_filtered_out_by_extra_tags(idi: int, tags_raw: Collection[str], extra_tags: List[str], is_extra_seq: bool, subfolder: str) -> bool:
+def is_filtered_out_by_extra_tags(idi: int, tags_raw: Collection[str], extra_seq: Union[List[str], List[int]], subfolder: str) -> bool:
     suc = True
     sname = f'{PREFIX}{idi:d}.mp4'
     sfol = f'[{subfolder}] ' if subfolder else ''
-    if len(extra_tags) > 0:
-        if is_extra_seq:
-            assert len(extra_tags) == 1
-            id_sequence = try_parse_id_or_group(extra_tags)
-            assert id_sequence
-            if idi not in id_sequence:
+    if extra_seq:
+        if isinstance(extra_seq[0], int):
+            if idi not in extra_seq:
                 suc = False
-                Log.trace(f'{sfol}Video {sname} isn\'t contained in id list \'{str(id_sequence)}\'. Skipped!',
+                Log.trace(f'{sfol}Video {sname} isn\'t contained in id list \'{str(extra_seq)}\'. Skipped!',
                           LoggingFlags.EX_MISSING_TAGS)
             return not suc
 
-        for extag in extra_tags:
-            if extag[0] == '(':
+        for extag in extra_seq:
+            if extag.startswith('('):
                 if get_or_group_matching_tag(extag, tags_raw) is None:
                     suc = False
                     Log.trace(f'{sfol}Video {sname} misses required tag matching \'{extag}\'. Skipped!',
@@ -128,13 +126,14 @@ def is_filtered_out_by_extra_tags(idi: int, tags_raw: Collection[str], extra_tag
                     Log.info(f'{sfol}Video {sname} contains excluded tags combination \'{extag[1:]}\'. Skipped!',
                              LoggingFlags.EX_EXCLUDED_TAGS)
             else:
-                my_extag = extag[1:] if extag[0] == '-' else extag
+                negative = extag.startswith('-')
+                my_extag = extag[1:] if negative else extag
                 mtag = get_matching_tag(my_extag, tags_raw)
-                if mtag is not None and extag[0] == '-':
+                if mtag is not None and negative:
                     suc = False
                     Log.info(f'{sfol}Video {sname} contains excluded tag \'{mtag}\'. Skipped!',
                              LoggingFlags.EX_EXCLUDED_TAGS)
-                elif mtag is None and extag[0] != '-':
+                elif mtag is None and not negative:
                     suc = False
                     Log.trace(f'{sfol}Video {sname} misses required tag matching \'{my_extag}\'. Skipped!',
                               LoggingFlags.EX_MISSING_TAGS)
