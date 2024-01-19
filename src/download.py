@@ -6,7 +6,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-from asyncio import sleep, get_running_loop, Task, CancelledError
+from asyncio import Task, CancelledError, sleep, get_running_loop
 from os import path, stat, remove, makedirs, rename
 from random import uniform as frand
 from typing import Optional, Iterable, Dict
