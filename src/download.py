@@ -154,7 +154,7 @@ async def process_id(vi: VideoInfo) -> DownloadResult:
         fname_mid = f'_{QUALITIES[i]}' if has_naming_flag(NamingFlags.QUALITY) else ''
         vi.my_filename = f'{fname_part1}{fname_mid}{fname_part2}'
         res = await download_video(vi)
-        if res not in (DownloadResult.SUCCESS, DownloadResult.FAIL_ALREADY_EXISTS):
+        if res not in (DownloadResult.SUCCESS, DownloadResult.FAIL_SKIPPED, DownloadResult.FAIL_ALREADY_EXISTS):
             ret_vals.append(res)
         else:
             return res
@@ -249,6 +249,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
 
     if skip is True:
         vi.set_state(VideoInfo.State.DONE)
+        ret = DownloadResult.FAIL_SKIPPED
     else:
         vi.set_state(VideoInfo.State.DOWNLOADING)
         if not path.isdir(vi.my_folder):
@@ -340,7 +341,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 Log.error(f'Failed to download {sfilename}. Removing unfinished file...')
                 remove(vi.my_fullpath)
 
-    ret = (ret if ret == DownloadResult.FAIL_NOT_FOUND else
+    ret = (ret if ret in (DownloadResult.FAIL_NOT_FOUND, DownloadResult.FAIL_SKIPPED) else
            DownloadResult.SUCCESS if retries < CONNECT_RETRIES_BASE else
            DownloadResult.FAIL_RETRIES)
 
