@@ -13,13 +13,13 @@ from typing import Sequence
 from cmdargs import HelpPrintExitException, prepare_arglist
 from config import Config
 from defs import (
-    PREFIX, SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE, SITE_ITEM_REQUEST_UPLOADER_PAGE, SLASH,
+    PREFIX, SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE, SITE_ITEM_REQUEST_UPLOADER_PAGE,
 )
 from download import download, at_interrupt
 from fetch_html import make_session, fetch_html
 from logger import Log
 from path_util import prefilter_existing_items
-from rex import re_page_entry, re_page_rating, re_page_title
+from rex import re_page_entry
 from util import at_startup
 from validators import find_and_resolve_config_conflicts
 from vinfo import VideoInfo, get_min_max_ids
@@ -72,14 +72,14 @@ async def main(args: Sequence[str]) -> None:
 
             pi += 1
 
-            if maxpage == 0 or (Config.uploader and pi - 1 == maxpage):
+            if maxpage == 0 or pi - 1 == maxpage:
                 old_maxpage = maxpage
                 if Config.playlist_name and any('Error' in (d.string, d.text) for d in a_html.find_all('legend')):
                     Log.fatal(f'\nFatal: playlist is not found for user \'{Config.playlist_name}\'!')
                     return
-                for li_page in [li.find('a') for li in a_html.find_all('li', class_='hidden-xs')]:
+                for a_page in a_html.find_all('a', class_='page-link'):
                     try:
-                        maxpage = max(maxpage, int(str(li_page.text)))
+                        maxpage = max(maxpage, int(str(a_page.text)))
                     except Exception:
                         pass
                 if maxpage == 0:
@@ -98,22 +98,16 @@ async def main(args: Sequence[str]) -> None:
 
             Log.info(f'page {pi - 1:d}...{" (this is the last page!)" if (0 < maxpage == pi - 1) else ""}')
 
-            arefs = a_html.find_all('a', href=re_page_entry)
-            rrefs = a_html.find_all('b', string=re_page_rating)
-            trefs = a_html.find_all('div' if Config.playlist_name or Config.uploader else 'span', class_=re_page_title)
-            if len(arefs) == len(rrefs) * 2:
-                for i in reversed(range(len(arefs))):
-                    if not (i % 2):
-                        del arefs[i]
-            assert len(arefs) == len(rrefs) == len(trefs)
-            for refpair in zip(arefs, rrefs, trefs):
-                cur_id = int(re_page_entry.search(str(refpair[0].get('href'))).group(1))
+            vrefs = a_html.find_all('div', class_='col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3')
+            for vref in vrefs:
+                aref = vref.find_all('a')[-1]
+                rref = vref.find('span', class_='content-rating')
+                tref = aref.find('span')
+                cur_id = int(re_page_entry.search(str(aref.get('href'))).group(1))
                 if check_id_bounds(cur_id) is False:
                     continue
-                href_rel = str(refpair[0].get('href'))
-                tref = str(refpair[2].text)
-                my_title = tref if tref != '' else href_rel[href_rel.rfind(SLASH) + 1:] if href_rel != '' else ''
-                my_rating = str(refpair[1].text)
+                my_title = str(tref.text)
+                my_rating = str(rref.find('span').text)
                 my_rating = '' if my_rating in ('0%', '') else my_rating[:-1]  # 0% rating doesn't mean all votes are dislikes necessarily
                 v_entries.append(VideoInfo(cur_id, my_title, m_rating=my_rating))
 

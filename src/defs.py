@@ -34,8 +34,7 @@ EXTENSIONS_V = (DEFAULT_EXT, 'webm')
 START_TIME = datetime.now()
 
 SITE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
-SITE_ITEM_REQUEST_SEARCH_PAGE = b64decode(
-    'aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcz9vPW1yJnNlYXJjaF9xdWVyeT0lcyZwYWdlPSVk').decode()
+SITE_ITEM_REQUEST_SEARCH_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcy8lcz9vPW1yJnBhZ2U9JWQ=').decode()
 """Params required: **search**, **page** - **str**, **int**\n
 Ex. SITE_ITEM_REQUEST_SEARCH_PAGE % ('sfw', 1)"""
 #
@@ -176,7 +175,7 @@ HELP_ARG_PATH = 'Download destination. Default is current folder'
 #     ' Note that search obeys \'AND\' rule: search string AND ANY_OF/ALL the tags AND ANY_OF/ALL the artists AND ANY_OF/ALL the categories'
 # )
 HELP_ARG_PLAYLIST = 'Playlist to download (filters still apply)'
-HELP_ARG_SEARCH_STR = 'Native search using string query (matching all words). Spaces must be replced with \'+\'. Ex. \'after+hours\''
+HELP_ARG_SEARCH_STR = 'Native search using string query (matching all words). Spaces must be replced with \'-\'. Ex. \'after-hours\''
 HELP_ARG_QUALITY = f'Video quality. Default is \'{DEFAULT_QUALITY}\'. If not found, anything less is used'
 HELP_ARG_PROXY = 'Proxy to use. Example: http://127.0.0.1:222'
 HELP_ARG_UTPOLICY = (

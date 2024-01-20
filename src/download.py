@@ -61,24 +61,24 @@ async def process_id(vi: VideoInfo) -> DownloadResult:
         titlemeta = a_html.find('meta', attrs={'name': 'description'})
         vi.my_title = titlemeta.get('content', '') if titlemeta else ''
     try:
-        dislikes_int = int(a_html.find('span', id='video_dislikes').text)
-        likes_int = int(a_html.find('span', id='video_likes').text)
+        dislikes_int = int(a_html.find('span', id=f'dislikes_video_{vi.my_id:d}').text)
+        likes_int = int(a_html.find('span', id=f'likes_video_{vi.my_id:d}').text)
         rating = f'{(likes_int * 100) // (dislikes_int + likes_int):d}' if (dislikes_int + likes_int) > 0 else rating
         score = f'{likes_int - dislikes_int:d}'
     except Exception:
         Log.warn(f'Warning: cannot extract score for {sname}.')
     try:
         try:
-            my_author = str(a_html.find('div', class_='pull-left user-container').find('span').string).lower()
+            my_author = str(a_html.find('div', class_='card-sub mt-3').find('span', class_='').text).lower()
         except Exception:
-            my_author = a_html.find('div', class_='text-danger').find('a').string.lower()
+            my_author = a_html.find('div', class_='text-danger').find('a').text.lower()
     except Exception:
         Log.warn(f'Warning: cannot extract author for {sname}.')
         my_author = ''
     tdiv = a_html.find('meta', attrs={'name': 'keywords'})
     if tdiv is None:
         Log.info(f'Warning: video {sname} has no tags!')
-    tags = unite_separated_tags((str(tdiv.get('content')) if tdiv else '').replace(', ', TAGS_CONCAT_CHAR).lower())
+    tags = unite_separated_tags((str(tdiv.get('content')) if tdiv else '').replace(' ', TAGS_CONCAT_CHAR).lower())
     tags_raw = [tag.replace(' ', '_') for tag in tags.split(TAGS_CONCAT_CHAR) if len(tag) > 0]
     for add_tag in [ca for ca in [my_author] if len(ca) > 0]:
         if add_tag not in tags_raw:
@@ -112,19 +112,17 @@ async def process_id(vi: VideoInfo) -> DownloadResult:
     if Config.save_tags:
         vi.my_tags = ' '.join(tag.replace(' ', '_') for tag in tags_raw)
     if Config.save_descriptions or Config.save_comments:
-        cidivs = a_html.find_all('div', class_='comment-info')
-        cudivs = [cidiv.find('a') for cidiv in cidivs]
-        cbdivs = a_html.find_all('div', class_='comment-body overflow-hidden')
+        cbdivs = a_html.find_all('div', class_='comment-body')
+        cudivs = [cb.find('a', class_='comment-username') for cb in cbdivs] if cbdivs else []
+        ctdivs = [cb.find('div', class_='comment-text') for cb in cbdivs] if cbdivs else []
         my_uploader = my_author or 'unknown'
-        has_description = (cudivs[-1].text.lower() == my_uploader) if (cudivs and cbdivs) else False  # first comment by uploader
-        if cudivs and cbdivs:
-            assert len(cbdivs) == len(cudivs)
+        has_description = (cudivs[-1].text.lower() == my_uploader) if cudivs else False  # first comment by uploader
         if Config.save_descriptions:
-            desc_comment = (f'{cudivs[-1].text}:\n' + cbdivs[-1].get_text('\n').strip()) if has_description else ''
+            desc_comment = (f'{cudivs[-1].text}:\n{ctdivs[-1].text.strip()}') if has_description else ''
             desc_base = ''
             vi.my_description = desc_base or (f'\n{desc_comment}\n' if desc_comment else '')
         if Config.save_comments:
-            comments_list = [f'{cudivs[i].text}:\n' + cbdivs[i].get_text('\n').strip() for i in range(len(cbdivs) - int(has_description))]
+            comments_list = [f'{cudivs[i].text}:\n{ctdivs[i].text.strip()}' for i in range(len(ctdivs) - int(has_description))]
             vi.my_comments = ('\n' + '\n\n'.join(comments_list) + '\n') if comments_list else ''
     my_tags = filtered_tags(tags_raw) or my_tags
 
