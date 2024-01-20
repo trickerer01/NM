@@ -16,8 +16,8 @@ from aiohttp import ClientSession, ClientResponse, ClientPayloadError
 
 from config import Config
 from defs import (
-    SITE, CONNECT_RETRIES_BASE, SITE_ITEM_REQUEST_VIDEO, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH, DOWNLOAD_MODE_SKIP, TAGS_CONCAT_CHAR,
-    DOWNLOAD_STATUS_CHECK_TIMER, SCREENSHOTS_COUNT, DownloadResult, Mem, NamingFlags, PREFIX, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
+    Mem, NamingFlags, DownloadResult, CONNECT_RETRIES_BASE, SITE_ITEM_REQUEST_VIDEO, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH, PREFIX,
+    DOWNLOAD_MODE_SKIP, TAGS_CONCAT_CHAR, DOWNLOAD_STATUS_CHECK_TIMER, SITE, SCREENSHOTS_COUNT, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
 )
 from downloader import VideoDownloadWorker
 from fetch_html import fetch_html, wrap_request, make_session
@@ -26,19 +26,19 @@ from path_util import file_already_exists
 from rex import re_media_filename, re_private_video
 from scenario import DownloadScenario
 from tagger import filtered_tags, is_filtered_out_by_extra_tags, unite_separated_tags
-from util import get_elapsed_time_i, extract_ext, has_naming_flag
-from vinfo import export_video_info, VideoInfo
+from util import has_naming_flag, get_elapsed_time_i, extract_ext
+from vinfo import VideoInfo, export_video_info
 
 __all__ = ('download', 'at_interrupt')
 
 
 async def download(sequence: Iterable[VideoInfo], by_id: bool, filtered_count: int, session: ClientSession = None) -> None:
     async with session or make_session() as session:
-        await VideoDownloadWorker(sequence, (download_video, process_id)[by_id], filtered_count, session).run()
+        await VideoDownloadWorker(sequence, (download_video, process_video)[by_id], filtered_count, session).run()
     export_video_info(sequence)
 
 
-async def process_id(vi: VideoInfo) -> DownloadResult:
+async def process_video(vi: VideoInfo) -> DownloadResult:
     dwn = VideoDownloadWorker.get()
     scenario = Config.scenario  # type: Optional[DownloadScenario]
     sname = f'{PREFIX}{vi.my_id:d}.mp4'
@@ -112,9 +112,9 @@ async def process_id(vi: VideoInfo) -> DownloadResult:
     if Config.save_tags:
         vi.my_tags = ' '.join(tag.replace(' ', '_') for tag in tags_raw)
     if Config.save_descriptions or Config.save_comments:
-        cbdivs = a_html.find_all('div', class_='comment-body')
-        cudivs = [cb.find('a', class_='comment-username') for cb in cbdivs] if cbdivs else []
-        ctdivs = [cb.find('div', class_='comment-text') for cb in cbdivs] if cbdivs else []
+        cidivs = a_html.find_all('div', class_='comment-body')
+        cudivs = [cidiv.find('a', class_='comment-username') for cidiv in cidivs] if cidivs else []
+        ctdivs = [cidiv.find('div', class_='comment-text') for cidiv in cidivs] if cidivs else []
         my_uploader = my_author or 'unknown'
         has_description = (cudivs[-1].text.lower() == my_uploader) if cudivs else False  # first comment by uploader
         if Config.save_descriptions:

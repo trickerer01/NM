@@ -36,7 +36,7 @@ async def main(args: Sequence[str]) -> None:
     Config.read(arglist, True)
 
     full_download = True
-    # vid_ref_class was here
+    # video_ref_class was here
 
     if find_and_resolve_config_conflicts() is True:
         await sleep(3.0)
