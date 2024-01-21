@@ -107,7 +107,7 @@ async def main(args: Sequence[str]) -> None:
                 if check_id_bounds(cur_id) is False:
                     continue
                 my_title = str(tref.text)
-                my_rating = str(rref.find('span').text)
+                my_rating = str(rref.find('span').text) if rref else ''
                 my_rating = '' if my_rating in ('0%', '') else my_rating[:-1]  # 0% rating doesn't mean all votes are dislikes necessarily
                 v_entries.append(VideoInfo(cur_id, my_title, m_rating=my_rating))
 
