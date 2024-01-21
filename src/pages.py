@@ -36,7 +36,7 @@ async def main(args: Sequence[str]) -> None:
     Config.read(arglist, True)
 
     full_download = True
-    # video_ref_class was here
+    video_ref_class = 'col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3'
 
     if find_and_resolve_config_conflicts() is True:
         await sleep(3.0)
@@ -91,14 +91,14 @@ async def main(args: Sequence[str]) -> None:
                     Log.debug(f'Extracted new max page: {maxpage:d}')
 
             if Config.get_maxid:
-                miref = a_html.find('div', class_='col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3').find('a')
+                miref = a_html.find('div', class_=video_ref_class).find('a')
                 max_id = re_page_entry.search(str(miref.get('href'))).group(1)
                 Log.fatal(f'{PREFIX[:2].upper()}: {max_id}')
                 return
 
             Log.info(f'page {pi - 1:d}...{" (this is the last page!)" if (0 < maxpage == pi - 1) else ""}')
 
-            vrefs = a_html.find_all('div', class_='col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3')
+            vrefs = a_html.find_all('div', class_=video_ref_class)
             for vref in vrefs:
                 aref = vref.find_all('a')[-1]
                 rref = vref.find('span', class_='content-rating')
