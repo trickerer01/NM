@@ -91,7 +91,7 @@ async def main(args: Sequence[str]) -> None:
                     Log.debug(f'Extracted new max page: {maxpage:d}')
 
             if Config.get_maxid:
-                miref = a_html.find('a', href=re_page_entry)
+                miref = a_html.find('div', class_='col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3').find('a')
                 max_id = re_page_entry.search(str(miref.get('href'))).group(1)
                 Log.fatal(f'{PREFIX[:2].upper()}: {max_id}')
                 return
