@@ -35,6 +35,7 @@ def valid_extra_tag(tag: str, log=True) -> str:
     try:
         if tag.startswith('('):
             assert is_valid_or_group(tag)
+            pass
         elif tag.startswith('-('):
             assert is_valid_neg_and_group(tag)
         else:
