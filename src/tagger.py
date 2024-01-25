@@ -9,13 +9,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from typing import List, Optional, Collection, Iterable, MutableSequence, Tuple
 
 from bigstrings import TAG_ALIASES
-from defs import LoggingFlags, TAGS_CONCAT_CHAR, PREFIX
+from defs import LoggingFlags, TAGS_CONCAT_CHAR
 from logger import Log
 from rex import (
     re_replace_symbols, re_wtag, re_idval, re_uscore_mult, re_not_a_letter, re_numbered_or_counted_tag, re_or_group,
     re_neg_and_group, re_tags_to_process, re_tags_to_exclude, RAW_TAGS_REPLACEMENTS,
     prepare_regex_fullmatch,
 )
+from vinfo import VideoInfo
 
 __all__ = (
     'filtered_tags', 'get_matching_tag', 'extract_id_or_group', 'valid_extra_tag', 'is_filtered_out_by_extra_tags',
@@ -105,11 +106,11 @@ def trim_undersores(base_str: str) -> str:
     return re_uscore_mult.sub('_', base_str).strip('_')
 
 
-def is_filtered_out_by_extra_tags(idi: int, tags_raw: Collection[str], extra_tags: List[str], id_seq: List[int], subfolder: str) -> bool:
+def is_filtered_out_by_extra_tags(vi: VideoInfo, tags_raw: List[str], extra_tags: List[str], id_seq: List[int], subfolder: str) -> bool:
     suc = True
-    sname = f'{PREFIX}{idi:d}.mp4'
+    sname = vi.sname
     sfol = f'[{subfolder}] ' if subfolder else ''
-    if id_seq and idi not in id_seq:
+    if id_seq and vi.my_id not in id_seq:
         suc = False
         Log.trace(f'{sfol}Video {sname} isn\'t contained in id list \'{str(id_seq)}\'. Skipped!',
                   LoggingFlags.EX_MISSING_TAGS)

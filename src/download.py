@@ -42,7 +42,7 @@ async def download(sequence: Iterable[VideoInfo], by_id: bool, filtered_count: i
 async def process_video(vi: VideoInfo) -> DownloadResult:
     dwn = VideoDownloadWorker.get()
     scenario = Config.scenario  # type: Optional[DownloadScenario]
-    sname = f'{PREFIX}{vi.my_id:d}.mp4'
+    sname = vi.sname
     my_tags = 'no_tags'
     rating = vi.my_rating
     score = ''
@@ -84,7 +84,7 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
     for add_tag in [ca for ca in [my_author] if len(ca) > 0]:
         if add_tag not in tags_raw:
             tags_raw.append(add_tag)
-    if is_filtered_out_by_extra_tags(vi.my_id, tags_raw, Config.extra_tags, Config.id_sequence, vi.my_subfolder):
+    if is_filtered_out_by_extra_tags(vi, tags_raw, Config.extra_tags, Config.id_sequence, vi.my_subfolder):
         Log.info(f'Info: video {sname} is filtered out by{" outer" if scenario is not None else ""} extra tags, skipping...')
         return DownloadResult.FAIL_SKIPPED
     for vsrs, csri, srn, pc in zip((score, rating), (Config.min_score, Config.min_rating), ('score', 'rating'), ('', '%')):
@@ -96,7 +96,7 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
             except Exception:
                 pass
     if scenario is not None:
-        matching_sq = scenario.get_matching_subquery(vi.my_id, tags_raw, score, rating)
+        matching_sq = scenario.get_matching_subquery(vi, tags_raw, score, rating)
         utpalways_sq = scenario.get_utp_always_subquery() if tdiv is None else None
         if matching_sq:
             vi.my_subfolder = matching_sq.subfolder
@@ -128,7 +128,7 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
     my_tags = filtered_tags(tags_raw) or my_tags
 
     nm_ = PREFIX if has_naming_flag(NamingFlags.PREFIX) else ''
-    fname_part2 = extract_ext('.mp4')
+    fname_part2 = extract_ext(vi.my_link)
     my_score = (f'{f"+" if score.isnumeric() else ""}{score}' if len(score) > 0
                 else '' if len(rating) > 0 else 'unk')
     my_rating = (f'{", " if  len(my_score) > 0 else ""}{rating}{"%" if rating.isnumeric() else ""}' if len(rating) > 0
@@ -165,9 +165,10 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
         return DownloadResult.FAIL_RETRIES
 
 
-async def check_video_download_status(idi: int, dest: str, init_size: int, resp: ClientResponse) -> None:
+async def check_video_download_status(vi: VideoInfo, init_size: int, resp: ClientResponse) -> None:
     dwn = VideoDownloadWorker.get()
-    sname = f'{PREFIX}{idi:d}.mp4'
+    sname = vi.sname
+    dest = vi.my_fullpath
     check_timer = float(DOWNLOAD_STATUS_CHECK_TIMER)
     slow_con_dwn_threshold = max(1, DOWNLOAD_STATUS_CHECK_TIMER * Config.throttle * Mem.KB)
     last_size = init_size
@@ -239,7 +240,7 @@ async def download_sceenshots(vi: VideoInfo) -> DownloadResult:
 
 async def download_video(vi: VideoInfo) -> DownloadResult:
     dwn = VideoDownloadWorker.get()
-    sname = f'{PREFIX}{vi.my_id:d}.mp4'
+    sname = vi.sname
     sfilename = f'{vi.my_sfolder}{vi.my_filename}'
     retries = 0
     ret = DownloadResult.SUCCESS
@@ -306,7 +307,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
 
                 dwn.add_to_writes(vi)
                 vi.set_state(VideoInfo.State.WRITING)
-                status_checker = get_running_loop().create_task(check_video_download_status(vi.my_id, vi.my_fullpath, file_size, r))
+                status_checker = get_running_loop().create_task(check_video_download_status(vi, file_size, r))
                 async with async_open(vi.my_fullpath, 'ab') as outf:
                     async for chunk in r.content.iter_chunked(1 * Mem.MB):
                         await outf.write(chunk)
