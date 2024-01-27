@@ -55,7 +55,7 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
 
     if any('Error' in (d.string, d.text) for d in a_html.find_all('legend')):
         Log.error(f'Warning: Got error 404 for {sname} (probably unlisted), author/score will not be extracted...')
-    elif any(re_private_video.search(d.text) for d in a_html.find_all('div', class_='text-danger')):
+    elif any(re_private_video.search(d.text) for d in a_html.find_all('span', class_='text-danger')):
         Log.warn(f'Warning: Got private video error for {sname}, score(likes)/extra_title will not be extracted...')
 
     if not vi.my_title:
@@ -72,7 +72,7 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
         try:
             my_author = str(a_html.find('div', class_='card-sub mt-3').find('span', class_='').text).lower()
         except Exception:
-            my_author = a_html.find('div', class_='text-danger').find('a').text.lower()
+            my_author = a_html.find('span', class_='text-danger').find('a').text.lower()
     except Exception:
         Log.warn(f'Warning: cannot extract author for {sname}.')
         my_author = ''
