@@ -34,13 +34,16 @@ def valid_playlist_name(plist: str) -> Tuple[int, str]:
 
 def valid_extra_tag(tag: str, log=True) -> str:
     try:
+        pass
         if tag.startswith('('):
             assert is_valid_or_group(tag)
             pass
         elif tag.startswith('-('):
             assert is_valid_neg_and_group(tag)
+            pass
         else:
             pass
+        pass
         return tag.lower().replace(' ', '_')
     except Exception:
         if log:
