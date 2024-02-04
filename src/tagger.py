@@ -169,7 +169,7 @@ def filtered_tags(tags_list: Collection[str]) -> str:
 
         tag = alias or tag
 
-        if re_tags_to_exclude.match(tag):
+        if alias is None and re_tags_to_exclude.match(tag):
             continue
 
         tag = trim_undersores(tag)
