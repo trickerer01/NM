@@ -176,6 +176,7 @@ def prepare_arglist_pages(args: Sequence[str]) -> Namespace:
     # arggr_pl_upl.add_argument('-playlist_id', metavar='#number', default=(0, ''), help='', type=valid_playlist_id)
     arggr_pl_upl.add_argument('-playlist_name', metavar='#name', default=(0, ''), help=HELP_ARG_PLAYLIST, type=valid_playlist_name)
     arggr_pl_upl.add_argument('-uploader', metavar='#username', default='', help=HELP_ARG_UPLOADER)
+    # arggr_pl_upl.add_argument('-model', metavar='#name', default=0, help=HELP_ARG_MODEL)
     par_cmd.add_argument('-search', metavar='#string', default='', help=HELP_ARG_SEARCH_STR, type=valid_search_string)
     # par_cmd.add_argument('-search_tag', metavar='#tag[,tag...]', default='', help='', type=valid_tags)
     # par_cmd.add_argument('-search_art', metavar='#artist[,artist...]', default='', help='', type=valid_artists)
