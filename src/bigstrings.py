@@ -177,6 +177,8 @@ TAG_ALIASES = {
     'lezdom': 'lesbian',
     'genderswap_(mtf)': 'genderswap_mtf',
     'genderswap_(ftm)': 'genderswap_ftm',
+    'ovipositor': 'eggs',
+    'oviposition': 'eggs',
 }
 
 #
