@@ -48,11 +48,11 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
     scenario = Config.scenario  # type: Optional[DownloadScenario]
     sname = vi.sname
     my_tags = 'no_tags'
-    rating = vi.my_rating
+    rating = vi.rating
     score = ''
 
     vi.set_state(VideoInfo.State.ACTIVE)
-    a_html = await fetch_html(SITE_ITEM_REQUEST_VIDEO % vi.my_id, session=dwn.session)
+    a_html = await fetch_html(SITE_ITEM_REQUEST_VIDEO % vi.id, session=dwn.session)
     if a_html is None:
         Log.error(f'Error: unable to retreive html for {sname}! Aborted!')
         return DownloadResult.FAIL_RETRIES
@@ -62,12 +62,12 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
     elif any(re_private_video.search(d.text) for d in a_html.find_all('span', class_='text-danger')):
         Log.warn(f'Warning: Got private video error for {sname}, score(likes)/extra_title will not be extracted...')
 
-    if not vi.my_title:
+    if not vi.title:
         titlemeta = a_html.find('meta', attrs={'name': 'description'})
-        vi.my_title = titlemeta.get('content', '') if titlemeta else ''
+        vi.title = titlemeta.get('content', '') if titlemeta else ''
     try:
-        dislikes_int = int(a_html.find('span', id=f'dislikes_video_{vi.my_id:d}').text)
-        likes_int = int(a_html.find('span', id=f'likes_video_{vi.my_id:d}').text)
+        dislikes_int = int(a_html.find('span', id=f'dislikes_video_{vi.id:d}').text)
+        likes_int = int(a_html.find('span', id=f'likes_video_{vi.id:d}').text)
         rating = f'{(likes_int * 100) // (dislikes_int + likes_int):d}' if (dislikes_int + likes_int) > 0 else rating
         score = f'{likes_int - dislikes_int:d}'
     except Exception:
@@ -89,7 +89,7 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
     for add_tag in [ca for ca in [my_author] if len(ca) > 0]:
         if add_tag not in tags_raw:
             tags_raw.append(add_tag)
-    if is_filtered_out_by_extra_tags(vi, tags_raw, Config.extra_tags, Config.id_sequence, vi.my_subfolder):
+    if is_filtered_out_by_extra_tags(vi, tags_raw, Config.extra_tags, Config.id_sequence, vi.subfolder):
         Log.info(f'Info: video {sname} is filtered out by{" outer" if scenario is not None else ""} extra tags, skipping...')
         return DownloadResult.FAIL_SKIPPED
     for vsrs, csri, srn, pc in zip((score, rating), (Config.min_score, Config.min_rating), ('score', 'rating'), ('', '%')):
@@ -104,11 +104,11 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
         matching_sq = scenario.get_matching_subquery(vi, tags_raw, score, rating)
         utpalways_sq = scenario.get_utp_always_subquery() if tdiv is None else None
         if matching_sq:
-            vi.my_subfolder = matching_sq.subfolder
-            vi.my_quality = matching_sq.quality
+            vi.subfolder = matching_sq.subfolder
+            vi.quality = matching_sq.quality
         elif utpalways_sq:
-            vi.my_subfolder = utpalways_sq.subfolder
-            vi.my_quality = utpalways_sq.quality
+            vi.subfolder = utpalways_sq.subfolder
+            vi.quality = utpalways_sq.quality
         else:
             Log.info(f'Info: unable to find matching or utp scenario subquery for {sname}, skipping...')
             return DownloadResult.FAIL_SKIPPED
@@ -116,7 +116,7 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
         Log.warn(f'Warning: could not extract tags from {sname}, skipping due to untagged videos download policy...')
         return DownloadResult.FAIL_SKIPPED
     if Config.save_tags:
-        vi.my_tags = ' '.join(tag.replace(' ', '_') for tag in tags_raw)
+        vi.tags = ' '.join(tag.replace(' ', '_') for tag in tags_raw)
     if Config.save_descriptions or Config.save_comments:
         cidivs = a_html.find_all('div', class_='comment-body')
         cudivs = [cidiv.find('a', class_='comment-username') for cidiv in cidivs] if cidivs else []
@@ -126,22 +126,22 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
         if Config.save_descriptions:
             desc_comment = (f'{cudivs[-1].text}:\n{ctdivs[-1].text.strip()}') if has_description else ''
             desc_base = ''
-            vi.my_description = desc_base or (f'\n{desc_comment}\n' if desc_comment else '')
+            vi.description = desc_base or (f'\n{desc_comment}\n' if desc_comment else '')
         if Config.save_comments:
             comments_list = [f'{cudivs[i].text}:\n{ctdivs[i].text.strip()}' for i in range(len(ctdivs) - int(has_description))]
-            vi.my_comments = ('\n' + '\n\n'.join(comments_list) + '\n') if comments_list else ''
+            vi.comments = ('\n' + '\n\n'.join(comments_list) + '\n') if comments_list else ''
     my_tags = filtered_tags(tags_raw) or my_tags
 
     nm_ = PREFIX if has_naming_flag(NamingFlags.PREFIX) else ''
-    fname_part2 = extract_ext(vi.my_link)
+    fname_part2 = extract_ext(vi.link)
     my_score = (f'{f"+" if score.isnumeric() else ""}{score}' if len(score) > 0
                 else '' if len(rating) > 0 else 'unk')
     my_rating = (f'{", " if  len(my_score) > 0 else ""}{rating}{"%" if rating.isnumeric() else ""}' if len(rating) > 0
                  else '' if len(my_score) > 0 else 'unk')
     fname_part1 = (
-        f'{nm_}{vi.my_id:d}'
+        f'{nm_}{vi.id:d}'
         f'{f"_({my_score}{my_rating})" if has_naming_flag(NamingFlags.SCORE) else ""}'
-        f'{f"_{vi.my_title}" if vi.my_title and has_naming_flag(NamingFlags.TITLE) else ""}'
+        f'{f"_{vi.title}" if vi.title and has_naming_flag(NamingFlags.TITLE) else ""}'
     )
     # <fname_part1>_(<TAGS...>)_<QUALITY><fname_part2>
     extra_len = 2 + 2 + 5  # 2 underscores + 2 brackets + len('1080p') - max len of all qualities
@@ -154,10 +154,10 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
     fname_part1 = fname_part1.strip()
 
     ret_vals = list()
-    for i in range(QUALITIES.index(vi.my_quality), len(QUALITIES)):
-        vi.my_link = f'{SITE}/media/videos/{QUALITY_STARTS[i]}{vi.my_id:d}{QUALITY_ENDS[i]}{fname_part2}'
+    for i in range(QUALITIES.index(vi.quality), len(QUALITIES)):
+        vi.link = f'{SITE}/media/videos/{QUALITY_STARTS[i]}{vi.id:d}{QUALITY_ENDS[i]}{fname_part2}'
         fname_mid = f'_{QUALITIES[i]}' if has_naming_flag(NamingFlags.QUALITY) else ''
-        vi.my_filename = f'{fname_part1}{fname_mid}{fname_part2}'
+        vi.filename = f'{fname_part1}{fname_mid}{fname_part2}'
         res = await download_video(vi)
         if res not in (DownloadResult.SUCCESS, DownloadResult.FAIL_SKIPPED, DownloadResult.FAIL_ALREADY_EXISTS):
             ret_vals.append(res)
@@ -197,11 +197,11 @@ async def check_video_download_status(vi: VideoInfo, init_size: int, resp: Clien
 
 async def download_sceenshot(vi: VideoInfo, scr_num: int) -> DownloadResult:
     dwn = VideoDownloadWorker.get()
-    sname = f'{PREFIX}{vi.my_id:d}_{scr_num:02d}.jpg'
-    sfilename = f'{f"{vi.my_subfolder}/" if len(vi.my_subfolder) > 0 else ""}{PREFIX}{vi.my_id:d}/{scr_num:02d}.jpg'
-    my_folder = f'{vi.my_folder}{PREFIX}{vi.my_id:d}/'
+    sname = f'{PREFIX}{vi.id:d}_{scr_num:02d}.jpg'
+    sfilename = f'{f"{vi.subfolder}/" if len(vi.subfolder) > 0 else ""}{PREFIX}{vi.id:d}/{scr_num:02d}.jpg'
+    my_folder = f'{vi.my_folder}{PREFIX}{vi.id:d}/'
     fullpath = f'{my_folder}{scr_num:02d}.jpg'
-    my_link = f'{SITE}/media/videos/tmb2/{vi.my_id:d}/{scr_num:d}.jpg'
+    my_link = f'{SITE}/media/videos/tmb2/{vi.id:d}/{scr_num:d}.jpg'
     ret = DownloadResult.SUCCESS
 
     if not path.isdir(my_folder):
@@ -247,7 +247,7 @@ async def download_sceenshots(vi: VideoInfo) -> DownloadResult:
 async def download_video(vi: VideoInfo) -> DownloadResult:
     dwn = VideoDownloadWorker.get()
     sname = vi.sname
-    sfilename = f'{vi.my_sfolder}{vi.my_filename}'
+    sfilename = f'{vi.my_sfolder}{vi.filename}'
     retries = 0
     ret = DownloadResult.SUCCESS
     skip = Config.dm == DOWNLOAD_MODE_SKIP
@@ -264,16 +264,16 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             except Exception:
                 raise IOError(f'ERROR: Unable to create subfolder \'{vi.my_folder}\'!')
         else:
-            nm_match = re_media_filename.match(vi.my_filename)
+            nm_match = re_media_filename.match(vi.filename)
             nm_quality = nm_match.group(2)
-            nm_curfile = file_already_exists(vi.my_id, nm_quality)
+            nm_curfile = file_already_exists(vi.id, nm_quality)
             if nm_curfile:
                 if Config.continue_mode:
                     if nm_curfile != vi.my_fullpath:
-                        Log.info(f'{sname} {vi.my_quality} (or similar) found. Enforcing new name (was \'{path.split(nm_curfile)[1]}\').')
+                        Log.info(f'{sname} {vi.quality} (or similar) found. Enforcing new name (was \'{path.split(nm_curfile)[1]}\').')
                         rename(nm_curfile, vi.my_fullpath)
                 else:
-                    Log.info(f'{vi.my_filename} (or similar) already exists. Skipped.')
+                    Log.info(f'{vi.filename} (or similar) already exists. Skipped.')
                     vi.set_state(VideoInfo.State.DONE)
                     return DownloadResult.FAIL_ALREADY_EXISTS
 
@@ -284,7 +284,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
 
             if Config.dm == DOWNLOAD_MODE_TOUCH:
                 if file_exists:
-                    Log.info(f'{sname} ({vi.my_quality}) already exists, size: {file_size:d} ({file_size / Mem.MB:.2f} Mb)')
+                    Log.info(f'{sname} ({vi.quality}) already exists, size: {file_size:d} ({file_size / Mem.MB:.2f} Mb)')
                     vi.set_state(VideoInfo.State.DONE)
                     return DownloadResult.FAIL_ALREADY_EXISTS
                 else:
@@ -295,12 +295,12 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
 
             hkwargs = {'headers': {'Range': f'bytes={file_size:d}-'}} if file_size > 0 else {}  # type: Dict[str, Dict[str, str]]
             r = None
-            async with await wrap_request(dwn.session, 'GET', vi.my_link, **hkwargs) as r:
+            async with await wrap_request(dwn.session, 'GET', vi.link, **hkwargs) as r:
                 content_len = r.content_length or 0
                 content_range_s = r.headers.get('Content-Range', '/').split('/', 1)
                 content_range = int(content_range_s[1]) if len(content_range_s) > 1 and content_range_s[1].isnumeric() else 1
                 if (content_len == 0 or r.status == 416) and file_size >= content_range:  # r.status may be 404 also (Apache mishap)
-                    Log.warn(f'{sname} ({vi.my_quality}) is already completed, size: {file_size:d} ({file_size / Mem.MB:.2f} Mb)')
+                    Log.warn(f'{sname} ({vi.quality}) is already completed, size: {file_size:d} ({file_size / Mem.MB:.2f} Mb)')
                     vi.set_state(VideoInfo.State.DONE)
                     break
                 if r.status == 404:
@@ -308,14 +308,14 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                     retries = CONNECT_RETRIES_BASE - 1
                     ret = DownloadResult.FAIL_NOT_FOUND
                 if r.content_type and 'text' in r.content_type:
-                    Log.error(f'File not found at {vi.my_link}!')
-                    raise FileNotFoundError(vi.my_link)
+                    Log.error(f'File not found at {vi.link}!')
+                    raise FileNotFoundError(vi.link)
 
-                vi.my_expected_size = file_size + content_len
-                vi.my_last_check_size = vi.my_start_size = file_size
-                vi.my_last_check_time = vi.my_start_time = get_elapsed_time_i()
+                vi.expected_size = file_size + content_len
+                vi.last_check_size = vi.start_size = file_size
+                vi.last_check_time = vi.start_time = get_elapsed_time_i()
                 starting_str = f' <continuing at {file_size:d}>' if file_size else ''
-                total_str = f' / {vi.my_expected_size / Mem.MB:.2f}' if file_size else ''
+                total_str = f' / {vi.expected_size / Mem.MB:.2f}' if file_size else ''
                 Log.info(f'Saving{starting_str} {sname} {content_len / Mem.MB:.2f}{total_str} Mb to {sfilename}')
 
                 dwn.add_to_writes(vi)
@@ -328,9 +328,9 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 dwn.remove_from_writes(vi)
 
                 file_size = stat(vi.my_fullpath).st_size
-                if vi.my_expected_size and file_size != vi.my_expected_size:
-                    Log.error(f'Error: file size mismatch for {sfilename}: {file_size:d} / {vi.my_expected_size:d}')
-                    raise IOError(vi.my_link)
+                if vi.expected_size and file_size != vi.expected_size:
+                    Log.error(f'Error: file size mismatch for {sfilename}: {file_size:d} / {vi.expected_size:d}')
+                    raise IOError(vi.link)
 
                 vi.set_state(VideoInfo.State.DONE)
                 break
