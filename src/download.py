@@ -261,8 +261,6 @@ async def download_sceenshots(vi: VideoInfo) -> DownloadResult:
 
 async def download_video(vi: VideoInfo) -> DownloadResult:
     dwn = VideoDownloadWorker.get()
-    sname = vi.sname
-    sfilename = f'{vi.my_sfolder}{vi.filename}'
     retries = 0
     ret = DownloadResult.SUCCESS
     skip = Config.dm == DOWNLOAD_MODE_SKIP
@@ -286,11 +284,11 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 if Config.continue_mode:
                     if nm_curfile != vi.my_fullpath:
                         old_filename = path.split(nm_curfile)[1]
-                        Log.info(f'{vi.filename} {vi.quality} (or similar) found. Enforcing new name (was \'{old_filename}\').')
+                        Log.info(f'{vi.sffilename} {vi.quality} (or similar) found. Enforcing new name (was \'{old_filename}\').')
                         if not try_rename(nm_curfile, vi.my_fullpath):
-                            Log.warn(f'Warning: file {vi.my_fullpath} already exists! Old file will be preserved.')
+                            Log.warn(f'Warning: file {vi.sffilename} already exists! Old file will be preserved.')
                 else:
-                    Log.info(f'{vi.filename} (or similar) already exists. Skipped.')
+                    Log.info(f'{vi.sffilename} (or similar) already exists. Skipped.')
                     vi.set_state(VideoInfo.State.DONE)
                     return DownloadResult.FAIL_ALREADY_EXISTS
 
@@ -301,11 +299,11 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
 
             if Config.dm == DOWNLOAD_MODE_TOUCH:
                 if file_exists:
-                    Log.info(f'{sname} ({vi.quality}) already exists, size: {file_size:d} ({file_size / Mem.MB:.2f} Mb)')
+                    Log.info(f'{vi.sfsname} ({vi.quality}) already exists, size: {file_size:d} ({file_size / Mem.MB:.2f} Mb)')
                     vi.set_state(VideoInfo.State.DONE)
                     return DownloadResult.FAIL_ALREADY_EXISTS
                 else:
-                    Log.info(f'Saving<touch> {sname} {0.0:.2f} Mb to {sfilename}')
+                    Log.info(f'Saving<touch> {vi.sname} {0.0:.2f} Mb to {vi.sffilename}')
                     with open(vi.my_fullpath, 'wb'):
                         vi.set_state(VideoInfo.State.DONE)
                 break
@@ -317,12 +315,12 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 content_range_s = r.headers.get('Content-Range', '/').split('/', 1)
                 content_range = int(content_range_s[1]) if len(content_range_s) > 1 and content_range_s[1].isnumeric() else 1
                 if (content_len == 0 or r.status == 416) and file_size >= content_range:  # r.status may be 404 also (Apache mishap)
-                    Log.warn(f'{sname} ({vi.quality}) is already completed, size: {file_size:d} ({file_size / Mem.MB:.2f} Mb)')
+                    Log.warn(f'{vi.sfsname} ({vi.quality}) is already completed, size: {file_size:d} ({file_size / Mem.MB:.2f} Mb)')
                     vi.set_state(VideoInfo.State.DONE)
                     ret = DownloadResult.FAIL_ALREADY_EXISTS
                     break
                 if r.status == 404:
-                    Log.error(f'Got 404 for {sname}...!')
+                    Log.error(f'Got 404 for {vi.sfsname}...!')
                     retries = CONNECT_RETRIES_BASE - 1
                     ret = DownloadResult.FAIL_NOT_FOUND
                 if r.content_type and 'text' in r.content_type:
@@ -334,7 +332,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 vi.last_check_time = vi.start_time = get_elapsed_time_i()
                 starting_str = f' <continuing at {file_size:d}>' if file_size else ''
                 total_str = f' / {vi.expected_size / Mem.MB:.2f}' if file_size else ''
-                Log.info(f'Saving{starting_str} {sname} {content_len / Mem.MB:.2f}{total_str} Mb to {sfilename}')
+                Log.info(f'Saving{starting_str} {vi.sname} {content_len / Mem.MB:.2f}{total_str} Mb to {vi.sffilename}')
 
                 dwn.add_to_writes(vi)
                 vi.set_state(VideoInfo.State.WRITING)
@@ -347,7 +345,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
 
                 file_size = stat(vi.my_fullpath).st_size
                 if vi.expected_size and file_size != vi.expected_size:
-                    Log.error(f'Error: file size mismatch for {sfilename}: {file_size:d} / {vi.expected_size:d}')
+                    Log.error(f'Error: file size mismatch for {vi.sfsname}: {file_size:d} / {vi.expected_size:d}')
                     raise IOError(vi.link)
 
                 vi.set_state(VideoInfo.State.DONE)
@@ -357,7 +355,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             print(sys.exc_info()[0], sys.exc_info()[1])
             if (r is None or r.status != 403) and isinstance(e, ClientPayloadError) is False:
                 retries += 1
-                Log.error(f'{sfilename}: error #{retries:d}...')
+                Log.error(f'{vi.sffilename}: error #{retries:d}...')
             if r is not None and r.closed is False:
                 r.close()
             # Network error may be thrown before item is added to active downloads
@@ -369,7 +367,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 vi.set_state(VideoInfo.State.DOWNLOADING)
                 await sleep(frand(1.0, 7.0))
             elif Config.keep_unfinished is False and path.isfile(vi.my_fullpath):
-                Log.error(f'Failed to download {sfilename}. Removing unfinished file...')
+                Log.error(f'Failed to download {vi.sffilename}. Removing unfinished file...')
                 remove(vi.my_fullpath)
 
     ret = (ret if ret in (DownloadResult.FAIL_NOT_FOUND, DownloadResult.FAIL_SKIPPED, DownloadResult.FAIL_ALREADY_EXISTS) else
@@ -379,7 +377,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
     if Config.save_screenshots:
         sret = await download_sceenshots(vi)
         if sret != DownloadResult.SUCCESS:
-            Log.warn(f'{sfilename}: `download_sceenshots()` has failed items (ret = {str(sret)})')
+            Log.warn(f'{vi.sffilename}: `download_sceenshots()` has failed items (ret = {str(sret)})')
 
     return ret
 
