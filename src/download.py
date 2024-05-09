@@ -285,7 +285,8 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             if nm_curfile:
                 if Config.continue_mode:
                     if nm_curfile != vi.my_fullpath:
-                        Log.info(f'{sname} {vi.quality} (or similar) found. Enforcing new name (was \'{path.split(nm_curfile)[1]}\').')
+                        old_filename = path.split(nm_curfile)[1]
+                        Log.info(f'{vi.filename} {vi.quality} (or similar) found. Enforcing new name (was \'{old_filename}\').')
                         if not try_rename(nm_curfile, vi.my_fullpath):
                             Log.warn(f'Warning: file {vi.my_fullpath} already exists! Old file will be preserved.')
                 else:
