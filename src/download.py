@@ -315,7 +315,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 content_range_s = r.headers.get('Content-Range', '/').split('/', 1)
                 content_range = int(content_range_s[1]) if len(content_range_s) > 1 and content_range_s[1].isnumeric() else 1
                 if (content_len == 0 or r.status == 416) and file_size >= content_range:  # r.status may be 404 also (Apache mishap)
-                    Log.warn(f'{vi.sfsname} ({vi.quality}) is already completed, size: {file_size:d} ({file_size / Mem.MB:.2f} Mb)')
+                    Log.warn(f'{vi.sfsname} ({vi.link_quality}) is already completed, size: {file_size:d} ({file_size / Mem.MB:.2f} Mb)')
                     vi.set_state(VideoInfo.State.DONE)
                     ret = DownloadResult.FAIL_ALREADY_EXISTS
                     break

@@ -11,7 +11,7 @@ from enum import IntEnum
 from typing import Dict, Iterable, Union, Tuple
 
 from config import Config
-from defs import PREFIX, UTF8, DEFAULT_QUALITY, DEFAULT_EXT
+from defs import PREFIX, UTF8, DEFAULT_QUALITY, DEFAULT_EXT, QUALITY_STARTS, QUALITIES
 from util import normalize_path, normalize_filename
 
 __all__ = ('VideoInfo', 'get_min_max_ids', 'export_video_info')
@@ -58,7 +58,7 @@ class VideoInfo:  # up to ~3 Kb (when all info is filled, asizeof)
     def __str__(self) -> str:
         return (
             f'[{self.state_str}] \'{PREFIX}{self.id:d}_{self.title}.{DEFAULT_EXT}\' ({self.quality})'
-            f'\nDest: \'{self.my_fullpath}\'\nLink: \'{self.link}\''
+            f'\nDest: \'{self.my_fullpath}\'\nLink: \'{self.link}\' ({self.link_quality})'
         )
 
     @property
@@ -88,6 +88,13 @@ class VideoInfo:  # up to ~3 Kb (when all info is filled, asizeof)
     @property
     def my_fullpath(self) -> str:
         return normalize_filename(self.filename, self.my_folder)
+
+    @property
+    def link_quality(self) -> str:
+        for qsi, qs in enumerate(QUALITY_STARTS):
+            if qs in self.link:
+                return QUALITIES[qsi]
+        return 'unk'
 
     @property
     def state_str(self) -> str:
