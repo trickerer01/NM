@@ -66,12 +66,13 @@ re_tags_to_exclude = re_compile(
     r'i(?:lk.*?|mic.*?|ni.*?|ssion.*?)|md|o(?:[ao]n.+?|d(?:e.*?)?|ld.*?|m|saic|ther)|p4|u(?:ltipl.+?|s(?:c[lu].+?|ic.*?)))|'  # m
     r'n(?:a(?:ke.+?|rra.+?|ught.*?)|e(?:ko.*?|tor.+?)|ipp.+?|o(?:_.+?|sound)|sfw.*?|tr|ud[ei].*?)|'  # n
     r'o(?:bey.*?|il.+?|n.+?|perat.*?|riginal.*?|ut.*?)|'  # o
-    r'p(?:a(?:iz.+?|nt.*?|r(?:asite|[ot].*?))|e(?:n(?:et.+?|i.+?)|tite)|i(?:erc.*?|gtail.*?|ll.*?|n[bn].+?)|l(?:ay.*?|ea.*?)|'  # p
+    r'p(?:a(?:iz.+?|nt.*?|r(?:asite|[ot].*?))|e(?:n(?:et.+?|i.+?)|tite)|h(?:one)|i(?:erc.*?|gtail.*?|ll.*?|n[bn].+?)|l(?:ay.*?|ea.*?)|'  # p
     r'o(?:nytail.*?|ol.*?|rn.*?|si.*?|und.*?)|r(?:e(?:dat.*?|mak.*?|view.*?)|inc.+?|o(?:ject.*?|n.+?|stit.*?))|u(?:bl?i.*?|ss.*?))|'  # p
     r'r(?:34|63|aid.*?|e(?:al.*?|boo.+?|d(?!head).+?|vers.+?)|i(?:d[ei].*?|mm.*?|s[ei].*?|tual.*?)|'  # r
     r'o(?:le.*?|man.*?|om.*?|ugh.*?)|u(?:bb.+?|le.*?))|'  # r
-    r's(?:ans|chool.*?|ex.*?|fm|h(?:e|in[ey]|o(?:e.*?|rt.*?|uld.*?))|i(?:lver.*?|m(?:s[^\d].*?|ulat.+?)|nthet.*?|ster.*?|ze.*?)|kin|'  # s
-    r'l(?:ap.*?)|m(?:all.*?|il.+?|oth.+?)|o(?:ft.*?|mes?|u(?:nd.*?|rce.*?))|p(?:an[ik].*?|ort.*?)|q(?:u(?:ea.+?|irt.*?))|'  # s
+    r's(?:ans|c(?:hool.*?|reen.*?)|ex.*?|fm|h(?:e|in[ey]|o(?:e.*?|rt.*?|uld.*?))|'  # s
+    r'i(?:lver.*?|m(?:s[^\d].*?|ulat.+?)|nthet.*?|ster.*?|ze.*?)|kin|l(?:ap.*?)|m(?:all.*?|il.+?|oth.+?)|'  # s
+    r'o(?:ft.*?|mes?|u(?:nd.*?|rce.*?))|p(?:an[ik].*?|ort.*?)|q(?:u(?:ea.+?|irt.*?))|'  # s
     r't(?:a(?:nd.*?|r.*?)|ep.*?|o(?:ck.*?|ma.*?|r.*?)|raigh.+?|ud.*?|yl.+?)|u(?:bm.+?|per.*?)|w(?:eat.*?|i(?:m.*?|ng.*?)))|'  # s
     r't(?:a(?:g.+?|il.*?|lk.*?|n.+?|tt?o.*?)|e(?:as.+?|mpl.*?|st.*?)|h(?:i(?:c(?:c+|k)?|gh.*?)|rou.+?)|i(?:ktok.*?|t.+?)|'  # t
     r'o(?:e.+?|ilet|mb.*?|ngue.*?|on.*?|uch.*?)|pr|r(?:ain.*?|ip.*?|oug.+?)|win.*?)|'  # t
@@ -141,6 +142,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(gang),((?:bang|rape))'): r'\1\2',
     re_compile(r'(grand),(cupido)'): r'\1\2',
     re_compile(r'(group),(sex)'): r'\1 \2',
+    re_compile(r'(g[vw]en),(stac[iuy])'): r'\1 \2',
     re_compile(r'(hagen),(toons)'): r'\1 \2',
     re_compile(r'(hana),(song)'): r'\1 \2',
     re_compile(r'(hard),(core)'): r'\1\2',
@@ -157,7 +159,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(jessie),(rasberry)'): r'\1 \2',
     re_compile(r'(jill),(valentine)'): r'\1 \2',
     re_compile(r'(jojo)(?:,(.?s))?,(bizzare),(adventure)'): r'\1\2 \3 \4',
-    re_compile(r'(judy),(alvare[sz])'): r'\1 \2',
+    re_compile(r'(judy),(alvare[sz]|panam)'): r'\1 \2',
     re_compile(r'(jur[iy]),(han)'): r'\1 \2',
     re_compile(r'(kantai),(collection)'): r'\1 \2',
     re_compile(r'(kim),(possible)'): r'\1 \2',
@@ -194,6 +196,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(science),(fiction)'): r'\1 \2',
     re_compile(r'(sheva),(alomar)'): r'\1 \2',
     re_compile(r'(silent),(hill)(?:,(0?\d))'): r'\1 \2 \3',
+    re_compile(r'(sleepy),(b)'): r'\1 \2',
     re_compile(r'(soft),(core)'): r'\1\2',
     re_compile(r'(soul),(calibur|eater)'): r'\1 \2',
     re_compile(r'(spider),(man)'): r'\1 \2',
