@@ -54,8 +54,10 @@ async def download(sequence: List[VideoInfo], by_id: bool, filtered_count: int, 
 
 async def scan_video(vi: VideoInfo) -> DownloadResult:
     dwn = VideoDownloadWorker.get()
+    scn = VideoScanWorker.get()
     scenario = Config.scenario  # type: Optional[DownloadScenario]
     sname = vi.sname
+    extra_ids = scn.get_extra_ids() if scn else []  # type: List[int]
     my_tags = 'no_tags'
     rating = vi.rating
     score = ''
@@ -67,6 +69,10 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
         return DownloadResult.FAIL_RETRIES
 
     if any('Error' in (d.string, d.text) for d in a_html.find_all('legend')):
+        error_div = a_html.find('div', class_='text-danger')
+        if error_div and 'It is either deleted' in error_div.string:
+            Log.error(f'Got error 404 for {sname}, skipping...')
+            return DownloadResult.FAIL_NOT_FOUND
         Log.error(f'Warning: Got error 404 for {sname} (probably unlisted), author/score will not be extracted...')
     elif any(re_private_video.search(d.text) for d in a_html.find_all('span', class_='text-danger')):
         Log.warn(f'Warning: Got private video error for {sname}, score(likes)/extra_title will not be extracted...')
@@ -98,7 +104,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
     for add_tag in [ca for ca in [my_author] if len(ca) > 0]:
         if add_tag not in tags_raw:
             tags_raw.append(add_tag)
-    if is_filtered_out_by_extra_tags(vi, tags_raw, Config.extra_tags, Config.id_sequence, vi.subfolder):
+    if is_filtered_out_by_extra_tags(vi, tags_raw, Config.extra_tags, Config.id_sequence, vi.subfolder, extra_ids):
         Log.info(f'Info: video {sname} is filtered out by{" outer" if scenario is not None else ""} extra tags, skipping...')
         return DownloadResult.FAIL_SKIPPED
     for vsrs, csri, srn, pc in zip((score, rating), (Config.min_score, Config.min_rating), ('score', 'rating'), ('', '%')):
