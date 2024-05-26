@@ -59,7 +59,7 @@ DEFAULT_HEADERS = {'User-Agent': USER_AGENT}
 
 QUALITIES = ('1080p', '720p', 'hi', '480p', '360p', 'SD', 'low')
 QUALITY_STARTS = ('h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/')
-QUALITY_ENDS = ('_1080p', '_720p', '_hi', '_480p', '_360p', '_SD', '')
+QUALITY_ENDS = ('_1080p', '_720p', '', '_480p', '_360p', '_SD', '')
 
 DEFAULT_QUALITY = QUALITIES[4]
 """'360p'"""
