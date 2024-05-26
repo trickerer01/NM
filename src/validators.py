@@ -19,11 +19,14 @@ from util import normalize_path
 
 def find_and_resolve_config_conflicts() -> bool:
     if Config.playlist_name and Config.search:
-        Log.fatal('\nError: cannot use search within playlist! Please use one or the other')
+        Log.fatal('\nError: cannot use search within playlist! Please use one or the other, or filter using extra tags')
         raise ValueError
     if Config.uploader and Config.search:
-        Log.fatal('\nError: cannot use search within uploader\'s videos! Please use one or the other')
+        Log.fatal('\nError: cannot use search within uploader\'s videos! Please use one or the other, or filter using extra tags')
         raise ValueError
+    # if Config.model and Config.search:
+    #     Log.fatal('\nError: cannot use search within uploader\'s videos! Please use one or the other, or filter using extra tags')
+    #     raise ValueError
     if Config.use_id_sequence in (False, None) and Config.start_id > Config.end_id:
         Log.fatal(f'\nError: invalid video id bounds: start ({Config.start_id:d}) > end ({Config.end_id:d})')
         raise ValueError
