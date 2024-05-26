@@ -147,6 +147,7 @@ def add_common_args(parser_or_group: ArgumentParser) -> None:
     # parser_or_group.add_argument('-session_id', default=None, help=HELP_ARG_SESSION_ID, type=valid_session_id)
     parser_or_group.add_argument('-script', '--download-scenario', default=None, help=HELP_ARG_DWN_SCENARIO, type=DownloadScenario)
     parser_or_group.add_argument('--store-continue-cmdfile', action=ACTION_STORE_TRUE, help=HELP_ARG_STORE_CONTINUE_CMDFILE)
+    # parser_or_group.add_argument('--check-uploader', action=ACTION_STORE_TRUE, help=HELP_ARG_CHECK_UPLOADER)
     parser_or_group.add_argument(dest='extra_tags', nargs=ZERO_OR_MORE, help=HELP_ARG_EXTRA_TAGS)
 
 
