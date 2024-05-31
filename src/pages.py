@@ -42,14 +42,14 @@ async def main(args: Sequence[str]) -> None:
     if find_and_resolve_config_conflicts() is True:
         await sleep(3.0)
 
-    def check_id_bounds(video_id: int) -> bool:
+    def check_id_bounds(video_id: int) -> int:
         if video_id > Config.end_id:
             Log.trace(f'skipping {video_id:d} > {Config.end_id:d}')
-            return False
+            return 1
         if video_id < Config.start_id:
             Log.trace(f'skipping {video_id:d} < {Config.start_id:d}')
-            return False
-        return True
+            return -1
+        return 0
 
     v_entries = list()
     maxpage = Config.end if Config.start == Config.end else 0
@@ -100,17 +100,27 @@ async def main(args: Sequence[str]) -> None:
             Log.info(f'page {pi - 1:d}...{" (this is the last page!)" if (0 < maxpage == pi - 1) else ""}')
 
             vrefs = a_html.find_all('div', class_=video_ref_class)
+            lower_count = 0
+            orig_count = len(vrefs)
             for vref in vrefs:
                 aref = vref.find_all('a')[-1]
                 rref = vref.find('span', class_='content-rating')
                 tref = aref.find('span')
                 cur_id = int(re_page_entry.search(str(aref.get('href'))).group(1))
-                if check_id_bounds(cur_id) is False:
+                bound_res = check_id_bounds(cur_id)
+                if bound_res != 0:
+                    if bound_res < 0:
+                        lower_count += 1
                     continue
                 my_title = str(tref.text)
                 my_rating = str(rref.find('span').text) if rref else ''
                 my_rating = '' if my_rating in ('0%', '') else my_rating[:-1]  # 0% rating doesn't mean all votes are dislikes necessarily
                 v_entries.append(VideoInfo(cur_id, my_title, m_rating=my_rating))
+
+            if pi - 1 > Config.start and lower_count == orig_count > 0 and not Config.scan_all_pages:
+                if maxpage == 0 or pi - 1 < maxpage:
+                    Log.info(f'Page {pi - 1:d} has all post ids below lower bound. Pages scan stopped!')
+                break
 
         v_entries.reverse()
         orig_count = len(v_entries)

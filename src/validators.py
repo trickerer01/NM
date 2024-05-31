@@ -34,8 +34,14 @@ def find_and_resolve_config_conflicts() -> bool:
     if Config.get_maxid:
         Config.logging_flags = LoggingFlags.FATAL
         Config.start = Config.end = Config.start_id = Config.end_id = 1
+        return False
 
     delay_for_message = False
+
+    if Config.scan_all_pages and Config.start_id <= 1:
+        Log.info('Info: \'--scan-all-pages\' flag was set but post id lower bound was not provided, ignored')
+        delay_for_message = True
+
     if Config.scenario is not None:
         if Config.utp != DOWNLOAD_POLICY_DEFAULT:
             Log.info('Info: running download script, outer untagged policy will be ignored')
