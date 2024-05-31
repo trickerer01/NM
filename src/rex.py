@@ -96,7 +96,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(black|dark|pale|pink|white),(skin)'): r'\1 \2',
     re_compile(r'([^,]+),(job)'): r'\1\2',
     re_compile(r'([^,]+),(man)'): r'\1 \2',
-    re_compile(r'([^\d,]+),(0?\d)'): r'\1 \2',
+    re_compile(r'([^\d,]+),(0?\d+)(?:,|$)'): r'\1 \2',
     re_compile(r'(ada),(wong)'): r'\1 \2',
     re_compile(r'(against),(?:(the),)?(desk|table|wall)'): r'\1 the \3',
     re_compile(r'(all),(fours?)'): r'\1 \2',
