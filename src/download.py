@@ -106,7 +106,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
             tags_raw.append(add_tag)
     if is_filtered_out_by_extra_tags(vi, tags_raw, Config.extra_tags, Config.id_sequence, vi.subfolder, extra_ids):
         Log.info(f'Info: video {sname} is filtered out by{" outer" if scenario is not None else ""} extra tags, skipping...')
-        return DownloadResult.FAIL_SKIPPED
+        return DownloadResult.FAIL_FILTERED_OUTER if scenario else DownloadResult.FAIL_SKIPPED
     for vsrs, csri, srn, pc in zip((score, rating), (Config.min_score, Config.min_rating), ('score', 'rating'), ('', '%')):
         if len(vsrs) > 0 and csri is not None:
             try:
