@@ -46,7 +46,7 @@ class BaseConfig:
         self.throttle = None  # type: Optional[int]
         self.throttle_auto = None  # type: Optional[bool]
         self.store_continue_cmdfile = None  # type: Optional[bool]
-        # self.check_uploader = None  # type: Optional[bool]
+        self.check_uploader = None  # type: Optional[bool]
         # module-specific params (pages only or ids only)
         self.scan_all_pages = None  # type: Optional[bool]
         self.use_id_sequence = None  # type: Optional[bool]
@@ -96,7 +96,7 @@ class BaseConfig:
         self.throttle = params.throttle
         self.throttle_auto = params.throttle_auto
         self.store_continue_cmdfile = params.store_continue_cmdfile
-        # self.check_uploader = params.check_uploader
+        self.check_uploader = getattr(params, 'check_uploader', self.check_uploader)
         # module-specific params (pages only or ids only)
         self.scan_all_pages = getattr(params, 'scan_all_pages', self.scan_all_pages)
         self.use_id_sequence = getattr(params, 'use_id_sequence', self.use_id_sequence)

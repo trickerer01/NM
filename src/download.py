@@ -92,6 +92,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
             my_author = str(a_html.find('div', class_='card-sub mt-3').find('span', class_='').text).lower()
         except Exception:
             my_author = a_html.find('span', class_='text-danger').find('a').text.lower()
+        vi.uploader = my_author
     except Exception:
         Log.warn(f'Warning: cannot extract author for {sname}.')
         my_author = ''
