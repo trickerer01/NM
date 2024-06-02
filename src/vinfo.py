@@ -12,7 +12,7 @@ from os import path, listdir, remove
 from typing import Dict, Iterable, Union, Tuple, List, Match
 
 from config import Config
-from defs import PREFIX, UTF8, DEFAULT_QUALITY, DEFAULT_EXT, QUALITY_STARTS, QUALITIES
+from defs import PREFIX, UTF8, DEFAULT_QUALITY, DEFAULT_EXT, QUALITY_STARTS, QUALITY_ENDS, QUALITIES
 from logger import Log
 from rex import re_infolist_filename
 from util import normalize_path, normalize_filename
@@ -108,9 +108,9 @@ class VideoInfo:  # up to ~3 Kb (when all info is filled, asizeof)
 
     @property
     def link_quality(self) -> str:
-        for qsi, qs in enumerate(QUALITY_STARTS):
-            if qs in self.link:
-                return QUALITIES[qsi]
+        for qi in range(len(QUALITY_STARTS)):
+            if QUALITY_STARTS[qi] in self.link and QUALITY_ENDS[qi] in self.link:
+                return QUALITIES[qi]
         return 'unk'
 
     @property
