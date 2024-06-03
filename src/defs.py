@@ -11,7 +11,7 @@ from datetime import datetime
 from enum import IntEnum
 
 APP_NAME = 'NM'
-APP_VERSION = '1.6.240'
+APP_VERSION = '1.8.380'
 
 CONNECT_RETRIES_BASE = 50
 CONNECT_TIMEOUT_BASE = 10
