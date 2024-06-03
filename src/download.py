@@ -105,6 +105,23 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
     for add_tag in [ca for ca in [my_author] if len(ca) > 0]:
         if add_tag not in tags_raw:
             tags_raw.append(add_tag)
+    if Config.save_tags:
+        vi.tags = ' '.join(tag.replace(' ', '_') for tag in tags_raw)
+    if Config.save_descriptions or Config.save_comments or Config.check_description_pos or Config.check_description_neg:
+        cidivs = a_html.find_all('div', class_='comment-body')
+        cudivs = [cidiv.find('a', class_='comment-username') for cidiv in cidivs] if cidivs else []
+        ctdivs = [cidiv.find('div', class_='comment-text') for cidiv in cidivs] if cidivs else []
+        my_uploader = my_author or 'unknown'
+        has_description = (cudivs[-1].text.lower() == my_uploader) if cudivs else False  # first comment by uploader
+        if Config.save_descriptions or Config.check_description_pos or Config.check_description_neg:
+            desc_comment = (f'{cudivs[-1].text}:\n{ctdivs[-1].text.strip()}') if has_description else ''
+            desc_base = ''
+            vi.description = desc_base or (f'\n{desc_comment}\n' if desc_comment else '')
+        if Config.save_comments:
+            comments_list = [f'{cudivs[i].text}:\n{ctdivs[i].text.strip()}' for i in range(len(ctdivs) - int(has_description))]
+            vi.comments = ('\n' + '\n\n'.join(comments_list) + '\n') if comments_list else ''
+    if Config.check_uploader and vi.uploader and vi.uploader not in tags_raw:
+        tags_raw.append(vi.uploader)
     if is_filtered_out_by_extra_tags(vi, tags_raw, Config.extra_tags, Config.id_sequence, vi.subfolder, extra_ids):
         Log.info(f'Info: video {sname} is filtered out by{" outer" if scenario is not None else ""} extra tags, skipping...')
         return DownloadResult.FAIL_FILTERED_OUTER if scenario else DownloadResult.FAIL_SKIPPED
@@ -131,21 +148,6 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
     elif tdiv is None and len(Config.extra_tags) > 0 and Config.utp != DOWNLOAD_POLICY_ALWAYS:
         Log.warn(f'Warning: could not extract tags from {sname}, skipping due to untagged videos download policy...')
         return DownloadResult.FAIL_SKIPPED
-    if Config.save_tags:
-        vi.tags = ' '.join(tag.replace(' ', '_') for tag in tags_raw)
-    if Config.save_descriptions or Config.save_comments:
-        cidivs = a_html.find_all('div', class_='comment-body')
-        cudivs = [cidiv.find('a', class_='comment-username') for cidiv in cidivs] if cidivs else []
-        ctdivs = [cidiv.find('div', class_='comment-text') for cidiv in cidivs] if cidivs else []
-        my_uploader = my_author or 'unknown'
-        has_description = (cudivs[-1].text.lower() == my_uploader) if cudivs else False  # first comment by uploader
-        if Config.save_descriptions:
-            desc_comment = (f'{cudivs[-1].text}:\n{ctdivs[-1].text.strip()}') if has_description else ''
-            desc_base = ''
-            vi.description = desc_base or (f'\n{desc_comment}\n' if desc_comment else '')
-        if Config.save_comments:
-            comments_list = [f'{cudivs[i].text}:\n{ctdivs[i].text.strip()}' for i in range(len(ctdivs) - int(has_description))]
-            vi.comments = ('\n' + '\n\n'.join(comments_list) + '\n') if comments_list else ''
     my_tags = filtered_tags(tags_raw) or my_tags
 
     prefix = PREFIX if has_naming_flag(NamingFlags.PREFIX) else ''
