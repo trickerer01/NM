@@ -126,6 +126,10 @@ TAG_ALIASES = {
     'boywithfutanari': 'male_on_futa',
     'boy_on_futanari': 'male_on_futa',
     'boy_with_futanari': 'male_on_futa',
+    'canid_demon': 'demon',
+    'demon_girl': 'demon',
+    'demon_horns': 'demon',
+    'demon_tail': 'demon',
     'dominant': 'domination',
     'dominated': 'domination',
     'dominating': 'domination',
@@ -177,6 +181,7 @@ TAG_ALIASES = {
     'lezdom': 'lesbian',
     'genderswap_(mtf)': 'genderswap_mtf',
     'genderswap_(ftm)': 'genderswap_ftm',
+    'oviposit': 'eggs',
     'ovipositor': 'eggs',
     'oviposition': 'eggs',
 }
