@@ -80,6 +80,9 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
     if not vi.title:
         titlemeta = a_html.find('meta', attrs={'name': 'description'})
         vi.title = titlemeta.get('content', '') if titlemeta else ''
+
+    Log.debug(f'DEBUG: Scanning {sname}: \'{vi.title}\'')
+
     try:
         dislikes_int = int(a_html.find('span', id=f'dislikes_video_{vi.id:d}').text)
         likes_int = int(a_html.find('span', id=f'likes_video_{vi.id:d}').text)
