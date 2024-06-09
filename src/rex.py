@@ -191,6 +191,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(red),(head)'): r'\1\2',
     re_compile(r'(rick),(and),(morty)'): r'\1 \2 \3',
     re_compile(r'(rock),(candy)'): r'\1 \2',
+    re_compile(r'(rope),(dude)'): r'\1\2',
     re_compile(r'(salvatore),(moreau)'): r'\1 \2',
     re_compile(r'(samus),(aran)'): r'\1 \2',
     re_compile(r'(second),(li[fv]e)'): r'\1 \2',
