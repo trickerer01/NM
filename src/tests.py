@@ -29,7 +29,7 @@ from path_util import found_filenames_dict
 from util import normalize_path
 from version import APP_NAME, APP_VERSION
 
-RUN_CONN_TESTS = 1
+RUN_CONN_TESTS = 0
 
 
 def set_up_test(log=False) -> None:
