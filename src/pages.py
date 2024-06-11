@@ -13,7 +13,7 @@ from typing import Sequence
 from cmdargs import HelpPrintExitException, prepare_arglist
 from config import Config
 from defs import (
-    PREFIX, SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_UPLOADER_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
+    SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_UPLOADER_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
 
 )
 from download import download, at_interrupt
@@ -24,6 +24,7 @@ from rex import re_page_entry
 from util import at_startup
 from validators import find_and_resolve_config_conflicts
 from vinfo import VideoInfo
+from version import APP_NAME
 
 __all__ = ('main_sync',)
 
@@ -94,7 +95,7 @@ async def main(args: Sequence[str]) -> None:
             if Config.get_maxid:
                 miref = a_html.find('div', class_=video_ref_class).find('a')
                 max_id = re_page_entry.search(str(miref.get('href'))).group(1)
-                Log.fatal(f'{PREFIX[:2].upper()}: {max_id}')
+                Log.fatal(f'{APP_NAME}: {max_id}')
                 return
 
             Log.info(f'page {pi - 1:d}...{" (this is the last page!)" if (0 < maxpage == pi - 1) else ""}')
