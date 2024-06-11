@@ -16,9 +16,7 @@ from unittest.mock import patch
 from cmdargs import prepare_arglist
 # noinspection PyProtectedMember
 from config import BaseConfig
-from defs import (
-    APP_NAME, APP_VERSION, DOWNLOAD_MODE_TOUCH, QUALITIES,
-)
+from defs import DOWNLOAD_MODE_TOUCH, QUALITIES
 from downloader import VideoDownloadWorker
 from dscanner import VideoScanWorker
 # noinspection PyProtectedMember
@@ -29,8 +27,9 @@ from pages import main as pages_main, main_sync as pages_main_sync
 # noinspection PyProtectedMember
 from path_util import found_filenames_dict
 from util import normalize_path
+from version import APP_NAME, APP_VERSION
 
-RUN_CONN_TESTS = 0
+RUN_CONN_TESTS = 1
 
 
 def set_up_test(log=False) -> None:
