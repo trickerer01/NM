@@ -215,6 +215,7 @@ RAW_TAGS_REPLACEMENTS = {
     re_compile(r'(tina),(armstrong)'): r'\1 \2',
     re_compile(r'(tinker),(bell)'): r'\1 \2',
     re_compile(r'(triss),(merigold)'): r'\1 \2',
+    re_compile(r'(unreal),(engine)'): r'\1\2',
     re_compile(r'(vam),(guy)'): r'\1 \2',
     re_compile(r'(voice),(act[^,]*?)'): r'\1 \2',
     re_compile(r'(wander),(over),(yonder)'): r'\1 \2 \3',
