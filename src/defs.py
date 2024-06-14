@@ -55,13 +55,6 @@ Ex. SITE_ITEM_REQUEST_UPLOADER_PAGE % ('anonymous', 1)"""
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.6 Firefox/102.0 PaleMoon/33.0.1'
 DEFAULT_HEADERS = {'User-Agent': USER_AGENT}
 
-QUALITIES = ('1080p', '720p', 'hi', '480p', '360p', 'SD', 'low')
-QUALITY_STARTS = ('h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/')
-QUALITY_ENDS = ('_1080p', '_720p', '', '_480p', '_360p', '_SD', '')
-
-DEFAULT_QUALITY = QUALITIES[4]
-"""'360p'"""
-
 # untagged videos download policy
 DOWNLOAD_POLICY_NOFILTERS = 'nofilters'
 DOWNLOAD_POLICY_ALWAYS = 'always'
@@ -86,6 +79,35 @@ DOWNLOAD_MODE_DEFAULT = DOWNLOAD_MODE_FULL
 # """('all','any')"""
 # SEARCH_RULE_DEFAULT = SEARCH_RULE_ALL
 # """'all'"""
+
+
+class Quality(str):
+    def __lt__(self, other: str) -> bool:
+        return QUALITIES.index(self) > QUALITIES.index(other)
+
+    def __gt__(self, other: str) -> bool:
+        return QUALITIES.index(self) < QUALITIES.index(other)
+
+    def __le__(self, other: str) -> bool:
+        return QUALITIES.index(self) >= QUALITIES.index(other)
+
+    def __ge__(self, other: str) -> bool:
+        return QUALITIES.index(self) <= QUALITIES.index(other)
+
+
+QUALITY_1080P = Quality('1080p')
+QUALITY_720P = Quality('720p')
+QUALITY_HI = Quality('hi')
+QUALITY_480P = Quality('480p')
+QUALITY_360P = Quality('360p')
+QUALITY_SD = Quality('SD')
+QUALITY_LOW = Quality('low')
+
+QUALITIES = (QUALITY_1080P, QUALITY_720P, QUALITY_HI, QUALITY_480P, QUALITY_360P, QUALITY_SD, QUALITY_LOW)
+QUALITY_STARTS = ('h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/')
+QUALITY_ENDS = ('_1080p', '_720p', '', '_480p', '_360p', '_SD', '')
+
+DEFAULT_QUALITY = QUALITY_360P
 
 
 class NamingFlags:
