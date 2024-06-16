@@ -20,6 +20,7 @@ NM is a video downloader with a lot of features, most of which are filters for f
 #### Tags
 - There is no list of existing tags. Video tagging is completely on uploaders. So better utilize...
 - Wildcards. In any `extra tag` you can use symbols `?` and `*` for `any symbol` and `any number of any symbols` repectively
+- Also any square brackets `[...]` are always interpreted as symbol selection group matching any symbol contained between opening and closing bracket. Example: `b[ua]ck` matches both `back` and `buck`. Note: this syntax is converted to regex directly so a single opening bracket `[` encountered causes an error while single closing bracket `]` doesn't
 - `extra tags` aren't validated, they can be anything
 - What makes `extra tags` different from search string is `tags` or `-tags` are being used as filters instead of search params, search string is passed using its own search argument (see full help) and all unknown arguments are automatically considered `extra tags`
 

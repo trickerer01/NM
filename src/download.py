@@ -104,10 +104,11 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
         Log.info(f'Warning: video {sname} has no tags!')
     tags = unite_separated_tags((str(tdiv.get('content')).replace('\n', ' ') if tdiv else '')
                                 .replace(' ', TAGS_CONCAT_CHAR).replace(2 * TAGS_CONCAT_CHAR, TAGS_CONCAT_CHAR).lower())
-    tags_raw = [tag.replace(' ', '_') for tag in tags.split(TAGS_CONCAT_CHAR) if len(tag) > 0]
-    for add_tag in [ca for ca in [my_author] if len(ca) > 0]:
-        if add_tag not in tags_raw:
-            tags_raw.append(add_tag)
+    tags_raw = [tag.replace(' ', '_') for tag in tags.split(TAGS_CONCAT_CHAR) if tag]
+    for calist in ([my_author],):
+        for add_tag in [ca.replace(' ', '_') for ca in calist if ca]:
+            if add_tag not in tags_raw:
+                tags_raw.append(add_tag)
     if Config.save_tags:
         vi.tags = ' '.join(tag.replace(' ', '_') for tag in tags_raw)
     if Config.save_descriptions or Config.save_comments or Config.check_description_pos or Config.check_description_neg:
