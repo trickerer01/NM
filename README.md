@@ -20,9 +20,11 @@ NM is a video downloader with a lot of features, most of which are filters for f
 #### Tags
 - There is no list of existing tags. Video tagging is completely on uploaders. So better utilize...
 - Wildcards. In any `extra tag` you can use symbols `?` and `*` for `any symbol` and `any number of any symbols` repectively
-- Also any square brackets `[...]` are always interpreted as symbol selection group matching any symbol contained between opening and closing bracket. Example: `b[ua]ck` matches both `back` and `buck`. Note: this syntax is converted to regex directly so a single opening bracket `[` encountered causes an error while single closing bracket `]` doesn't
-- Same approach can be used for entire words using double parenthesis `((word1|word2))`, `|` symbol here is used to separate words. Example: `after_((hours|school))` matches both `after_hours` and `after_school`
-- `extra tags` aren't validated, they can be anything
+- If even more advanced approach is required you can also use regular expressions. To prevent syntax conflicts following regex symbols must be escaped with `` ` ``: `()[]{}?*.,-+`. Example: ``*`[1`-5`]`+`(finger`{1`,3`}|girl`)s`?`.`*`` converts to regex ``^.*[1-5]+(?:finger{1,3}|girl)s?.*$``. Notes:
+  - No need to specify group as non-capturing
+  - Some characters don't need escaping, like `|` there
+  - You can combine wildcards and regular expressions within the same extra tag. Note how first `*` is converted as wildcard symbol while the ending `` `.`* `` specified explicitly as regex converts to the same characters pair
+  - `` ` `` character is used for escaping because it isn't contained in any tag, artist or category name
 - What makes `extra tags` different from search string is `tags` or `-tags` are being used as filters instead of search params, search string is passed using its own search argument (see full help) and all unknown arguments are automatically considered `extra tags`
 
 #### Additional info
