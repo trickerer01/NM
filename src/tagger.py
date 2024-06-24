@@ -65,9 +65,10 @@ def is_valid_or_group(orgr: str) -> bool:
 
 
 def normalize_wtag(wtag: str) -> str:
+    wtag = wtag.replace('((', '\u2039').replace('))', '\u203A')
     for c in '.()-+':
         wtag = wtag.replace(c, f'\\{c}')
-    return wtag.replace('*', '.*').replace('?', '.')
+    return wtag.replace('*', '.*').replace('?', '.').replace('\u203A', ')').replace('\u2039', '(?:')
 
 
 def get_matching_tag(wtag: str, mtags: Iterable[str], *, force_regex=False) -> Optional[str]:
