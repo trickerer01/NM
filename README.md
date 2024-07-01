@@ -13,10 +13,14 @@ NM is a video downloader with a lot of features, most of which are filters for f
 - For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/NM/issues)
 
 #### Search & filters
-- NM supports searching using native website API
-- Search (`pages.py` module only) is performed using search string (see help for more info), comparing every word against title or tags, partial match required: searching for 'all' will match titles containing 'tall', 'call', 'alligator' and so on
+- NM supports searching (`pages.py` module) using native website API
+  - `-search <STRING>` - search using raw string, matching all words (see below). Concatenate using `-`:
+- Search is performed using search string matching all words (see below)
 - Initial search results / ids list can be then filtered further using `extra tags` (see help for additional info)
 
+##### Search rules
+- How raw string search really works: when trying to match word(s) in the search string server iterates over post info exactly once, this means a single piece of post info may only match one word in search string, for example searching for `girl-girl` will return only a fraction of the results returned when searching for just `girl`. Words in provided string may match title, tags or author (uploader). Matching is partial so word 'all' will match 'tall', 'calling' and everything else containing this symbol sequence
+ 
 #### Tags
 - There is no list of existing tags. Video tagging is completely on uploaders. So better utilize...
 - Wildcards. In any `extra tag` you can use symbols `?` and `*` for `any symbol` and `any number of any symbols` repectively
