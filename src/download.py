@@ -115,7 +115,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
         cidivs = a_html.find_all('div', class_='comment-body')
         cudivs = [cidiv.find('a', class_='comment-username') for cidiv in cidivs] if cidivs else []
         ctdivs = [cidiv.find('div', class_='comment-text') for cidiv in cidivs] if cidivs else []
-        my_uploader = my_author or 'unknown'
+        my_uploader = vi.uploader or 'unknown'
         has_description = (cudivs[-1].text.lower() == my_uploader) if cudivs else False  # first comment by uploader
         if Config.save_descriptions or Config.check_description_pos or Config.check_description_neg:
             desc_comment = (f'{cudivs[-1].text}:\n{ctdivs[-1].text.strip()}') if has_description else ''
