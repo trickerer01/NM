@@ -21,7 +21,7 @@ from fetch_html import make_session, fetch_html
 from logger import Log
 from path_util import prefilter_existing_items
 from rex import re_page_entry
-from util import at_startup
+from util import at_startup, get_time_seconds
 from validators import find_and_resolve_config_conflicts
 from vinfo import VideoInfo
 from version import APP_NAME
@@ -111,6 +111,7 @@ async def main(args: Sequence[str]) -> None:
                 aref = vref.find_all('a')[-1]
                 rref = vref.find('span', class_='content-rating')
                 tref = aref.find('span')
+                dref = vref.find('div', class_='duration')
                 cur_id = int(re_page_entry.search(str(aref.get('href'))).group(1))
                 bound_res = check_id_bounds(cur_id)
                 if bound_res != 0:
@@ -120,7 +121,8 @@ async def main(args: Sequence[str]) -> None:
                 my_title = str(tref.text)
                 my_rating = str(rref.find('span').text) if rref else ''
                 my_rating = '' if my_rating in ('0%', '') else my_rating[:-1]  # 0% rating doesn't mean all votes are dislikes necessarily
-                v_entries.append(VideoInfo(cur_id, my_title, m_rating=my_rating))
+                my_duration = get_time_seconds(str(dref.get_text(strip=True).replace('HD', '')))
+                v_entries.append(VideoInfo(cur_id, my_title, m_rating=my_rating, m_duration=my_duration))
 
             if pi - 1 > Config.start and lower_count == orig_count > 0 and not Config.scan_all_pages:
                 if maxpage == 0 or pi - 1 < maxpage:

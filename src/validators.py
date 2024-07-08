@@ -11,7 +11,9 @@ from ipaddress import IPv4Address
 from os import path
 
 from config import Config
-from defs import NamingFlags, LoggingFlags, SLASH, NAMING_FLAGS, LOGGING_FLAGS, DOWNLOAD_POLICY_DEFAULT, DEFAULT_QUALITY
+from defs import (
+    NamingFlags, LoggingFlags, Duration, SLASH, NAMING_FLAGS, LOGGING_FLAGS, DOWNLOAD_POLICY_DEFAULT, DEFAULT_QUALITY
+)
 from logger import Log
 from rex import re_non_search_symbols, re_session_id
 from util import normalize_path
@@ -49,6 +51,10 @@ def find_and_resolve_config_conflicts() -> bool:
         Log.info('Info: \'--scan-all-pages\' flag was set but post id lower bound was not provided, ignored')
         delay_for_message = True
 
+    if Config.duration and not Config.is_pages:
+        Log.info('Info: duration extraction is not yet available for pure ids scan, ignored')
+        Config.duration = None
+        delay_for_message = True
     if Config.scenario is not None:
         if Config.utp != DOWNLOAD_POLICY_DEFAULT:
             Log.info('Info: running download script, outer untagged policy will be ignored')
@@ -65,6 +71,9 @@ def find_and_resolve_config_conflicts() -> bool:
             delay_for_message = True
         if Config.quality != DEFAULT_QUALITY:
             Log.info('Info: running download script, outer quality setting will be ignored')
+            delay_for_message = True
+        if Config.duration:
+            Log.info('Info: running download script, outer duration setting will be ignored')
             delay_for_message = True
     return delay_for_message
 
@@ -172,6 +181,17 @@ def valid_session_id(sessionid: str) -> str:
     try:
         assert (not sessionid) or re_session_id.fullmatch(sessionid)
         return sessionid
+    except Exception:
+        raise ArgumentError
+
+
+def valid_duration(duration: str) -> Duration:
+    try:
+        parts = duration.split('-', maxsplit=2)
+        assert len(parts) == 2
+        pair = (positive_int(parts[0]), positive_nonzero_int(parts[1]))
+        assert pair[0] <= pair[1]
+        return Duration(pair)
     except Exception:
         raise ArgumentError
 
