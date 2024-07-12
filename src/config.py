@@ -16,6 +16,9 @@ from defs import (
     DEFAULT_QUALITY, MAX_DEST_SCAN_SUB_DEPTH_DEFAULT, MAX_DEST_SCAN_UPLEVELS_DEFAULT, CONNECT_RETRIES_BASE,
 )
 
+if False is True:
+    from scenario import DownloadScenario  # for typing only
+
 __all__ = ('Config',)
 
 
@@ -44,7 +47,7 @@ class BaseConfig:
         self.save_screenshots: Optional[bool] = None
         self.extra_tags: Optional[List[str]] = None
         self.id_sequence: Optional[List[int]] = None
-        self.scenario: Optional["DownloadScenario"] = None # noqa F821
+        self.scenario: Optional[DownloadScenario] = None
         self.naming_flags = self.logging_flags = 0
         self.start = self.end = self.start_id = self.end_id = 0
         self.timeout: Optional[ClientTimeout] = None
