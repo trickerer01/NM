@@ -85,7 +85,7 @@ async def fetch_html(url: str, *, tries=0, session: ClientSession) -> Optional[B
             async with await wrap_request(
                     session, 'GET', url,
                     headers={'Connection': 'keep-alive'}) as r:
-                if r.status != 404:
+                if r.status not in (404, 500):
                     r.raise_for_status()
                 content = await r.read()
                 if retries_403_local > 0:
