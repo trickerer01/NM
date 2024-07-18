@@ -24,7 +24,7 @@ NM is a video downloader with a lot of features, most of which are filters for f
 #### Tags
 - There is no list of existing tags. Video tagging is completely on uploaders. So better utilize...
 - Wildcards. In any `extra tag` you can use symbols `?` and `*` for `any symbol` and `any number of any symbols` repectively
-- If even more advanced approach is required you can also use regular expressions. To prevent syntax conflicts following regex symbols must be escaped using `` ` ``: `()?*.,-+`. Example: ``*[1`-5]`+`(finger{1`,3}|girl`)s`?`.`*`` converts to regex ``^.*[1-5]+(?:finger{1,3}|girl)s?.*$``. Notes:
+- If even more advanced approach is required you can also use regular expressions. To prevent syntax conflicts following regex symbols must be escaped using `` ` ``: `()?*.,-+` as well as `(?:` sequence (`` `(?: ``). Example: ``*[1`-5]`+`(finger{1`,3}|girl`)s`?`.`*`` converts to regex ``^.*[1-5]+(?:finger{1,3}|girl)s?.*$``. Notes:
   - No need to specify group as non-capturing
   - Some characters don't need escaping, like `|` or `[` there
   - You can combine wildcards and regular expressions within the same extra tag. Note how first `*` is converted as wildcard symbol while the ending `` `.`* `` specified explicitly as regex converts to the same characters pair
