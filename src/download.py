@@ -28,7 +28,7 @@ from fetch_html import fetch_html, wrap_request, make_session, ensure_conn_close
 from logger import Log
 from path_util import file_already_exists, try_rename, is_file_being_used
 from rex import re_media_filename, re_time, re_private_video
-from tagger import filtered_tags, is_filtered_out_by_extra_tags, unite_separated_tags
+from tagger import filtered_tags, is_filtered_out_by_extra_tags, solve_tag_conflicts, unite_separated_tags
 from util import has_naming_flag, format_time, normalize_path, get_elapsed_time_i, get_time_seconds, extract_ext
 from vinfo import VideoInfo, export_video_info, get_min_max_ids
 
@@ -128,6 +128,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
             vi.comments = ('\n' + '\n\n'.join(comments_list) + '\n') if comments_list else ''
     if Config.check_uploader and vi.uploader and vi.uploader not in tags_raw:
         tags_raw.append(vi.uploader)
+    solve_tag_conflicts(vi, tags_raw)
     if is_filtered_out_by_extra_tags(vi, tags_raw, Config.extra_tags, Config.id_sequence, vi.subfolder, extra_ids):
         Log.info(f'Info: video {sname} is filtered out by{" outer" if scenario else ""} extra tags, skipping...')
         return DownloadResult.FAIL_FILTERED_OUTER if scenario else DownloadResult.FAIL_SKIPPED
