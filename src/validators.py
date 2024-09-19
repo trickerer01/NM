@@ -51,10 +51,6 @@ def find_and_resolve_config_conflicts() -> bool:
         Log.info('Info: \'--scan-all-pages\' flag was set but post id lower bound was not provided, ignored')
         delay_for_message = True
 
-    if Config.duration and not Config.is_pages:
-        Log.info('Info: duration extraction is not yet available for pure ids scan, ignored')
-        Config.duration = None
-        delay_for_message = True
     if Config.scenario is not None:
         if Config.utp != DOWNLOAD_POLICY_DEFAULT:
             Log.info('Info: running download script, outer untagged policy will be ignored')

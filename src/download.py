@@ -27,9 +27,9 @@ from dthrottler import ThrottleChecker
 from fetch_html import fetch_html, wrap_request, make_session, ensure_conn_closed
 from logger import Log
 from path_util import file_already_exists, try_rename, is_file_being_used
-from rex import re_media_filename, re_time, re_private_video
+from rex import re_media_filename, re_private_video
 from tagger import filtered_tags, is_filtered_out_by_extra_tags, solve_tag_conflicts, unite_separated_tags
-from util import has_naming_flag, format_time, normalize_path, get_elapsed_time_i, get_time_seconds, extract_ext
+from util import has_naming_flag, format_time, normalize_path, get_elapsed_time_i, extract_ext
 from vinfo import VideoInfo, export_video_info, get_min_max_ids
 
 __all__ = ('download', 'at_interrupt')
@@ -80,8 +80,9 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
     if not vi.title:
         titlemeta = a_html.find('meta', attrs={'name': 'description'})
         vi.title = titlemeta.get('content', '') if titlemeta else ''
-    if not vi.duration and Config.duration:  # TODO: duration extraction is impossible from post page
-        vi.duration = get_time_seconds(str(a_html.find('div', class_='info row').find('span', string=re_time).text))
+    if not vi.duration:
+        duration_idx1 = str(a_html).find('var video_duration = "') + len('var video_duration = "')
+        vi.duration = int(float(str(a_html)[duration_idx1:str(a_html).find('"', duration_idx1 + 1)]))
 
     Log.info(f'Scanning {sname}: {vi.fduration} \'{vi.title}\'')
 
