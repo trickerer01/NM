@@ -128,7 +128,8 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
             vi.comments = ('\n' + '\n\n'.join(comments_list) + '\n') if comments_list else ''
     if Config.check_uploader and vi.uploader and vi.uploader not in tags_raw:
         tags_raw.append(vi.uploader)
-    solve_tag_conflicts(vi, tags_raw)
+    if Config.solve_tag_conflicts:
+        solve_tag_conflicts(vi, tags_raw)
     if is_filtered_out_by_extra_tags(vi, tags_raw, Config.extra_tags, Config.id_sequence, vi.subfolder, extra_ids):
         Log.info(f'Info: video {sname} is filtered out by{" outer" if scenario else ""} extra tags, skipping...')
         return DownloadResult.FAIL_FILTERED_OUTER if scenario else DownloadResult.FAIL_SKIPPED
