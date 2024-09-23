@@ -76,6 +76,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
         Log.error(f'Warning: Got error 404 for {sname} (probably unlisted), author/score will not be extracted...')
     elif any(re_private_video.search(d.text) for d in a_html.find_all('span', class_='text-danger')):
         Log.warn(f'Warning: Got private video error for {sname}, score(likes)/extra_title will not be extracted...')
+        vi.private = True
 
     if not vi.title:
         titlemeta = a_html.find('meta', attrs={'name': 'description'})
@@ -205,7 +206,7 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
     nfres = DownloadResult.FAIL_NOT_FOUND
     notfound_count = len(list(filter(None, [dres == nfres for dres in ret_vals])))
     if notfound_count == len(ret_vals):
-        Log.warn(f'Warning: {vi.sfsname} returned {nfres} for all scanned qualities ({"private" if vi.rating == "" else "public"})!')
+        Log.warn(f'Warning: {vi.sfsname} returned {nfres} for all scanned qualities ({"private" if vi.private else "public"})!')
     if notfound_count > 0 and (notfound_count < len(ret_vals) or vi.rating == ''):
         return DownloadResult.FAIL_NOT_FOUND
     else:
