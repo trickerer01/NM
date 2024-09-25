@@ -55,7 +55,7 @@ Ex. SITE_ITEM_REQUEST_UPLOADER_PAGE % ('anonymous', 1)"""
 #
 #
 
-USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.6 Firefox/102.0 PaleMoon/33.0.1'
+USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.7 Firefox/102.0 PaleMoon/33.3.1'
 DEFAULT_HEADERS = {'User-Agent': USER_AGENT}
 
 # untagged videos download policy
