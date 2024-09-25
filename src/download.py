@@ -62,6 +62,19 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
     rating = vi.rating
     score = ''
 
+    predict_gap1 = False  # Config.predict_id_gaps and 3400000 <= vi.id <= 3900000 and vi.id not in scn.get_extra_ids()
+    if predict_gap1:
+        vi_prev1 = scn.find_vinfo(vi.id - 1)
+        vi_prev2 = scn.find_vinfo(vi.id - 2)
+        if vi_prev1 and vi_prev2:
+            f_404s = [vip.has_flag(VideoInfo.Flags.RETURNED_404) for vip in (vi_prev1, vi_prev2)]
+            skip = f_404s[0] is not f_404s[1]
+        else:
+            skip = vi_prev1 and not vi_prev1.has_flag(VideoInfo.Flags.RETURNED_404)
+        if skip:
+            Log.warn(f'Id gap prediction forces error 404 for {sname}, skipping...')
+            return DownloadResult.FAIL_NOT_FOUND
+
     vi.set_state(VideoInfo.State.SCANNING)
     a_html = await fetch_html(SITE_ITEM_REQUEST_VIDEO % vi.id, session=dwn.session)
     if a_html is None:
@@ -77,6 +90,17 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
     elif any(re_private_video.search(d.text) for d in a_html.find_all('span', class_='text-danger')):
         Log.warn(f'Warning: Got private video error for {sname}, score(likes)/extra_title will not be extracted...')
         vi.private = True
+
+    if predict_gap1:
+        # find previous valid id and check the offset
+        id_dec = 3
+        vi_prev_x = scn.find_vinfo(vi.id - id_dec)
+        while vi_prev_x and vi_prev_x.has_flag(VideoInfo.Flags.RETURNED_404):
+            id_dec += 1
+            vi_prev_x = scn.find_vinfo(vi.id - id_dec)
+        if vi_prev_x and (id_dec % 3) != 0:
+            Log.error(f'Error: id gap predictor encountered unexpected valid post offset. Disabling prediction!')
+            Config.predict_id_gaps = False
 
     if not vi.title:
         titlemeta = a_html.find('meta', attrs={'name': 'description'})
