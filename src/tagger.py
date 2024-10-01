@@ -6,7 +6,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-from typing import List, Optional, Collection, Iterable, MutableSequence, Union, Dict, Tuple
+from __future__ import annotations
+from collections.abc import Collection, Iterable, MutableSequence
 
 from bigstrings import TAG_ALIASES, TAG_CONFLICTS
 from config import Config
@@ -25,7 +26,7 @@ __all__ = (
 )
 
 
-def valid_playlist_name(plist: str) -> Tuple[int, str]:
+def valid_playlist_name(plist: str) -> tuple[int, str]:
     try:
         plist_name, plist_numb = plist, 0
         return (plist_numb, plist_name)
@@ -70,7 +71,7 @@ def normalize_wtag(wtag: str) -> str:
         # '[': '\u2018', ']': '\u2019', '{': '\u201C', '}': '\u201D',
         '.': '\u1FBE', ',': '\u201A', '+': '\u2020', '-': '\u2012',
     }
-    wtag_breplacements: Dict[str, str] = {wtag_freplacements[k]: k for k in wtag_freplacements}
+    wtag_breplacements: dict[str, str] = {wtag_freplacements[k]: k for k in wtag_freplacements}
     wtag_breplacements[wtag_freplacements['(']] = '(?:'
     chars_need_escaping = list(wtag_freplacements.keys())
     del chars_need_escaping[1:3]
@@ -88,7 +89,7 @@ def normalize_wtag(wtag: str) -> str:
     return wtag
 
 
-def get_matching_tag(wtag: str, mtags: Iterable[str], *, force_regex=False) -> Optional[str]:
+def get_matching_tag(wtag: str, mtags: Iterable[str], *, force_regex=False) -> str | None:
     if not is_wtag(wtag) and not force_regex:
         return wtag if wtag in mtags else None
     pat = prepare_regex_fullmatch(normalize_wtag(wtag))
@@ -98,7 +99,7 @@ def get_matching_tag(wtag: str, mtags: Iterable[str], *, force_regex=False) -> O
     return None
 
 
-def get_or_group_matching_tag(orgr: str, mtags: Iterable[str]) -> Optional[str]:
+def get_or_group_matching_tag(orgr: str, mtags: Iterable[str]) -> str | None:
     for tag in orgr[1:-1].split('~'):
         mtag = get_matching_tag(tag, mtags)
         if mtag:
@@ -106,7 +107,7 @@ def get_or_group_matching_tag(orgr: str, mtags: Iterable[str]) -> Optional[str]:
     return None
 
 
-def get_neg_and_group_matches(andgr: str, mtags: Iterable[str]) -> List[str]:
+def get_neg_and_group_matches(andgr: str, mtags: Iterable[str]) -> list[str]:
     matched_tags = list()
     for wtag in andgr[2:-1].split(','):
         mtag = get_matching_tag(wtag, mtags, force_regex=True)
@@ -120,7 +121,7 @@ def is_valid_id_or_group(orgr: str) -> bool:
     return is_valid_or_group(orgr) and all(re_idval.fullmatch(tag) for tag in orgr[1:-1].split('~'))
 
 
-def extract_id_or_group(ex_tags: MutableSequence[str]) -> List[int]:
+def extract_id_or_group(ex_tags: MutableSequence[str]) -> list[int]:
     """May alter the input container!"""
     for i in range(len(ex_tags)):
         orgr = ex_tags[i]
@@ -154,7 +155,7 @@ def convert_extra_tag_for_text_matching(ex_tag: str) -> str:
     return conv_tag
 
 
-def match_text(ex_tag: str, text: str, group_type='') -> Union[None, str, List[str]]:
+def match_text(ex_tag: str, text: str, group_type='') -> None | str | list[str]:
     converted_tag = convert_extra_tag_for_text_matching(ex_tag)
     text = text.replace('\n', ' ').strip().lower()
     if group_type == 'or':
@@ -169,7 +170,7 @@ def trim_undersores(base_str: str) -> str:
     return re_uscore_mult.sub('_', base_str).strip('_')
 
 
-def solve_tag_conflicts(vi: VideoInfo, tags_raw: List[str]) -> None:
+def solve_tag_conflicts(vi: VideoInfo, tags_raw: list[str]) -> None:
     for ctag in TAG_CONFLICTS:
         if ctag in tags_raw:
             cposlist, cneglist = TAG_CONFLICTS[ctag]
@@ -178,8 +179,8 @@ def solve_tag_conflicts(vi: VideoInfo, tags_raw: List[str]) -> None:
                 tags_raw.remove(ctag)
 
 
-def is_filtered_out_by_extra_tags(vi: VideoInfo, tags_raw: List[str], extra_tags: List[str],
-                                  id_seq: List[int], subfolder: str, id_seq_ex: List[int] = None) -> bool:
+def is_filtered_out_by_extra_tags(vi: VideoInfo, tags_raw: list[str], extra_tags: list[str],
+                                  id_seq: list[int], subfolder: str, id_seq_ex: list[int] = None) -> bool:
     suc = True
     sname = f'{f"[{subfolder}] " if subfolder else ""}Video {vi.sname}'
     if id_seq and vi.id not in id_seq and not (id_seq_ex and vi.id in id_seq_ex):
@@ -259,7 +260,7 @@ def filtered_tags(tags_list: Collection[str]) -> str:
     if len(tags_list) == 0:
         return ''
 
-    tags_list_final: List[str] = list()
+    tags_list_final: list[str] = list()
 
     for tag in tags_list:
         tag = re_replace_symbols.sub('_', tag.replace('-', '').replace('\'', '').replace('.', ''))
