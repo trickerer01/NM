@@ -94,11 +94,11 @@ async def main(args: Sequence[str]) -> None:
                     Log.debug(f'Extracted new max page: {maxpage:d}')
 
             if Config.get_maxid:
-                miref = a_html.find('div', class_=video_ref_class1)
-                miref = miref or a_html.find('div', class_=video_ref_class2)
-                miref = miref.find('a')
-                max_id = re_page_entry.search(str(miref.get('href'))).group(1)
-                Log.fatal(f'{APP_NAME}: {max_id}')
+                mirefs = a_html.find_all('div', class_=video_ref_class1)
+                mirefs = mirefs or a_html.find_all('div', class_=video_ref_class2)
+                mirefs = [_.find('a') for _ in mirefs]
+                max_id = max(int(re_page_entry.search(str(_.get('href'))).group(1)) for _ in mirefs)
+                Log.fatal(f'{APP_NAME}: {max_id:d}')
                 return
 
             Log.info(f'page {pi - 1:d}...{" (this is the last page!)" if (0 < maxpage == pi - 1) else ""}')
