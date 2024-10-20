@@ -12,13 +12,13 @@ from collections.abc import Collection, Iterable, MutableSequence
 from bigstrings import TAG_ALIASES, TAG_CONFLICTS
 from config import Config
 from defs import TAGS_CONCAT_CHAR
+from iinfo import VideoInfo
 from logger import Log
 from rex import (
     re_replace_symbols, re_wtag, re_idval, re_uscore_mult, re_not_a_letter, re_numbered_or_counted_tag, re_or_group,
     re_neg_and_group, re_tags_to_process, re_tags_to_exclude, RAW_TAGS_REPLACEMENTS,
     prepare_regex_fullmatch,
 )
-from vinfo import VideoInfo
 
 __all__ = (
     'filtered_tags', 'get_matching_tag', 'extract_id_or_group', 'valid_extra_tag', 'is_filtered_out_by_extra_tags', 'solve_tag_conflicts',
