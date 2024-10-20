@@ -68,9 +68,6 @@ def find_and_resolve_config_conflicts() -> bool:
         if Config.quality != DEFAULT_QUALITY:
             Log.info('Info: running download script, outer quality setting will be ignored')
             delay_for_message = True
-        if Config.duration:
-            Log.info('Info: running download script, outer duration setting will be ignored')
-            delay_for_message = True
     return delay_for_message
 
 
