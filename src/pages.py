@@ -13,7 +13,7 @@ from collections.abc import Sequence
 from cmdargs import HelpPrintExitException, prepare_arglist
 from config import Config
 from defs import (
-    SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_UPLOADER_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
+    NamingFlags, SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_UPLOADER_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
 
 )
 from download import download, at_interrupt
@@ -22,7 +22,7 @@ from iinfo import VideoInfo
 from logger import Log
 from path_util import prefilter_existing_items
 from rex import re_page_entry
-from util import at_startup, get_time_seconds
+from util import at_startup, has_naming_flag, get_time_seconds
 from validators import find_and_resolve_config_conflicts
 from version import APP_NAME
 
@@ -119,10 +119,12 @@ async def main(args: Sequence[str]) -> None:
                         lower_count += 1
                     continue
                 my_title = str(tref.text)
+                my_utitle = str(aref['href'][aref['href'].rfind('/') + 1:])
                 my_rating = str(rref.find('span').text) if rref else ''
                 my_rating = '' if my_rating in ('0%', '') else my_rating[:-1]  # 0% rating doesn't mean all votes are dislikes necessarily
                 my_duration = get_time_seconds(str(dref.get_text(strip=True).replace('HD', '')))
-                v_entries.append(VideoInfo(cur_id, my_title, m_rating=my_rating, m_duration=my_duration))
+                use_utitle = has_naming_flag(NamingFlags.USE_URL_TITLE)
+                v_entries.append(VideoInfo(cur_id, my_utitle if use_utitle else my_title, m_rating=my_rating, m_duration=my_duration))
 
             if pi - 1 > Config.start and lower_count == orig_count > 0 and not Config.scan_all_pages:
                 if maxpage == 0 or pi - 1 < maxpage:
