@@ -53,6 +53,10 @@ def valid_extra_tag(tag: str, log=True) -> str:
         raise ValueError
 
 
+def is_utag(tag: str) -> bool:
+    return tag.startswith('u:')
+
+
 def is_wtag(tag: str) -> bool:
     return not not re_wtag.fullmatch(tag)
 
