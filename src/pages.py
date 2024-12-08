@@ -14,7 +14,7 @@ from cmdargs import HelpPrintExitException, prepare_arglist
 from config import Config
 from defs import (
     NamingFlags, SITE_ITEM_REQUEST_SEARCH_PAGE, SITE_ITEM_REQUEST_UPLOADER_PAGE, SITE_ITEM_REQUEST_PLAYLIST_PAGE,
-
+    SITE_ITEM_REQUEST_FAVOURITES_PAGE,
 )
 from download import download, at_interrupt
 from fetch_html import make_session, fetch_html
@@ -65,6 +65,7 @@ async def main(args: Sequence[str]) -> None:
 
             page_addr = (
                 (SITE_ITEM_REQUEST_PLAYLIST_PAGE % (Config.playlist_name, pi)) if Config.playlist_name else
+                (SITE_ITEM_REQUEST_FAVOURITES_PAGE % (Config.favourites, pi)) if Config.favourites else
                 (SITE_ITEM_REQUEST_UPLOADER_PAGE % (Config.uploader, pi)) if Config.uploader else
                 (SITE_ITEM_REQUEST_SEARCH_PAGE % (Config.search, pi))
             )

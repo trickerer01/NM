@@ -19,8 +19,8 @@ re_time = re_compile(r'\d+(?::\d+){1,2}')
 re_private_video = re_compile(r'^This is a private video\..*?$')
 # pages
 re_page_entry = re_compile(r'^/video/(\d+)/[^/]+?$')
-# re_page_rating = re_compile(r'^(?:\d{1,3}%|-)$')
-# re_page_title = re_compile(r'^video-title title-truncate.*?$')
+# re_preview_entry = re_compile(r'/(\d+)_preview[^.]*?\.([^/]+)/')
+# re_paginator = re_compile(r'from(?:_(?:fav_)?(?:albums|videos))?:(\d+)')
 # validators
 re_non_search_symbols = re_compile(r'[^\da-zA-Z._+\-\[\]]')
 re_session_id = re_compile(r'[a-z0-9]{26}')

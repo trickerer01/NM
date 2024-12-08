@@ -45,6 +45,7 @@ SITE_ITEM_REQUEST_SEARCH_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltY
 """Params required: **search**, **page** - **str**, **int**\n
 Ex. SITE_ITEM_REQUEST_SEARCH_PAGE % ('sfw', 1)"""
 #
+#
 SITE_ITEM_REQUEST_VIDEO = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdmlkZW8vJWQv').decode()
 """Params required: **video_id** - **int**\n
 Ex. SITE_ITEM_REQUEST_VIDEO % (69999)"""
@@ -53,11 +54,21 @@ SITE_ITEM_REQUEST_PLAYLIST_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbml
 Ex. SITE_ITEM_REQUEST_PLAYLIST_PAGE % ('anonymous', 1)"""
 #
 #
+SITE_ITEM_REQUEST_FAVOURITES_PAGE = b64decode(
+    'aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdXNlci8lcy9mYXZvcml0ZS92aWRlb3M/cGFnZT0lZA==').decode()
+"""Params required: **user_id**, **page** - **str**, **int**\n
+Ex. SITE_ITEM_REQUEST_FAVOURITES_PAGE % ('anonymous', 1)"""
+#
 SITE_ITEM_REQUEST_UPLOADER_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdXNlci8lcy92aWRlb3M/cGFnZT0lZA==').decode()
 """Params required: **username**, **page** - **str**, **int**\n
 Ex. SITE_ITEM_REQUEST_UPLOADER_PAGE % ('anonymous', 1)"""
 #
 #
+# SITE_AJAX_REQUEST_MODEL_PAGE = b64decode(
+#     'aHR0cHM6Ly9ydWxlMzR2aWRlby5jb20vbW9kZWxzLyVzLz9tb2RlPWFzeW5jJmZ1bmN0aW9uPWdldF9ibG9jayZibG9ja19pZD1jdXN0b21fbGlzdF92aWRlb3NfY29tbW9uX3'
+#     'ZpZGVvcyZzb3J0X2J5PSZmcm9tPSVk').decode()
+# """Params required: **artist_name**, **page** - **str**, **int**\n
+# Ex. SITE_AJAX_REQUEST_MODEL_PAGE % ('gray', 1)"""
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.7 Firefox/102.0 PaleMoon/33.3.1'
 DEFAULT_HEADERS = {'User-Agent': USER_AGENT}
@@ -313,6 +324,7 @@ HELP_ARG_TIMEOUT = f'Connection timeout (in seconds). Default is \'{CONNECT_TIME
 HELP_ARG_RETRIES = f'Connection retries count. Default is \'{CONNECT_RETRIES_BASE:d}\''
 HELP_ARG_THROTTLE = 'Download speed threshold (in KB/s) to assume throttling, drop connection and retry'
 HELP_ARG_THROTTLE_AUTO = 'Enable automatic throttle threshold adjustment when crossed too many times in a row'
+HELP_ARG_FAVORITES = 'Username (filters still apply)'
 HELP_ARG_UPLOADER = 'Uploader username (filters still apply)'
 # HELP_ARG_MODEL = 'Artist name (download directly from artist\'s page)'
 # HELP_ARG_ALLOW_DUPLICATE_NAMES = (
