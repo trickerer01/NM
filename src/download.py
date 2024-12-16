@@ -78,7 +78,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
     a_html = await fetch_html(SITE_ITEM_REQUEST_VIDEO % vi.id, session=dwn.session)
     if a_html is None:
         Log.error(f'Error: unable to retreive html for {sname}! Aborted!')
-        return DownloadResult.FAIL_RETRIES
+        return DownloadResult.FAIL_SKIPPED if Config.aborted else DownloadResult.FAIL_RETRIES
 
     if any('Error' in (d.string, d.text) for d in a_html.find_all('legend')):
         error_div = a_html.find('div', class_='text-danger')
