@@ -8,10 +8,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 from __future__ import annotations
 from collections.abc import Collection, Iterable, MutableSequence
+from json import load as load_json
+from os import path
 
-from bigstrings import TAG_ALIASES, TAG_CONFLICTS
 from config import Config
-from defs import TAGS_CONCAT_CHAR
+from defs import (
+    TAGS_CONCAT_CHAR, UTF8,
+    FILE_LOC_TAG_ALIASES, FILE_LOC_TAG_CONFLICTS,
+)
 from iinfo import VideoInfo
 from logger import Log
 from rex import (
@@ -19,11 +23,19 @@ from rex import (
     re_neg_and_group, re_tags_to_process, re_tags_to_exclude, RAW_TAGS_REPLACEMENTS,
     prepare_regex_fullmatch,
 )
+from util import normalize_path
 
 __all__ = (
     'filtered_tags', 'get_matching_tag', 'extract_id_or_group', 'valid_extra_tag', 'is_filtered_out_by_extra_tags', 'solve_tag_conflicts',
     'valid_playlist_name', 'unite_separated_tags',
 )
+
+# TAG_NUMS: dict[str, str] = dict()
+# ART_NUMS: dict[str, str] = dict()
+# CAT_NUMS: dict[str, str] = dict()
+# PLA_NUMS: dict[str, str] = dict()
+TAG_ALIASES: dict[str, str] = dict()
+TAG_CONFLICTS: dict[str, tuple[list[str], list[str]]] = dict()
 
 
 def valid_playlist_name(plist: str) -> tuple[int, str]:
@@ -175,6 +187,8 @@ def trim_undersores(base_str: str) -> str:
 
 
 def solve_tag_conflicts(vi: VideoInfo, tags_raw: list[str]) -> None:
+    if not TAG_CONFLICTS:
+        load_tag_conflicts()
     for ctag in TAG_CONFLICTS:
         if ctag in tags_raw:
             cposlist, cneglist = TAG_CONFLICTS[ctag]
@@ -264,6 +278,9 @@ def filtered_tags(tags_list: Collection[str]) -> str:
     if len(tags_list) == 0:
         return ''
 
+    if not TAG_ALIASES:
+        load_tag_aliases()
+
     tags_list_final: list[str] = list()
 
     for tag in tags_list:
@@ -306,6 +323,43 @@ def filtered_tags(tags_list: Collection[str]) -> str:
             tags_list_final.append(tag)
 
     return trim_undersores(TAGS_CONCAT_CHAR.join(tags_list_final))
+
+
+def load_actpac_json(src_file: str, dest_dict: dict[str, str] | dict[str, tuple[list[str], list[str]]], name: str, *, extract=True) -> None:
+    try:
+        Log.trace(f'Loading {name}...')
+        with open(src_file, 'r', encoding=UTF8) as json_file:
+            if extract:
+                dest_dict.update({k: (v[:v.find(',')] if ',' in v else v) for k, v in load_json(json_file).items()})
+            else:
+                dest_dict.update(load_json(json_file))
+    except Exception:
+        Log.error(f'Failed to load {name} from {normalize_path(path.abspath(src_file), False)}')
+        dest_dict.update({'': ''})
+
+
+# def load_tag_nums() -> None:
+#     load_actpac_json(FILE_LOC_TAGS, TAG_NUMS, 'tag nums')
+
+
+# def load_artist_nums() -> None:
+#     load_actpac_json(FILE_LOC_ARTS, ART_NUMS, 'artist nums')
+
+
+# def load_category_nums() -> None:
+#     load_actpac_json(FILE_LOC_CATS, CAT_NUMS, 'category nums')
+
+
+# def load_playlist_nums() -> None:
+#     load_actpac_json(FILE_LOC_PLAS, PLA_NUMS, 'playlist nums')
+
+
+def load_tag_aliases() -> None:
+    load_actpac_json(FILE_LOC_TAG_ALIASES, TAG_ALIASES, 'tag aliases', extract=False)
+
+
+def load_tag_conflicts() -> None:
+    load_actpac_json(FILE_LOC_TAG_CONFLICTS, TAG_CONFLICTS, 'tag conflicts', extract=False)
 
 #
 #
