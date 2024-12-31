@@ -12,7 +12,7 @@ from random import uniform as frand
 from urllib.parse import urlparse
 
 from aiofile import async_open
-from aiohttp import ClientSession, ClientPayloadError
+from aiohttp import ClientPayloadError
 
 from config import Config
 from defs import (
@@ -23,7 +23,7 @@ from defs import (
 from downloader import VideoDownloadWorker
 from dscanner import VideoScanWorker
 from dthrottler import ThrottleChecker
-from fetch_html import fetch_html, wrap_request, make_session, ensure_conn_closed
+from fetch_html import fetch_html, wrap_request, ensure_conn_closed
 from iinfo import VideoInfo, export_video_info, get_min_max_ids
 from logger import Log
 from path_util import file_already_exists, try_rename, is_file_being_used, register_new_file
@@ -34,25 +34,20 @@ from util import has_naming_flag, format_time, normalize_path, get_elapsed_time_
 __all__ = ('download', 'at_interrupt')
 
 
-async def download(sequence: list[VideoInfo], by_id: bool, filtered_count: int, session: ClientSession = None) -> None:
+async def download(sequence: list[VideoInfo], by_id: bool, filtered_count: int) -> None:
     minid, maxid = get_min_max_ids(sequence)
     eta_min = int(2.0 + (CONNECT_REQUEST_DELAY + 0.2 + 0.02) * len(sequence))
     interrupt_msg = f'\nPress \'{SCAN_CANCEL_KEYSTROKE}\' twice to stop' if by_id else ''
-    Log.info(f'\nOk! {len(sequence):d} ids (+{filtered_count:d} filtered out), bound {minid:d} to {maxid:d}. Working...{interrupt_msg}\n'
+    Log.info(f'\nOk! {len(sequence):d} ids (+{filtered_count:d} filtered out), bound {minid:d} to {maxid:d}.'
+             f' Working...{interrupt_msg if by_id else ""}\n'
              f'\nThis will take at least {eta_min:d} seconds{f" ({format_time(eta_min)})" if eta_min >= 60 else ""}!\n')
-    async with session or make_session() as session, make_session(True) as session.np:
-        with (VideoScanWorker(sequence, scan_video) as scn,
-              VideoDownloadWorker(sequence, process_video, filtered_count, session) as dwn):
-            if by_id:
-                for cv in as_completed([scn.run(), dwn.run()]):
-                    await cv
-            else:
-                await dwn.run()
+    with (VideoScanWorker(sequence, scan_video) as scn, VideoDownloadWorker(sequence, process_video, filtered_count) as dwn):
+        for cv in as_completed([scn.run(), dwn.run()] if by_id else [dwn.run()]):
+            await cv
     export_video_info(sequence)
 
 
 async def scan_video(vi: VideoInfo) -> DownloadResult:
-    dwn = VideoDownloadWorker.get()
     scn = VideoScanWorker.get()
     scenario = Config.scenario
     sname = vi.sname
@@ -78,7 +73,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
         return DownloadResult.FAIL_NOT_FOUND
 
     vi.set_state(VideoInfo.State.SCANNING)
-    a_html = await fetch_html(SITE_ITEM_REQUEST_VIDEO % vi.id, session=dwn.session)
+    a_html = await fetch_html(SITE_ITEM_REQUEST_VIDEO % vi.id)
     if a_html is None:
         Log.error(f'Error: unable to retreive html for {sname}! Aborted!')
         return DownloadResult.FAIL_SKIPPED if Config.aborted else DownloadResult.FAIL_RETRIES
@@ -244,7 +239,6 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
 
 
 async def download_sceenshot(vi: VideoInfo, scr_num: int) -> DownloadResult:
-    dwn = VideoDownloadWorker.get()
     sname = f'{PREFIX}{vi.id:d}_{scr_num:02d}.jpg'
     sfilename = f'{f"{vi.subfolder}/" if len(vi.subfolder) > 0 else ""}{PREFIX}{vi.id:d}/{scr_num:02d}.jpg'
     my_folder = f'{vi.my_folder}{PREFIX}{vi.id:d}/'
@@ -259,7 +253,7 @@ async def download_sceenshot(vi: VideoInfo, scr_num: int) -> DownloadResult:
             raise IOError(f'ERROR: Unable to create subfolder \'{my_folder}\'!')
 
     try:
-        async with await wrap_request(dwn.session, 'GET', my_link) as r:
+        async with await wrap_request('GET', my_link) as r:
             if r.status == 404:
                 Log.error(f'Got 404 for {sname}...!')
                 ret = DownloadResult.FAIL_NOT_FOUND
@@ -368,12 +362,12 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
 
             hkwargs: dict[str, dict[str, str]] = {'headers': {'Range': f'bytes={file_size:d}-'}} if file_size > 0 else {}
             ckwargs = dict(allow_redirects=not Config.proxy or not Config.download_without_proxy)
-            r = await wrap_request(dwn.session, 'GET', vi.link, **ckwargs, **hkwargs)
+            r = await wrap_request('GET', vi.link, **ckwargs, **hkwargs)
             while r.status in (301, 302):
                 if urlparse(r.headers['Location']).hostname != urlparse(vi.link).hostname:
                     ckwargs.update(noproxy=True, allow_redirects=True)
                 ensure_conn_closed(r)
-                r = await wrap_request(dwn.session, 'GET', r.headers['Location'], **ckwargs, **hkwargs)
+                r = await wrap_request('GET', r.headers['Location'], **ckwargs, **hkwargs)
             content_len = r.content_length or 0
             content_range_s = r.headers.get('Content-Range', '/').split('/', 1)
             content_range = int(content_range_s[1]) if len(content_range_s) > 1 and content_range_s[1].isnumeric() else 1
