@@ -99,14 +99,17 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
             Log.error('Error: id gap predictor encountered unexpected valid post offset. Disabling prediction!')
             Config.predict_id_gaps = False
 
+    Log.info(f'Scanning {sname}: {vi.fduration} \'{vi.title}\'')
+
     if not vi.title:
         titlemeta = a_html.find('meta', attrs={'name': 'description'})
         vi.title = titlemeta.get('content', '') if titlemeta else ''
     if not vi.duration:
-        duration_idx1 = str(a_html).find('var video_duration = "') + len('var video_duration = "')
-        vi.duration = int(float(str(a_html)[duration_idx1:str(a_html).find('"', duration_idx1 + 1)]))
-
-    Log.info(f'Scanning {sname}: {vi.fduration} \'{vi.title}\'')
+        try:
+            duration_idx1 = str(a_html).find('var video_duration = "') + len('var video_duration = "')
+            vi.duration = int(float(str(a_html)[duration_idx1:str(a_html).find('"', duration_idx1 + 1)]))
+        except Exception:
+            Log.warn(f'Warning: cannot extract duration for {sname}.')
 
     try:
         dislikes_int = int(a_html.find('span', id=f'dislikes_video_{vi.id:d}').text)
