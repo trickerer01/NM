@@ -78,9 +78,10 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
         Log.error(f'Error: unable to retreive html for {sname}! Aborted!')
         return DownloadResult.FAIL_SKIPPED if Config.aborted else DownloadResult.FAIL_RETRIES
 
-    if any('Error' in (d.string, d.text) for d in a_html.find_all('legend')):
+    blank_404 = any('/notfound/video_missing' in d.text for d in a_html.find_all('script'))
+    if any('Error' in (d.string, d.text) for d in a_html.find_all('legend')) or blank_404:
         error_div = a_html.find('div', class_='text-danger')
-        if error_div and 'It is either deleted' in error_div.string:
+        if (error_div and 'It is either deleted' in error_div.string) or blank_404:
             Log.error(f'Got error 404 for {sname}, skipping...')
             return DownloadResult.FAIL_NOT_FOUND
         Log.error(f'Warning: Got error 404 for {sname} (probably unlisted), author/score will not be extracted...')
@@ -99,8 +100,6 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
             Log.error('Error: id gap predictor encountered unexpected valid post offset. Disabling prediction!')
             Config.predict_id_gaps = False
 
-    Log.info(f'Scanning {sname}: {vi.fduration} \'{vi.title}\'')
-
     if not vi.title:
         titlemeta = a_html.find('meta', attrs={'name': 'description'})
         vi.title = titlemeta.get('content', '') if titlemeta else ''
@@ -110,6 +109,8 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
             vi.duration = int(float(str(a_html)[duration_idx1:str(a_html).find('"', duration_idx1 + 1)]))
         except Exception:
             Log.warn(f'Warning: cannot extract duration for {sname}.')
+
+    Log.info(f'Scanning {sname}: {vi.fduration} \'{vi.title}\'')
 
     try:
         dislikes_int = int(a_html.find('span', id=f'dislikes_video_{vi.id:d}').text)
