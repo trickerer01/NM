@@ -69,7 +69,7 @@ async def main(args: Sequence[str]) -> None:
                 (SITE_ITEM_REQUEST_UPLOADER_PAGE % (Config.uploader, pi)) if Config.uploader else
                 (SITE_ITEM_REQUEST_SEARCH_PAGE % (Config.search, pi))
             )
-            a_html = await fetch_html(page_addr)
+            a_html = await fetch_html(page_addr, cookies={'show_category_21': '1', 'show_category_22': '1'})
             if not a_html:
                 Log.error(f'Error: cannot get html for page {pi:d}')
                 continue
