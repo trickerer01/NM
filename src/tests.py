@@ -206,7 +206,7 @@ class DownloadTests(TestCase):
         set_up_test()
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
-        tempfile_id = '85606'
+        tempfile_id = '85608'
         tempfile_ext = 'mp4'
         tempfile_fullpath = f'{tempdir}{tempfile_id}.{tempfile_ext}'
         arglist1 = ['-path', tempdir, '-start', tempfile_id, '-dmode', 'touch', '-naming', 'none', '-quality', '360p', '-log', 'trace']
@@ -223,11 +223,11 @@ class DownloadTests(TestCase):
         set_up_test()
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
-        tempfile_id = '85716'
+        tempfile_id = '24085'
         tempfile_ext = 'mp4'
         tempfile_fullpath = f'{tempdir}{tempfile_id}.{tempfile_ext}'
         arglist1 = ['-path', tempdir, '-pages', '999', '-dmode', 'touch', '-naming', 'none', '-quality', '360p', '-log', 'trace',
-                    '-begin_id', tempfile_id, '-stop_id', tempfile_id, '-search', 'queen+nualia+played']
+                    '-begin_id', tempfile_id, '-stop_id', tempfile_id, '-search', 'itsmonty']
         pages_main_sync(arglist1)
         self.assertTrue(path.isfile(tempfile_fullpath))
         st = stat(tempfile_fullpath)
