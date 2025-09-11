@@ -71,7 +71,7 @@ class VideoDownloadWorker:
         self._write_queue_size_last = 0
         self._lock = AsyncLock()
 
-        if self._scn:
+        if self._scn and not self._scn.done():
             self._seq.clear()
             self._scn.register_task_finish_callback(self._at_task_finish)
 

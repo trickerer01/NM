@@ -46,13 +46,13 @@ class VideoScanWorker:
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         VideoScanWorker._instance = None
 
-    def __init__(self, sequence: list[VideoInfo], func: Callable[[VideoInfo], Coroutine[Any, Any, DownloadResult]]) -> None:
+    def __init__(self, sequence: list[VideoInfo], func: Callable[[VideoInfo], Coroutine[Any, Any, DownloadResult]], by_id: bool) -> None:
         assert VideoScanWorker._instance is None
         VideoScanWorker._instance = self
 
         self._original_sequence = sequence
         self._func = func
-        self._seq = deque(sequence)
+        self._seq = deque(sequence) if by_id else deque[VideoInfo]()
 
         self._orig_count = len(self._original_sequence)
         self._scan_count = 0

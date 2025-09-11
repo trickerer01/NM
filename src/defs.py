@@ -38,7 +38,7 @@ SLASH = '/'
 UTF8 = 'utf-8'
 TAGS_CONCAT_CHAR = ','
 DEFAULT_EXT = 'mp4'
-EXTENSIONS_V = (DEFAULT_EXT, 'webm')
+EXTENSIONS_V = (DEFAULT_EXT, 'webm', 'jpg', 'jpeg')
 START_TIME = datetime.now()
 
 SITE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()

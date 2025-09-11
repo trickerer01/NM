@@ -41,7 +41,7 @@ async def download(sequence: list[VideoInfo], by_id: bool, filtered_count: int) 
     Log.info(f'\nOk! {len(sequence):d} ids (+{filtered_count:d} filtered out), bound {minid:d} to {maxid:d}.'
              f' Working...{interrupt_msg if by_id else ""}\n'
              f'\nThis will take at least {eta_min:d} seconds{f" ({format_time(eta_min)})" if eta_min >= 60 else ""}!\n')
-    with (VideoScanWorker(sequence, scan_video) as scn, VideoDownloadWorker(sequence, process_video, filtered_count) as dwn):
+    with (VideoScanWorker(sequence, scan_video, by_id) as scn, VideoDownloadWorker(sequence, process_video, filtered_count) as dwn):
         for cv in as_completed([scn.run(), dwn.run()] if by_id else [dwn.run()]):
             await cv
     export_video_info(sequence)
@@ -223,6 +223,13 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
     ret_vals = list()
     fname_part1 = vi.filename
     for i in range(QUALITIES.index(vi.quality), len(QUALITIES)):
+        if 'media/photos/' in vi.link:
+            res = await download_video(vi)
+            if res not in (DownloadResult.SUCCESS, DownloadResult.FAIL_SKIPPED, DownloadResult.FAIL_ALREADY_EXISTS):
+                ret_vals.append(res)
+                break
+            else:
+                return res
         vi.link = f'{SITE}/media/videos/{QUALITY_STARTS[i]}{vi.id:d}{QUALITY_ENDS[i]}{extract_ext(vi.link)}'
         fname_mid = f'_{QUALITIES[i]}' if has_naming_flag(NamingFlags.QUALITY) else ''
         vi.filename = f'{fname_part1}{fname_mid}{extract_ext(vi.link)}'
