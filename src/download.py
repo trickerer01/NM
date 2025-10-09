@@ -240,11 +240,9 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
         else:
             return res
     vi.set_state(VideoInfo.State.FAILED)
-    nfres = DownloadResult.FAIL_NOT_FOUND
-    notfound_count = len(list(filter(None, [dres == nfres for dres in ret_vals])))
-    if notfound_count == len(ret_vals):
-        Log.warn(f'Warning: {vi.sfsname} returned {nfres} for all scanned qualities ({"private" if vi.private else "public"})!')
-    if notfound_count > 0 and (notfound_count < len(ret_vals) or vi.rating == ''):
+    if all(_ == DownloadResult.FAIL_NOT_FOUND for _ in ret_vals):
+        Log.warn(f'Warning: {vi.sfsname} returned {DownloadResult.FAIL_NOT_FOUND} for all scanned qualities '
+                 f'({("public", "private")[vi.private]})!')
         return DownloadResult.FAIL_NOT_FOUND
     else:
         return DownloadResult.FAIL_RETRIES
