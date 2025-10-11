@@ -110,6 +110,7 @@ class BaseConfig:
         self.search_rule_tag: str | None = None
         self.search_rule_art: str | None = None
         self.search_rule_cat: str | None = None
+        self.blacklist: str | None = None
         self.playlist_id: int | None = None
         self.playlist_name: str | None = None
         self.favourites: int | None = None

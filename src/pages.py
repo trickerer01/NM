@@ -78,6 +78,10 @@ async def main(args: Sequence[str]) -> None:
                 Log.error(f'Error: cannot get html for page {pi:d}')
                 continue
 
+            if not len(a_html):
+                Log.error(f'Error: got empty HTML for page {pi}! Retrying...')
+                continue
+
             pi += 1
 
             if maxpage == 0 or pi - 1 == maxpage:

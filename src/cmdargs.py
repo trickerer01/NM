@@ -298,6 +298,7 @@ def prepare_arglist_pages(args: Sequence[str]) -> Namespace:
     # par_cmd.add_argument('-search_rule_tag', default=SEARCH_RULE_DEFAULT, help='', choices=SEARCH_RULES)
     # par_cmd.add_argument('-search_rule_art', default=SEARCH_RULE_DEFAULT, help='', choices=SEARCH_RULES)
     # par_cmd.add_argument('-search_rule_cat', default=SEARCH_RULE_DEFAULT, help=HELP_ARG_SEARCH_RULE, choices=SEARCH_RULES)
+    # par_cmd.add_argument('-blacklist', metavar='#[[(a|c|t):]name[,...]', default='', help=HELP_ARG_BLACKLIST, type=valid_blacklist)
 
     add_common_args(par_cmd)
     return execute_parser(parser, par_cmd, args, True)
