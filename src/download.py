@@ -78,6 +78,10 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
         Log.error(f'Error: unable to retreive html for {sname}! Aborted!')
         return DownloadResult.FAIL_SKIPPED if Config.aborted else DownloadResult.FAIL_RETRIES
 
+    if not len(a_html):
+        Log.error(f'Got empty HTML page for {sname}! Rescanning...')
+        return DownloadResult.FAIL_EMPTY_HTML
+
     blank_404 = any('/notfound/video_missing' in d.text for d in a_html.find_all('script'))
     if any('Error' in (d.string, d.text) for d in a_html.find_all('legend')) or blank_404:
         error_div = a_html.find('div', class_='text-danger')
