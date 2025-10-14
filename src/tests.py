@@ -6,30 +6,34 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+import os
 from asyncio import run as run_async
 from io import StringIO
-from os import path, stat
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 from unittest.mock import patch
 
 from cmdargs import prepare_arglist
+
 # noinspection PyProtectedMember
 from config import BaseConfig
-from defs import Duration, DOWNLOAD_MODE_TOUCH, QUALITIES, QUALITY_480P
+from defs import DOWNLOAD_MODE_TOUCH, QUALITIES, QUALITY_480P, Duration
+
 # noinspection PyProtectedMember
-from ids import main as ids_main, main_sync as ids_main_sync
+from ids import main as ids_main
+from ids import main_sync as ids_main_sync
 from logger import Log
+
 # noinspection PyProtectedMember
-from pages import main as pages_main, main_sync as pages_main_sync
+from pages import main as pages_main
+from pages import main_sync as pages_main_sync
+
 # noinspection PyProtectedMember
 from path_util import found_filenames_dict
 from rex import prepare_regex_fullmatch
+
 # noinspection PyProtectedMember
-from tagger import (
-    normalize_wtag, match_text,
-    load_tag_aliases, load_tag_conflicts, TAG_ALIASES, TAG_CONFLICTS
-)
+from tagger import TAG_ALIASES, TAG_CONFLICTS, load_tag_aliases, load_tag_conflicts, match_text, normalize_wtag
 from util import normalize_path
 from version import APP_NAME, APP_VERSION
 
@@ -211,8 +215,8 @@ class DownloadTests(TestCase):
         tempfile_fullpath = f'{tempdir}{tempfile_id}.{tempfile_ext}'
         arglist1 = ['-path', tempdir, '-start', tempfile_id, '-dmode', 'touch', '-naming', 'none', '-quality', '360p', '-log', 'trace']
         ids_main_sync(arglist1)
-        self.assertTrue(path.isfile(tempfile_fullpath))
-        st = stat(tempfile_fullpath)
+        self.assertTrue(os.path.isfile(tempfile_fullpath))
+        st = os.stat(tempfile_fullpath)
         self.assertEqual(0, st.st_size)
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
@@ -229,8 +233,8 @@ class DownloadTests(TestCase):
         arglist1 = ['-path', tempdir, '-pages', '999', '-dmode', 'touch', '-naming', 'none', '-quality', '360p', '-log', 'trace',
                     '-begin_id', tempfile_id, '-stop_id', tempfile_id, '-search', 'itsmonty']
         pages_main_sync(arglist1)
-        self.assertTrue(path.isfile(tempfile_fullpath))
-        st = stat(tempfile_fullpath)
+        self.assertTrue(os.path.isfile(tempfile_fullpath))
+        st = os.stat(tempfile_fullpath)
         self.assertEqual(0, st.st_size)
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
@@ -246,8 +250,8 @@ class DownloadTests(TestCase):
         tempfile_fullpath = f'{tempdir}{tempfile_id}.{tempfile_ext}'
         arglist1 = ['-path', tempdir, '-start', tempfile_id, '-dmode', 'full', '-naming', 'none', '-quality', '360p', '-log', 'trace']
         ids_main_sync(arglist1)
-        self.assertTrue(path.isfile(tempfile_fullpath))
-        st = stat(tempfile_fullpath)
+        self.assertTrue(os.path.isfile(tempfile_fullpath))
+        st = os.stat(tempfile_fullpath)
         self.assertGreater(st.st_size, 0)
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
@@ -264,8 +268,8 @@ class DownloadTests(TestCase):
         arglist1 = ['-path', tempdir, '-pages', '999', '-dmode', 'full', '-naming', 'none', '-quality', '360p', '-log', 'trace',
                     '-begin_id', tempfile_id, '-stop_id', tempfile_id, '-search', 'isobel']
         pages_main_sync(arglist1)
-        self.assertTrue(path.isfile(tempfile_fullpath))
-        st = stat(tempfile_fullpath)
+        self.assertTrue(os.path.isfile(tempfile_fullpath))
+        st = os.stat(tempfile_fullpath)
         self.assertGreater(st.st_size, 0)
         tdir.cleanup()
         print(f'{self._testMethodName} passed')

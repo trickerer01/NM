@@ -6,32 +6,48 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-from asyncio import Task, sleep, as_completed, get_running_loop
-from os import path, stat, remove, makedirs
-from random import uniform as frand
-from urllib.parse import urlparse
+import os
+import random
+import urllib.parse
+from asyncio import Task, as_completed, get_running_loop, sleep
 
 from aiofile import async_open
 from aiohttp import ClientPayloadError
 
 from config import Config
 from defs import (
-    Mem, NamingFlags, DownloadResult, Quality, SITE_ITEM_REQUEST_VIDEO, DOWNLOAD_POLICY_ALWAYS, DOWNLOAD_MODE_TOUCH, PREFIX,
-    DOWNLOAD_MODE_SKIP, TAGS_CONCAT_CHAR, SITE, SCREENSHOTS_COUNT, QUALITIES, QUALITY_STARTS, QUALITY_ENDS,
-    FULLPATH_MAX_BASE_LEN, CONNECT_REQUEST_DELAY, CONNECT_RETRY_DELAY, SCAN_CANCEL_KEYSTROKE,
+    CONNECT_REQUEST_DELAY,
+    CONNECT_RETRY_DELAY,
+    DOWNLOAD_MODE_SKIP,
+    DOWNLOAD_MODE_TOUCH,
+    DOWNLOAD_POLICY_ALWAYS,
+    FULLPATH_MAX_BASE_LEN,
+    PREFIX,
+    QUALITIES,
+    QUALITY_ENDS,
+    QUALITY_STARTS,
+    SCAN_CANCEL_KEYSTROKE,
+    SCREENSHOTS_COUNT,
+    SITE,
+    SITE_ITEM_REQUEST_VIDEO,
+    TAGS_CONCAT_CHAR,
+    DownloadResult,
+    Mem,
+    NamingFlags,
+    Quality,
 )
 from downloader import VideoDownloadWorker
 from dscanner import VideoScanWorker
 from dthrottler import ThrottleChecker
-from fetch_html import fetch_html, wrap_request, ensure_conn_closed
+from fetch_html import ensure_conn_closed, fetch_html, wrap_request
 from iinfo import VideoInfo, export_video_info, get_min_max_ids
 from logger import Log
-from path_util import file_already_exists, try_rename, is_file_being_used, register_new_file
+from path_util import file_already_exists, is_file_being_used, register_new_file, try_rename
 from rex import re_media_filename, re_private_video
 from tagger import filtered_tags, is_filtered_out_by_extra_tags, solve_tag_conflicts, unite_separated_tags
-from util import has_naming_flag, format_time, normalize_path, get_elapsed_time_i, extract_ext
+from util import extract_ext, format_time, get_elapsed_time_i, has_naming_flag, normalize_path
 
-__all__ = ('download', 'at_interrupt')
+__all__ = ('at_interrupt', 'download')
 
 
 async def download(sequence: list[VideoInfo], by_id: bool, filtered_count: int) -> None:
@@ -165,7 +181,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
     if is_filtered_out_by_extra_tags(vi, tags_raw, Config.extra_tags, Config.id_sequence, vi.subfolder, extra_ids):
         Log.info(f'Info: video {sname} is filtered out by{" outer" if scenario else ""} extra tags, skipping...')
         return DownloadResult.FAIL_FILTERED_OUTER if scenario else DownloadResult.FAIL_SKIPPED
-    for vsrs, csri, srn, pc in zip((score, rating), (Config.min_score, Config.min_rating), ('score', 'rating'), ('', '%')):
+    for vsrs, csri, srn, pc in zip((score, rating), (Config.min_score, Config.min_rating), ('score', 'rating'), ('', '%'), strict=True):
         if len(vsrs) > 0 and csri is not None:
             try:
                 if int(vsrs) < csri:
@@ -189,7 +205,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
         Log.warn(f'Warning: could not extract tags from {sname}, skipping due to untagged videos download policy...')
         return DownloadResult.FAIL_SKIPPED
     if Config.duration and vi.duration and not (Config.duration.first <= vi.duration <= Config.duration.second):
-        Log.info(f'Info: video {sname} duration \'{vi.duration:d}\' is out of bounds ({str(Config.duration)}), skipping...')
+        Log.info(f'Info: video {sname} duration \'{vi.duration:d}\' is out of bounds ({Config.duration!s}), skipping...')
         return DownloadResult.FAIL_SKIPPED
     if scn.find_vinfo_pred(lambda _: _.id == vi.id and VideoInfo.State.DOWNLOAD_PENDING <= _.state <= VideoInfo.State.DONE):
         Log.info(f'{sname} was already processed, skipping...')
@@ -198,7 +214,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
 
     prefix = PREFIX if has_naming_flag(NamingFlags.PREFIX) else ''
     fname_part2 = extract_ext(vi.link)
-    my_score = (f'{f"+" if score.isnumeric() else ""}{score}' if len(score) > 0
+    my_score = (f'{"+" if score.isnumeric() else ""}{score}' if len(score) > 0
                 else '' if len(rating) > 0 else 'unk')
     my_rating = (f'{", " if len(my_score) > 0 else ""}{rating}{"%" if rating.isnumeric() else ""}' if len(rating) > 0
                  else '' if len(my_score) > 0 else 'unk')
@@ -224,7 +240,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
 
 
 async def process_video(vi: VideoInfo) -> DownloadResult:
-    ret_vals = list()
+    ret_vals = []
     fname_part1 = vi.filename
     for i in range(QUALITIES.index(vi.quality), len(QUALITIES)):
         if 'media/photos/' in vi.link:
@@ -260,11 +276,11 @@ async def download_sceenshot(vi: VideoInfo, scr_num: int) -> DownloadResult:
     my_link = f'{SITE}/media/videos/tmb2/{vi.id:d}/{scr_num:d}.jpg'
     ret = DownloadResult.SUCCESS
 
-    if not path.isdir(my_folder):
+    if not os.path.isdir(my_folder):
         try:
-            makedirs(my_folder)
+            os.makedirs(my_folder)
         except Exception:
-            raise IOError(f'ERROR: Unable to create subfolder \'{my_folder}\'!')
+            raise OSError(f'ERROR: Unable to create subfolder \'{my_folder}\'!')
 
     try:
         async with await wrap_request('GET', my_link) as r:
@@ -280,7 +296,7 @@ async def download_sceenshot(vi: VideoInfo, scr_num: int) -> DownloadResult:
                 async for chunk in r.content.iter_chunked(256 * Mem.KB):
                     await outf.write(chunk)
 
-            file_size = stat(fullpath).st_size
+            file_size = os.stat(fullpath).st_size
             if expected_size and file_size != expected_size:
                 Log.error(f'Error: file size mismatch for {sfilename}: {file_size:d} / {expected_size:d}')
                 ret = DownloadResult.FAIL_RETRIES
@@ -317,7 +333,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
         curfile_quality = Quality(curfile_match.group(2) or vi.quality)
         curfile = file_already_exists(vi.id, curfile_quality)
         if curfile:
-            curfile_folder, curfile_name = path.split(curfile)
+            curfile_folder, curfile_name = os.path.split(curfile)
             curfile_omatch = re_media_filename.match(curfile_name)
             curfile_oquality = Quality(curfile_omatch.group(2) or '')
             exact_name = curfile == vi.my_fullpath
@@ -329,38 +345,38 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                     Log.error(f'Error: file {vi.sffilename} already exists and is locked by \'{proc_str}\'!! Parallel download? Aborted!')
                     return DownloadResult.FAIL_ALREADY_EXISTS
                 if not exact_name:
-                    same_loc = path.isdir(vi.my_folder) and path.samefile(curfile_folder, vi.my_folder)
+                    same_loc = os.path.isdir(vi.my_folder) and os.path.samefile(curfile_folder, vi.my_folder)
                     loc_str = f' ({"same" if same_loc else "different"} location)'
                     if Config.no_rename_move is False or same_loc:
                         Log.info(f'{vi.sffilename} {vi.quality} found{loc_str}. Enforcing new name (was \'{curfile}\').')
                         if not try_rename(curfile, vi.my_fullpath):
                             Log.warn(f'Warning: file {vi.sffilename} already exists! Old file will be preserved.')
                     else:
-                        new_subfolder = normalize_path(path.relpath(curfile_folder, Config.dest_base))
+                        new_subfolder = normalize_path(os.path.relpath(curfile_folder, Config.dest_base))
                         Log.info(f'{vi.sffilename} {vi.quality} found{loc_str}. Enforcing old path + new name '
                                  f'\'{curfile_folder}/{vi.filename}\' due to \'--no-rename-move\' flag (was \'{curfile_name}\').')
                         vi.subfolder = new_subfolder
-                        if not try_rename(curfile, normalize_path(path.abspath(vi.my_fullpath), False)):
+                        if not try_rename(curfile, normalize_path(os.path.abspath(vi.my_fullpath), False)):
                             Log.warn(f'Warning: file {vi.sffilename} already exists! Old file will be preserved.')
             else:
                 qstr = f'\'{curfile_oquality}\' {"==" if exact_quality else ">=" if curfile_oquality else "<?>"} \'{curfile_quality}\''
                 Log.info(f'{vi.sfsname} already exists ({qstr}). Skipped.\n Location: \'{curfile}\'')
-                vi.subfolder = normalize_path(path.relpath(curfile_folder, Config.dest_base))
+                vi.subfolder = normalize_path(os.path.relpath(curfile_folder, Config.dest_base))
                 vi.set_state(VideoInfo.State.DONE)
                 return DownloadResult.FAIL_ALREADY_EXISTS
-        if not path.isdir(vi.my_folder):
+        if not os.path.isdir(vi.my_folder):
             try:
-                makedirs(vi.my_folder)
+                os.makedirs(vi.my_folder)
             except Exception:
-                raise IOError(f'ERROR: Unable to create subfolder \'{vi.my_folder}\'!')
+                raise OSError(f'ERROR: Unable to create subfolder \'{vi.my_folder}\'!')
 
     while (not skip) and retries <= Config.retries:
         r = None
         try:
-            file_exists = path.isfile(vi.my_fullpath)
+            file_exists = os.path.isfile(vi.my_fullpath)
             if file_exists and retries == 0:
                 vi.set_flag(VideoInfo.Flags.ALREADY_EXISTED_EXACT)
-            file_size = stat(vi.my_fullpath).st_size if file_exists else 0
+            file_size = os.stat(vi.my_fullpath).st_size if file_exists else 0
 
             if Config.dm == DOWNLOAD_MODE_TOUCH:
                 if file_exists:
@@ -375,11 +391,11 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 break
 
             hkwargs: dict[str, dict[str, str]] = {'headers': {'Range': f'bytes={file_size:d}-'} if file_size > 0 else {}}
-            ckwargs = dict(allow_redirects=not Config.proxy or not Config.download_without_proxy)
+            ckwargs = {'allow_redirects': not Config.proxy or not Config.download_without_proxy}
             hkwargs['headers'].update({'Referer': SITE_ITEM_REQUEST_VIDEO % vi.id})
             r = await wrap_request('GET', vi.link, **ckwargs, **hkwargs)
             while r.status in (301, 302):
-                if urlparse(r.headers['Location']).hostname != urlparse(vi.link).hostname:
+                if urllib.parse.urlparse(r.headers['Location']).hostname != urllib.parse.urlparse(vi.link).hostname:
                     ckwargs.update(noproxy=True, allow_redirects=True)
                 ensure_conn_closed(r)
                 r = await wrap_request('GET', r.headers['Location'], **ckwargs, **hkwargs)
@@ -427,10 +443,10 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             status_checker.reset()
             dwn.remove_from_writes(vi)
 
-            file_size = stat(vi.my_fullpath).st_size
+            file_size = os.stat(vi.my_fullpath).st_size
             if vi.expected_size and file_size != vi.expected_size:
                 Log.error(f'Error: file size mismatch for {vi.sfsname}: {file_size:d} / {vi.expected_size:d}')
-                raise IOError(vi.link)
+                raise OSError(vi.link)
 
             total_time = (get_elapsed_time_i() - vi.dstart_time) or 1
             Log.info(f'[download] {vi.sfsname} ({vi.link_quality}) completed in {format_time(total_time)} '
@@ -452,10 +468,10 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             status_checker.reset()
             if retries <= Config.retries:
                 vi.set_state(VideoInfo.State.DOWNLOADING)
-                await sleep(frand(*CONNECT_RETRY_DELAY))
-            elif Config.keep_unfinished is False and path.isfile(vi.my_fullpath) and vi.has_flag(VideoInfo.Flags.FILE_WAS_CREATED):
+                await sleep(random.uniform(*CONNECT_RETRY_DELAY))
+            elif Config.keep_unfinished is False and os.path.isfile(vi.my_fullpath) and vi.has_flag(VideoInfo.Flags.FILE_WAS_CREATED):
                 Log.error(f'Failed to download {vi.sffilename}. Removing unfinished file...')
-                remove(vi.my_fullpath)
+                os.remove(vi.my_fullpath)
         finally:
             ensure_conn_closed(r)
 
@@ -466,7 +482,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
     if Config.save_screenshots:
         sret = await download_sceenshots(vi)
         if sret != DownloadResult.SUCCESS:
-            Log.warn(f'{vi.sffilename}: `download_sceenshots()` has failed items (ret = {str(sret)})')
+            Log.warn(f'{vi.sffilename}: `download_sceenshots()` has failed items (ret = {sret!s})')
 
     return ret
 

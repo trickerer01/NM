@@ -6,11 +6,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+import base64
+import datetime
+import os
 from abc import ABC, abstractmethod
-from base64 import b64decode
-from datetime import datetime
 from enum import IntEnum
-from os import path
 from typing import TypeVar
 
 MIN_PYTHON_VERSION = (3, 10)
@@ -43,30 +43,30 @@ UTF8 = 'utf-8'
 TAGS_CONCAT_CHAR = ','
 DEFAULT_EXT = 'mp4'
 EXTENSIONS_V = (DEFAULT_EXT, 'webm', 'jpg', 'jpeg')
-START_TIME = datetime.now()
+START_TIME = datetime.datetime.now()
 
-SITE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
-SITE_ITEM_REQUEST_SEARCH_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcy8lcz9vPW1yJnBhZ2U9JWQ=').decode()
-"""Params required: **search**, **page** - **str**, **int**\n
-Ex. SITE_ITEM_REQUEST_SEARCH_PAGE % ('sfw', 1)"""
+SITE = base64.b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
+SITE_ITEM_REQUEST_SEARCH_PAGE = base64.b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcy8lcz9vPW1yJnBhZ2U9JWQ=').decode()
+'''Params required: **search**, **page** - **str**, **int**\n
+Ex. SITE_ITEM_REQUEST_SEARCH_PAGE % ('sfw', 1)'''
 #
 #
-SITE_ITEM_REQUEST_VIDEO = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdmlkZW8vJWQv').decode()
-"""Params required: **video_id** - **int**\n
-Ex. SITE_ITEM_REQUEST_VIDEO % (69999)"""
-SITE_ITEM_REQUEST_PLAYLIST_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdXNlci8lcy9wbGF5bGlzdD9wYWdlPSVk').decode()
-"""Params required: **username**, **page** - **str**, **int**\n
-Ex. SITE_ITEM_REQUEST_PLAYLIST_PAGE % ('anonymous', 1)"""
+SITE_ITEM_REQUEST_VIDEO = base64.b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdmlkZW8vJWQv').decode()
+'''Params required: **video_id** - **int**\n
+Ex. SITE_ITEM_REQUEST_VIDEO % (69999)'''
+SITE_ITEM_REQUEST_PLAYLIST_PAGE = base64.b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdXNlci8lcy9wbGF5bGlzdD9wYWdlPSVk').decode()
+'''Params required: **username**, **page** - **str**, **int**\n
+Ex. SITE_ITEM_REQUEST_PLAYLIST_PAGE % ('anonymous', 1)'''
 #
 #
-SITE_ITEM_REQUEST_FAVOURITES_PAGE = b64decode(
+SITE_ITEM_REQUEST_FAVOURITES_PAGE = base64.b64decode(
     'aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdXNlci8lcy9mYXZvcml0ZS92aWRlb3M/cGFnZT0lZA==').decode()
-"""Params required: **user_id**, **page** - **str**, **int**\n
-Ex. SITE_ITEM_REQUEST_FAVOURITES_PAGE % ('anonymous', 1)"""
+'''Params required: **user_id**, **page** - **str**, **int**\n
+Ex. SITE_ITEM_REQUEST_FAVOURITES_PAGE % ('anonymous', 1)'''
 #
-SITE_ITEM_REQUEST_UPLOADER_PAGE = b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdXNlci8lcy92aWRlb3M/cGFnZT0lZA==').decode()
-"""Params required: **username**, **page** - **str**, **int**\n
-Ex. SITE_ITEM_REQUEST_UPLOADER_PAGE % ('anonymous', 1)"""
+SITE_ITEM_REQUEST_UPLOADER_PAGE = base64.b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdXNlci8lcy92aWRlb3M/cGFnZT0lZA==').decode()
+'''Params required: **username**, **page** - **str**, **int**\n
+Ex. SITE_ITEM_REQUEST_UPLOADER_PAGE % ('anonymous', 1)'''
 #
 #
 # SITE_AJAX_REQUEST_MODEL_PAGE = b64decode(
@@ -82,7 +82,7 @@ DEFAULT_HEADERS = {'User-Agent': USER_AGENT}
 DOWNLOAD_POLICY_NOFILTERS = 'nofilters'
 DOWNLOAD_POLICY_ALWAYS = 'always'
 UNTAGGED_POLICIES = (DOWNLOAD_POLICY_NOFILTERS, DOWNLOAD_POLICY_ALWAYS)
-"""('nofilters','always')"""
+'''('nofilters','always')'''
 DOWNLOAD_POLICY_DEFAULT = DOWNLOAD_POLICY_NOFILTERS
 """'nofilters'"""
 
@@ -91,7 +91,7 @@ DOWNLOAD_MODE_FULL = 'full'
 DOWNLOAD_MODE_TOUCH = 'touch'
 DOWNLOAD_MODE_SKIP = 'skip'
 DOWNLOAD_MODES = (DOWNLOAD_MODE_FULL, DOWNLOAD_MODE_TOUCH, DOWNLOAD_MODE_SKIP)
-"""('full','touch','skip')"""
+'''('full','touch','skip')'''
 DOWNLOAD_MODE_DEFAULT = DOWNLOAD_MODE_FULL
 """'full'"""
 
@@ -143,11 +143,11 @@ class NamingFlags:
     # extra
     USE_URL_TITLE = 0x20
     ALL_DEFAULT = PREFIX | SCORE | TITLE | TAGS | QUALITY
-    """0x1F"""
+    '''0x1F'''
     ALL_EXTRA = USE_URL_TITLE
-    """0x20"""
+    '''0x20'''
     ALL = ALL_DEFAULT | ALL_EXTRA
-    """0x3F"""
+    '''0x3F'''
 
 
 NAMING_FLAGS = {
@@ -160,12 +160,12 @@ NAMING_FLAGS = {
     'full': f'0x{NamingFlags.ALL_DEFAULT:02X}',
     'urltitle': f'0x{NamingFlags.USE_URL_TITLE:02X}',
 }
-"""
+'''
 {\n\n'none': '0x00',\n\n'prefix': '0x01',\n\n'score': '0x02',\n\n'title': '0x04',\n\n'tags': '0x08',\n\n'quality': '0x10',
 \n\n'full': '0x1F'\n\n'urltitle': '0x20'\n\n}
-"""
+'''
 NAMING_FLAGS_DEFAULT = NamingFlags.ALL_DEFAULT
-"""0x1F"""
+'''0x1F'''
 
 
 class LoggingFlags(IntEnum):
@@ -178,7 +178,7 @@ class LoggingFlags(IntEnum):
     FATAL = 0x800
     # unused
     ALL = FATAL | ERROR | WARN | INFO | DEBUG | TRACE
-    """0x81F"""
+    '''0x81F'''
 
     def __str__(self) -> str:
         return f'{self.name} (0x{self.value:03X})'
@@ -191,13 +191,13 @@ LOGGING_FLAGS = {
     'debug': f'0x{LoggingFlags.DEBUG.value:03X}',
     'trace': f'0x{LoggingFlags.TRACE.value:03X}',
 }
-"""{\n\n'error': '0x010',\n\n'warn': '0x008',\n\n'info': '0x004',\n\n'debug': '0x002',\n\n'trace': '0x001'\n\n}"""
+'''{\n\n'error': '0x010',\n\n'warn': '0x008',\n\n'info': '0x004',\n\n'debug': '0x002',\n\n'trace': '0x001'\n\n}'''
 LOGGING_FLAGS_DEFAULT = LoggingFlags.INFO
-"""0x004"""
+'''0x004'''
 
 ACTION_STORE_TRUE = 'store_true'
 
-SRC_PATH = path.abspath(path.dirname(__file__)).replace('\\', SLASH)
+SRC_PATH = os.path.abspath(os.path.dirname(__file__)).replace('\\', SLASH)
 # FILE_LOC_TAGS = f'{SRC_PATH}/../2tags/nm_tags.json'
 # FILE_LOC_CATS = f'{SRC_PATH}/../3categories/nm_cats.json'
 # FILE_LOC_ARTS = f'{SRC_PATH}/../4artists/nm_arts.json'
