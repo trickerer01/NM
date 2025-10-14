@@ -9,8 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import os
 from collections.abc import MutableSequence
 
-from psutil import Error as PSError
-from psutil import process_iter
+import psutil
 
 from config import Config
 from defs import DEFAULT_EXT, PREFIX, Quality
@@ -188,7 +187,7 @@ def is_file_being_used(filepath: str) -> str:
     Can only check processes owned by current user unless launched with admin/superuser privileges
     """
     mypid = os.getpid()
-    for p in process_iter():
+    for p in psutil.process_iter():
         try:
             with p.oneshot():
                 if p.pid == mypid:
@@ -201,7 +200,7 @@ def is_file_being_used(filepath: str) -> str:
                     if os.path.samefile(filepath, fpath.path):
                         return f'{p.exe()} <{user_name}> (pid: {p.pid:d})'
         except Exception as e:
-            if isinstance(e, PSError):
+            if isinstance(e, psutil.Error):
                 pass
             else:
                 import traceback
