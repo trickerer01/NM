@@ -14,26 +14,24 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from cmdargs import prepare_arglist
-
-# noinspection PyProtectedMember
 from config import BaseConfig
-from defs import DOWNLOAD_MODE_TOUCH, QUALITIES, QUALITY_480P, Duration
-
-# noinspection PyProtectedMember
+from defs import DOWNLOAD_MODE_TOUCH, QUALITIES, QUALITY_480P, SITE, Duration
 from ids import main as ids_main
 from ids import main_sync as ids_main_sync
 from logger import Log
-
-# noinspection PyProtectedMember
 from pages import main as pages_main
 from pages import main_sync as pages_main_sync
-
-# noinspection PyProtectedMember
 from path_util import found_filenames_dict
 from rex import prepare_regex_fullmatch
-
-# noinspection PyProtectedMember
-from tagger import TAG_ALIASES, TAG_CONFLICTS, load_tag_aliases, load_tag_conflicts, match_text, normalize_wtag
+from tagger import (
+    TAG_ALIASES,
+    TAG_CONFLICTS,
+    extract_ids_from_links,
+    load_tag_aliases,
+    load_tag_conflicts,
+    match_text,
+    normalize_wtag,
+)
 from util import normalize_path
 from version import APP_NAME, APP_VERSION
 
@@ -185,6 +183,15 @@ class CmdTests(TestCase):
         self.assertEqual(c2.proxy, 'socks4://u1:p2@9.123.15.67:3128')
         self.assertEqual(Duration((10, 200)), c2.scenario.queries[1].duration)
         self.assertEqual(Duration((0, 9)), c2.scenario.queries[2].duration)
+        parsed3 = prepare_arglist(['-links', f'{SITE}video/130567', '-u:araraw'], False)
+        c3 = BaseConfig()
+        c3.read(parsed3, False)
+        self.assertTrue(c3.use_link_sequence)
+        self.assertEqual(2, len(c3.extra_tags))
+        c3.id_sequence = extract_ids_from_links(c3.extra_tags)
+        self.assertEqual(1, len(c3.extra_tags))
+        self.assertListEqual(['-u:araraw'], c3.extra_tags)
+        self.assertEqual(1, len(c3.id_sequence))
         print(f'{self._testMethodName} passed')
 
     def test_cmd_wtags(self):
