@@ -11,7 +11,17 @@ from argparse import ArgumentError
 from ipaddress import IPv4Address
 
 from config import Config
-from defs import DEFAULT_QUALITY, DOWNLOAD_POLICY_DEFAULT, LOGGING_FLAGS, NAMING_FLAGS, SLASH, Duration, LoggingFlags, NamingFlags
+from defs import (
+    DEFAULT_QUALITY,
+    DOWNLOAD_POLICY_DEFAULT,
+    IDGAP_PREDICTION_OFF,
+    LOGGING_FLAGS,
+    NAMING_FLAGS,
+    SLASH,
+    Duration,
+    LoggingFlags,
+    NamingFlags,
+)
 from logger import Log
 from rex import re_non_search_symbols, re_session_id
 from util import normalize_path
@@ -57,9 +67,9 @@ def find_and_resolve_config_conflicts() -> bool:
         Config.detect_id_gaps = False
         delay_for_message = True
     if Config.detect_id_gaps:
-        if Config.predict_id_gaps:
+        if Config.predict_id_gaps != IDGAP_PREDICTION_OFF:
             Log.info('Info: id gaps detection is enabled, disabling id gaps prediction')
-            Config.predict_id_gaps = False
+            Config.predict_id_gaps = IDGAP_PREDICTION_OFF
             delay_for_message = True
 
     if Config.scan_all_pages and Config.start_id <= 1:

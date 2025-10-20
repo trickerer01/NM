@@ -40,6 +40,7 @@ from downloader import VideoDownloadWorker
 from dscanner import VideoScanWorker
 from dthrottler import ThrottleChecker
 from fetch_html import ensure_conn_closed, fetch_html, wrap_request
+from idgaps import IdGapsPredictor
 from iinfo import VideoInfo, export_video_info, get_min_max_ids
 from logger import Log
 from path_util import file_already_exists, is_file_being_used, register_new_file, try_rename
@@ -65,6 +66,7 @@ async def download(sequence: list[VideoInfo], by_id: bool, filtered_count: int) 
 
 async def scan_video(vi: VideoInfo) -> DownloadResult:
     scn = VideoScanWorker.get()
+    gpred = IdGapsPredictor.get()
     scenario = Config.scenario
     sname = vi.sname
     extra_ids: list[int] = scn.get_extra_ids() if scn else []
@@ -72,20 +74,9 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
     rating = vi.rating
     score = ''
 
-    predict_gap1 = False  # Config.predict_id_gaps and 3400000 <= vi.id <= 3900000
-    predicted_skip = False
-    predicted_prefix = ''
-    if predict_gap1:
-        predicted_prefix = '1'
-        vi_prev1 = scn.find_vinfo_last(vi.id - 1)
-        vi_prev2 = scn.find_vinfo_last(vi.id - 2)
-        if vi_prev1 and vi_prev2:
-            f_404s = [vip.has_flag(VideoInfo.Flags.RETURNED_404) for vip in (vi_prev1, vi_prev2)]
-            predicted_skip = f_404s[0] is not f_404s[1]
-        else:
-            predicted_skip = vi_prev1 and not vi_prev1.has_flag(VideoInfo.Flags.RETURNED_404)
-    if predicted_skip:
+    if predicted_prefix := gpred.need_skip(vi):
         Log.warn(f'Id gap prediction {predicted_prefix} forces error 404 for {sname}, skipping...')
+        gpred.count_nonexisting()
         return DownloadResult.FAIL_NOT_FOUND
 
     vi.set_state(VideoInfo.State.SCANNING)
@@ -103,22 +94,14 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
         error_div = a_html.find('div', class_='text-danger')
         if (error_div and 'It is either deleted' in error_div.string) or blank_404:
             Log.error(f'Got error 404 for {sname}, skipping...')
+            gpred.count_nonexisting()
             return DownloadResult.FAIL_NOT_FOUND
         Log.error(f'Warning: Got error 404 for {sname} (probably unlisted), author/score will not be extracted...')
     elif any(re_private_video.search(d.text) for d in a_html.find_all('span', class_='text-danger')):
         Log.warn(f'Warning: Got private video error for {sname}, score(likes)/extra_title will not be extracted...')
         vi.private = True
 
-    if predict_gap1:
-        # find previous valid id and check the offset
-        id_dec = 3
-        vi_prev_x = scn.find_vinfo_last(vi.id - id_dec)
-        while vi_prev_x and vi_prev_x.has_flag(VideoInfo.Flags.RETURNED_404):
-            id_dec += 1
-            vi_prev_x = scn.find_vinfo_last(vi.id - id_dec)
-        if vi_prev_x and (id_dec % 3) != 0:
-            Log.error('Error: id gap predictor encountered unexpected valid post offset. Disabling prediction!')
-            Config.predict_id_gaps = False
+    gpred.count_existing(vi)
 
     if not vi.title:
         titlemeta = a_html.find('meta', attrs={'name': 'description'})
