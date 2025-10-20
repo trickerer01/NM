@@ -19,7 +19,7 @@ from logger import Log
 __all__ = ('IdGapsPredictor',)
 
 ID_SKIPS = (
-    (IntPair((0, 0)), 2),
+    (IntPair(0, 0), 2),
 )
 
 
