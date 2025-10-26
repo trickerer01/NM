@@ -151,7 +151,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
         my_uploader = vi.uploader or 'unknown'
         has_description = (cudivs[-1].text.lower() == my_uploader) if cudivs else False  # first comment by uploader
         if Config.save_descriptions or Config.check_description_pos or Config.check_description_neg:
-            desc_comment = (f'{cudivs[-1].text}:\n{ctdivs[-1].text.strip()}') if has_description else ''
+            desc_comment = f'{cudivs[-1].text}:\n{ctdivs[-1].text.strip()}' if has_description else ''
             desc_base = ''
             vi.description = desc_base or (f'\n{desc_comment}\n' if desc_comment else '')
         if Config.save_comments:
