@@ -60,7 +60,7 @@ TAG_CONFLICTS: dict[str, tuple[list[str], list[str]]] = {}
 def valid_playlist_name(plist: str) -> tuple[int, str]:
     try:
         plist_name, plist_numb = plist, 0
-        return (plist_numb, plist_name)
+        return plist_numb, plist_name
     except Exception:
         raise ValueError
 
