@@ -59,7 +59,7 @@ async def main(args: Sequence[str]) -> None:
             return -1
         return 0
 
-    v_entries = []
+    v_entries: list[VideoInfo] = []
     maxpage = Config.end if Config.start == Config.end else 0
 
     pi = Config.start
@@ -104,7 +104,7 @@ async def main(args: Sequence[str]) -> None:
                 mirefs = a_html.find_all('div', class_=video_ref_class1)
                 mirefs = mirefs or a_html.find_all('div', class_=video_ref_class2)
                 mirefs = [_.find('a') for _ in mirefs]
-                max_id = max(int(re_page_entry.search(str(_.get('href'))).group(1)) for _ in mirefs)
+                max_id = max(int(re_page_entry.search(_.get('href')).group(1)) for _ in mirefs)
                 Log.fatal(f'{APP_NAME}: {max_id:d}')
                 return
 
@@ -119,7 +119,7 @@ async def main(args: Sequence[str]) -> None:
                 rref = vref.find('span', class_='content-rating')
                 tref = aref.find('span')
                 dref = vref.find('div', class_='duration')
-                cur_id = int(re_page_entry.search(str(aref.get('href'))).group(1))
+                cur_id = int(re_page_entry.search(aref.get('href')).group(1))
                 bound_res = check_id_bounds(cur_id)
                 if bound_res != 0:
                     if bound_res < 0:
@@ -134,7 +134,7 @@ async def main(args: Sequence[str]) -> None:
                 v_entries.append(VideoInfo(cur_id, my_utitle if use_utitle else my_title, m_rating=my_rating, m_duration=my_duration))
 
             if pi - 1 > Config.start and lower_count == orig_count > 0 and not Config.scan_all_pages:
-                if maxpage == 0 or pi - 1 < maxpage:
+                if not (0 < maxpage <= pi - 1):
                     Log.info(f'Page {pi - 1:d} has all post ids below lower bound. Pages scan stopped!')
                 break
 

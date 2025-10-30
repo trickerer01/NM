@@ -173,12 +173,10 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
             except Exception:
                 pass
     if scenario:
-        matching_sq = scenario.get_matching_subquery(vi, tags_raw, score, rating)
-        utpalways_sq = scenario.get_utp_always_subquery() if tdiv is None else None
-        if matching_sq:
+        if matching_sq := scenario.get_matching_subquery(vi, tags_raw, score, rating):
             vi.subfolder = matching_sq.subfolder
             vi.quality = matching_sq.quality
-        elif utpalways_sq:
+        elif utpalways_sq := scenario.get_utp_always_subquery() if tdiv is None else None:
             vi.subfolder = utpalways_sq.subfolder
             vi.quality = utpalways_sq.quality
         else:
@@ -238,7 +236,7 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
         vi.filename = f'{fname_part1}{fname_mid}{extract_ext(vi.link)}'
         vi.set_state(VideoInfo.State.DOWNLOAD_PENDING)
         res = await download_video(vi)
-        if res not in (DownloadResult.SUCCESS, DownloadResult.FAIL_SKIPPED, DownloadResult.FAIL_ALREADY_EXISTS):
+        if (1 << res) & DownloadResult.RESULT_MASK_CRITICAL:
             ret_vals.append(res)
         else:
             return res
@@ -263,7 +261,8 @@ async def download_sceenshot(vi: VideoInfo, scr_num: int) -> DownloadResult:
         try:
             os.makedirs(my_folder)
         except Exception:
-            raise OSError(f'ERROR: Unable to create subfolder \'{my_folder}\'!')
+            Log.fatal(f'ERROR: Unable to create subfolder \'{my_folder}\'!')
+            raise
 
     try:
         async with await wrap_request('GET', my_link) as r:
@@ -292,7 +291,7 @@ async def download_sceenshot(vi: VideoInfo, scr_num: int) -> DownloadResult:
 async def download_sceenshots(vi: VideoInfo) -> DownloadResult:
     ret = DownloadResult.SUCCESS
     t: Task[DownloadResult]
-    for t in [get_running_loop().create_task(download_sceenshot(vi, scr_idx + 1)) for scr_idx in range(SCREENSHOTS_COUNT)]:
+    for t in (get_running_loop().create_task(download_sceenshot(vi, scr_idx + 1)) for scr_idx in range(SCREENSHOTS_COUNT)):
         res = await t
         if res not in (DownloadResult.SUCCESS, ret):
             ret = res
@@ -304,7 +303,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
     retries = 0
     exact_quality = False
     ret = DownloadResult.SUCCESS
-    skip = Config.dm == DOWNLOAD_MODE_SKIP
+    skip = Config.download_mode == DOWNLOAD_MODE_SKIP
     status_checker = ThrottleChecker(vi)
 
     if skip is True:
@@ -350,7 +349,8 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             try:
                 os.makedirs(vi.my_folder)
             except Exception:
-                raise OSError(f'ERROR: Unable to create subfolder \'{vi.my_folder}\'!')
+                Log.fatal(f'ERROR: Unable to create subfolder \'{vi.my_folder}\'!')
+                raise
 
     while (not skip) and retries <= Config.retries:
         r = None
@@ -360,7 +360,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 vi.set_flag(VideoInfo.Flags.ALREADY_EXISTED_EXACT)
             file_size = os.stat(vi.my_fullpath).st_size if file_exists else 0
 
-            if Config.dm == DOWNLOAD_MODE_TOUCH:
+            if Config.download_mode == DOWNLOAD_MODE_TOUCH:
                 if file_exists:
                     Log.info(f'{vi.sfsname} ({vi.quality}) already exists, size: {file_size:d} ({file_size / Mem.MB:.2f} Mb)')
                     vi.set_state(VideoInfo.State.DONE)
@@ -381,8 +381,8 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                     ckwargs.update(noproxy=True, allow_redirects=True)
                 ensure_conn_closed(r)
                 r = await wrap_request('GET', r.headers['Location'], **ckwargs, **hkwargs)
-            content_len = r.content_length or 0
-            content_range_s = r.headers.get('Content-Range', '/').split('/', 1)
+            content_len: int = r.content_length or 0
+            content_range_s = str(r.headers.get('Content-Range', '/')).split('/', 1)
             content_range = int(content_range_s[1]) if len(content_range_s) > 1 and content_range_s[1].isnumeric() else 1
             if (content_len == 0 or r.status == 416) and file_size >= content_range:  # r.status may be 404 also (Apache mishap)
                 Log.warn(f'{vi.sfsname} ({vi.link_quality}) is already completed, size: {file_size:d} ({file_size / Mem.MB:.2f} Mb)')
@@ -416,8 +416,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             async with async_open(vi.my_fullpath, 'ab') as outf:
                 register_new_file(vi)
                 vi.set_flag(VideoInfo.Flags.FILE_WAS_CREATED)
-                if vi.dstart_time == 0:
-                    vi.dstart_time = get_elapsed_time_i()
+                vi.dstart_time = vi.dstart_time or get_elapsed_time_i()
                 async for chunk in r.content.iter_chunked(512 * Mem.KB):
                     await outf.write(chunk)
                     vi.bytes_written += len(chunk)
