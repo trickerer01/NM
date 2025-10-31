@@ -37,11 +37,9 @@ __all__ = ('main_sync',)
 
 async def main(args: Sequence[str]) -> None:
     try:
-        arglist = prepare_arglist(args, True)
+        prepare_arglist(args, True)
     except HelpPrintExitException:
         return
-
-    Config.read(arglist, True)
 
     full_download = True
     video_ref_class1 = 'col-6 col-sm-6 col-md-4 col-lg-3 col-xl-2dot4 i-container'
@@ -120,8 +118,7 @@ async def main(args: Sequence[str]) -> None:
                 tref = aref.find('span')
                 dref = vref.find('div', class_='duration')
                 cur_id = int(re_page_entry.search(aref.get('href')).group(1))
-                bound_res = check_id_bounds(cur_id)
-                if bound_res != 0:
+                if bound_res := check_id_bounds(cur_id):
                     if bound_res < 0:
                         lower_count += 1
                     continue
@@ -133,7 +130,7 @@ async def main(args: Sequence[str]) -> None:
                 use_utitle = has_naming_flag(NamingFlags.USE_URL_TITLE)
                 v_entries.append(VideoInfo(cur_id, my_utitle if use_utitle else my_title, m_rating=my_rating, m_duration=my_duration))
 
-            if pi - 1 > Config.start and lower_count == orig_count > 0 and not Config.scan_all_pages:
+            if pi - 1 > Config.start and 0 < lower_count == orig_count and not Config.scan_all_pages:
                 if not (0 < maxpage <= pi - 1):
                     Log.info(f'Page {pi - 1:d} has all post ids below lower bound. Pages scan stopped!')
                 break

@@ -10,6 +10,7 @@ import os
 from argparse import ZERO_OR_MORE, ArgumentParser, Namespace
 from collections.abc import Sequence
 
+from config import Config
 from defs import (
     ACTION_STORE_TRUE,
     CONNECT_RETRIES_BASE,
@@ -93,6 +94,7 @@ from validators import (
     valid_proxy,
     valid_rating,
     valid_search_string,
+    valid_timeout,
 )
 from version import APP_NAME, APP_VERSION
 
@@ -145,7 +147,7 @@ def is_parsed_cmdfile(parsed_result: Namespace) -> bool:
 
 
 def validate_parsed(parser: ArgumentParser, args: Sequence[str], default_sub: ArgumentParser) -> Namespace:
-    errors_to_print = []
+    errors_to_print: list[str] = []
     parsed, unks = parser.parse_known_args(args) if args[0] in EXISTING_PARSERS else default_sub.parse_known_args(args)
     if not is_parsed_cmdfile(parsed):
         taglist: Sequence[str]
@@ -167,17 +169,20 @@ def execute_parser(parser: ArgumentParser, default_sub: ArgumentParser, args: Se
     try:
         assert args
         parsed = validate_parsed(parser, args, default_sub)
-        if (not is_parsed_cmdfile(parsed)) and not (pages and parsed.get_maxid):
+        if not is_parsed_cmdfile(parsed):
             if pages:
-                if parsed.end < parsed.start + parsed.pages - 1:
-                    parsed.end = parsed.start + parsed.pages - 1
+                parsed.is_pages = True
+                parsed.playlist_id, parsed.playlist_name = parsed.playlist_name
+                if not parsed.get_maxid:
+                    if parsed.end < parsed.start + parsed.pages - 1:
+                        parsed.end = parsed.start + parsed.pages - 1
             else:
                 if parsed.use_id_sequence or parsed.use_link_sequence:
                     parsed.start = parsed.end = None
-                elif parsed.end < parsed.start + parsed.count - 1:
-                    parsed.end = parsed.start + parsed.count - 1
+                else:
+                    parsed.end = max(parsed.end, parsed.start + parsed.count - 1)
         while is_parsed_cmdfile(parsed):
-            parsed = prepare_arglist(read_cmdfile(parsed.path), pages)
+            parsed = prepare_arglist_type(read_cmdfile(parsed.path), pages)
         return parsed
     except SystemExit:
         raise HelpPrintExitException
@@ -210,7 +215,7 @@ def add_common_args(parser_or_group: ArgumentParser) -> None:
     parser_or_group.add_argument('-fslevelup', metavar='#number', default=FSUP_DEFAULT, help=HELP_ARG_FSLEVELUP, type=positive_nonzero_int)
     parser_or_group.add_argument('-proxy', metavar='#type://[u:p@]a.d.d.r:port', default=None, help=HELP_ARG_PROXY, type=valid_proxy)
     parser_or_group.add_argument('-proxynodown', '--download-without-proxy', action=ACTION_STORE_TRUE, help=HELP_ARG_PROXYNODOWN)
-    parser_or_group.add_argument('-timeout', metavar='#seconds', default=0, help=HELP_ARG_TIMEOUT, type=positive_nonzero_int)
+    parser_or_group.add_argument('-timeout', metavar='#seconds', default=valid_timeout(''), help=HELP_ARG_TIMEOUT, type=valid_timeout)
     parser_or_group.add_argument('-retries', metavar='#number', default=CONNECT_RETRIES_BASE, help=HELP_ARG_RETRIES, type=positive_int)
     parser_or_group.add_argument('-throttle', metavar='#rate', default=0, help=HELP_ARG_THROTTLE, type=positive_nonzero_int)
     parser_or_group.add_argument('-athrottle', '--throttle-auto', action=ACTION_STORE_TRUE, help=HELP_ARG_THROTTLE_AUTO)
@@ -298,11 +303,19 @@ def prepare_arglist_pages(args: Sequence[str]) -> Namespace:
     return execute_parser(parser, par_cmd, args, True)
 
 
-def prepare_arglist(args: Sequence[str], pages: bool) -> Namespace:
-    if pages:
-        return prepare_arglist_pages(args)
-    else:
-        return prepare_arglist_ids(args)
+def prepare_arglist_type(args: Sequence[str], pages: bool) -> Namespace:
+    parsed = prepare_arglist_pages(args) if pages else prepare_arglist_ids(args)
+    return parsed
+
+
+def prepare_arglist(args: Sequence[str], pages: bool) -> None:
+    parsed = prepare_arglist_type(args, pages)
+    for pp in vars(parsed):
+        param = Config.NAMESPACE_VARS_REMAP.get(pp, pp)
+        if param in vars(Config):
+            setattr(Config, param, getattr(parsed, pp, getattr(Config, param)))
+        else:
+            Log.debug(f'Argument list param {param} was not consumed...')
 
 #
 #
