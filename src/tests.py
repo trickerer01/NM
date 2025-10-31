@@ -114,6 +114,7 @@ class CmdTests(TestCase):
     #     self.assertRaises(HelpPrintExitException, prepare_arglist, ['cmd', '-start', '1'], True)
     #     self.assertRaises(HelpPrintExitException, prepare_arglist, ['cmd', '-start', '1', '-pages'], True)
     #     self.assertNotEqual('', stderr.getvalue().strip('\n'))
+    #     print(f'{self._testMethodName} passed')
 
     @test_prepare()
     def test_cmd_pages01(self):
@@ -121,6 +122,7 @@ class CmdTests(TestCase):
         self.assertTrue(Config.get_maxid)
         # self.assertEqual(0, Config.playlist_id)
         # self.assertEqual('', Config.playlist_name)
+        print(f'{self._testMethodName} passed')
 
     @test_prepare()
     def test_cmd_pages02(self):
@@ -135,6 +137,7 @@ class CmdTests(TestCase):
         self.assertIsNone(Config.search_rule_art)
         self.assertIsNone(Config.use_id_sequence)
         self.assertTrue(Config.skip_empty_lists)
+        print(f'{self._testMethodName} passed')
 
     @test_prepare()
     def test_cmd_pages03(self):
@@ -154,6 +157,7 @@ class CmdTests(TestCase):
         self.assertTrue(Config.save_comments)
         self.assertTrue(Config.save_screenshots)
         self.assertTrue(Config.skip_empty_lists)
+        print(f'{self._testMethodName} passed')
 
     @test_prepare()
     def test_cmd_pages04(self):
@@ -173,6 +177,7 @@ class CmdTests(TestCase):
         self.assertTrue(Config.save_descriptions)
         self.assertTrue(Config.save_comments)
         self.assertTrue(Config.save_screenshots)
+        print(f'{self._testMethodName} passed')
 
     # @test_prepare()
     # def test_cmd_pages05(self):
@@ -201,6 +206,7 @@ class CmdTests(TestCase):
         self.assertTrue(Config.use_id_sequence)
         # self.assertEqual(0, len(Config.extra_tags))
         # self.assertEqual(2, len(Config.id_sequence))
+        print(f'{self._testMethodName} passed')
 
     @test_prepare()
     def test_cmd_ids02(self):
@@ -219,6 +225,7 @@ class CmdTests(TestCase):
         self.assertEqual(Config.proxy, 'socks4://u1:p2@9.123.15.67:3128')
         self.assertEqual(Duration(10, 200), Config.scenario.queries[1].duration)
         self.assertEqual(Duration(0, 9), Config.scenario.queries[2].duration)
+        print(f'{self._testMethodName} passed')
 
     @test_prepare()
     def test_cmd_ids03(self):
@@ -238,6 +245,7 @@ class CmdTests(TestCase):
                          '-*`[1`-5`]`+`(finger`{1`,3`}`|`girl`)s`?`.`*``'], True)
         self.assertEqual(r'^\-.*[1-5]+(?:finger{1,3}|girl)s?.*$', prepare_regex_fullmatch(normalize_wtag(Config.extra_tags[0])).pattern)
         self.assertEqual(r'^\-.*[1-5]+(?:finger{1,3}|girl)s?.*$', prepare_regex_fullmatch(normalize_wtag(Config.extra_tags[1])).pattern)
+        print(f'{self._testMethodName} passed')
 
     @test_prepare()
     def test_cmd_wtags02(self):
