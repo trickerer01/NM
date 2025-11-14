@@ -12,6 +12,7 @@ from collections.abc import Sequence
 
 from config import Config
 from defs import (
+    ACTION_APPEND,
     ACTION_STORE_TRUE,
     CONNECT_RETRIES_BASE,
     DEFAULT_QUALITY,
@@ -23,6 +24,7 @@ from defs import (
     HELP_ARG_CHECK_TITLEDESC,
     HELP_ARG_CMDFILE,
     HELP_ARG_CONTINUE,
+    HELP_ARG_COOKIE,
     HELP_ARG_DMMODE,
     HELP_ARG_DUMP_INFO,
     HELP_ARG_DUMP_SCREENSHOTS,
@@ -33,6 +35,7 @@ from defs import (
     HELP_ARG_FSDEPTH,
     HELP_ARG_FSLEVELUP,
     HELP_ARG_GET_MAXID,
+    HELP_ARG_HEADER,
     HELP_ARG_ID_COUNT,
     HELP_ARG_ID_END,
     HELP_ARG_ID_START,
@@ -90,6 +93,7 @@ from validators import (
     valid_duration,
     valid_filepath_abs,
     valid_int,
+    valid_kwarg,
     valid_lookahead,
     valid_path,
     valid_proxy,
@@ -137,12 +141,7 @@ class HelpPrintExitException(Exception):
 def read_cmdfile(cmdfile_path: str) -> list[str]:
     """Read cmd args from a text file"""
     with open(cmdfile_path, 'rt', encoding=UTF8) as cmdfile:
-        args = []
-        for line in cmdfile.readlines():
-            line = line.strip(' \n\ufeff')
-            if line:
-                args.append(line)
-        return args
+        return [_.strip(' \n\ufeff') for _ in cmdfile]
 
 
 def is_parsed_file(parsed_result: Namespace) -> bool:
@@ -233,6 +232,8 @@ def add_common_args(parser_or_group: ArgumentParser) -> None:
     parser_or_group.add_argument('-naming', default=NAMING_DEFAULT, help=HELP_ARG_NAMING, type=naming_flags)
     parser_or_group.add_argument('-log', '--log-level', default=LOGGING_DEFAULT, help=HELP_ARG_LOGGING, type=log_level)
     parser_or_group.add_argument('-nocolors', '--disable-log-colors', action=ACTION_STORE_TRUE, help=HELP_ARG_NOCOLORS)
+    parser_or_group.add_argument('-header', metavar='#name=value', action=ACTION_APPEND, help=HELP_ARG_HEADER, type=valid_kwarg)
+    parser_or_group.add_argument('-cookie', metavar='#name=value', action=ACTION_APPEND, help=HELP_ARG_COOKIE, type=valid_kwarg)
     parser_or_group.add_argument('-tdump', '--dump-tags', action=ACTION_STORE_TRUE, help='')
     parser_or_group.add_argument('-ddump', '--dump-descriptions', action=ACTION_STORE_TRUE, help='')
     parser_or_group.add_argument('-cdump', '--dump-comments', action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_INFO)
