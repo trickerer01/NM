@@ -118,7 +118,7 @@ IDGAP_PREDICTION_DEFAULT = IDGAP_PREDICTION_OFF
 
 
 class Quality(str):
-    def __init__(self, _: Literal['2160p', '1080p', '720p', 'hi', '480p', '360p', 'SD', 'low']) -> ...: ...
+    def __init__(self, _: Literal['2160p', '1080p', '720p', 'hi', '480p', '360p', 'SD', 'low', 'unk']) -> ...: ...
 
     def __lt__(self, other: str) -> bool:
         return QUALITIES.index(self) > QUALITIES.index(other)
