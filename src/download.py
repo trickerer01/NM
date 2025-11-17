@@ -30,6 +30,7 @@ from defs import (
     SCREENSHOTS_COUNT,
     SITE,
     SITE_ITEM_REQUEST_VIDEO,
+    SITE_V,
     TAGS_CONCAT_CHAR,
     DownloadResult,
     Mem,
@@ -222,7 +223,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
 
 
 async def process_video(vi: VideoInfo) -> DownloadResult:
-    ret_vals = []
+    ret_vals: list[DownloadResult] = []
     fname_part1 = vi.filename
     for i in range(QUALITIES.index(vi.quality), len(QUALITIES)):
         if 'media/photos/' in vi.link:
@@ -232,15 +233,16 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
                 break
             else:
                 return res
-        vi.link = f'{SITE}/media/videos/{QUALITY_STARTS[i]}{vi.id:d}{QUALITY_ENDS[i]}{extract_ext(vi.link)}'
-        fname_mid = f'_{QUALITIES[i]}' if has_naming_flag(NamingFlags.QUALITY) else ''
-        vi.filename = f'{fname_part1}{fname_mid}{extract_ext(vi.link)}'
-        vi.set_state(VideoInfo.State.DOWNLOAD_PENDING)
-        res = await download_video(vi)
-        if (1 << res) & DownloadResult.RESULT_MASK_CRITICAL:
-            ret_vals.append(res)
-        else:
-            return res
+        for site in (SITE, SITE_V):
+            vi.link = f'{site}/media/videos/{QUALITY_STARTS[i]}{vi.id:d}{QUALITY_ENDS[i]}{extract_ext(vi.link)}'
+            fname_mid = f'_{QUALITIES[i]}' if has_naming_flag(NamingFlags.QUALITY) else ''
+            vi.filename = f'{fname_part1}{fname_mid}{extract_ext(vi.link)}'
+            vi.set_state(VideoInfo.State.DOWNLOAD_PENDING)
+            res = await download_video(vi)
+            if (1 << res) & DownloadResult.RESULT_MASK_CRITICAL:
+                ret_vals.append(res)
+            else:
+                return res
     vi.set_state(VideoInfo.State.FAILED)
     if all(_ == DownloadResult.FAIL_NOT_FOUND for _ in ret_vals):
         Log.warn(f'Warning: {vi.sfsname} returned {DownloadResult.FAIL_NOT_FOUND} for all scanned qualities '

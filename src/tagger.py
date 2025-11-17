@@ -17,6 +17,7 @@ from defs import (
     FILE_LOC_TAG_CONFLICTS,
     HTTPS_PREFIX,
     SITE,
+    SITE_V,
     TAGS_CONCAT_CHAR,
     UTF8,
 )
@@ -97,11 +98,11 @@ def is_wtag(tag: str) -> bool:
 
 
 def is_valid_link(extag: str) -> bool:
-    return any((extag.startswith(SITE), f'{HTTPS_PREFIX}{extag}'.startswith(SITE)))
+    return any((extag.startswith((SITE, SITE_V)), f'{HTTPS_PREFIX}{extag}'.startswith((SITE, SITE_V))))
 
 
 def normalize_link(link: str) -> str:
-    return link if link.startswith(SITE) else f'{HTTPS_PREFIX}{link}'
+    return link if link.startswith((SITE, SITE_V)) else f'{HTTPS_PREFIX}{link}'
 
 
 def is_valid_neg_and_group(andgr: str) -> bool:

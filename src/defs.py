@@ -48,11 +48,11 @@ HTTPS_PREFIX = 'https://'
 START_TIME = datetime.datetime.now()
 
 SITE = base64.b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
+SITE_V = base64.b64decode('aHR0cHM6Ly92aWRlb3MubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
 SITE_ITEM_REQUEST_SEARCH_PAGE = base64.b64decode(
     'aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vc2VhcmNoL3ZpZGVvcy8lcz9vPW1yJnBhZ2U9JWQ=').decode()
 '''Params required: **search**, **page** - **str**, **int**\n
 Ex. SITE_ITEM_REQUEST_SEARCH_PAGE % ('sfw', 1)'''
-#
 #
 #
 SITE_ITEM_REQUEST_VIDEO = base64.b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20vdmlkZW8vJWQv').decode()
