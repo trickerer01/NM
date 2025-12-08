@@ -6,14 +6,24 @@ NM is a video downloader with a lot of features, most of which are filters for f
 ### How to use
 ##### Python 3.10 or greater required
 - NM is a cmdline tool, no GUI
-- It consists of 2 main download modules: `pages.py` for pages scanning, `ids.py` ‒ for video ids traversal
 - See `requirements.txt` for additional dependencies. Install with:
   - `python -m pip install -r requirements.txt`
-- Invoke `python pages.py --help` or `python ids.py --help` to list possible arguments for each module (the differences are minimal)
+##### Install as a module
+- `cd nm`
+- `python -m pip install .`
+- `python -m nm [options...]` OR simply
+- `nm [options...]`
+##### Without installing
+- `cd nm`
+- Run either:
+  - `python nm/__main__.py [options...]` OR
+  - `nm.cmd [options...]` (Windows)
+  - `nm.sh [options...]` (Linux)
+
 - For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/NM/issues)
 
 #### Search & filters
-- NM supports searching (`pages.py` module) using native website API
+- NM supports searching (`nm pages`) using native website API
   - `-search <STRING>` - search using raw string, matching all words (see below). Concatenate using `-`:
 - Search is performed using search string matching all words (see below)
 - Initial search results / ids list can be then filtered further using `extra tags` (see help for additional info)
@@ -45,7 +55,7 @@ NM is a video downloader with a lot of features, most of which are filters for f
   - Scenario (script) is used to separate videos matching different sets of tags into different folders in a single pass
   - *SCRIPT* is a semicolon-separated sequence of '*\<subfolder>*<NOTHING>**:** *\<args...>*' groups (subqueries)
   - *SCRIPT* always contains spaces hence has to be escaped by quotes:
-    - python ids.py \<args>... -script ***"***<NOTHING>sub1: tags1; sub2: tags2 ...***"***
+    - nm ids \<args>... -script ***"***<NOTHING>sub1: tags1; sub2: tags2 ...***"***
   - Typically each next subquery is better exclude all required tags from previous one and retain excluded tags, so you know exactly what file goes where. But excluding previous required tags is optional - first matching subquery is used and if some item didn't match previous sub there is no point checking those tags again. **Subquery order matters**. Also, `-tags` contained in every subquery can be safely moved outside of script
     - ... -script "s1: *a b (c\~d)* **-e**; s2: **-a -b -c -d -e** *f g (h\~i)*; s3: **-a -b -c -d -e -f -g -h -i** *k*" `<< full script`
     - ... -script "s1: *a b (c\~d)* **-e**; s2: *f g (h\~i)* **-e**; s3: *k* **-e**" `<< no redundant excludes`
@@ -58,16 +68,16 @@ NM is a video downloader with a lot of features, most of which are filters for f
 3. Downloading a set of videos
   - There are two ways to download a set of ids instead of id range:
   - Using id sequence:
-    - Syntax: `--use-id-sequence` / `-seq`, `ids.py` module only (or download scenario subquery)
+    - Syntax: `--use-id-sequence` / `-seq`, `nm ids` only (or download scenario subquery)
     - The sequence itself is an `extra tag` in a form of `OR` group of ids:
       - `(id=<id1>~id=<id2>~...~id=<idN>)`
     - Id sequence is used **instead** of id range, you can't use both
-      - `python ids.py <args>... -seq (id=1337~id=9999~id=1001)`
+      - `nm ids <args>... -seq (id=1337~id=9999~id=1001)`
   - By passing video links directly:
-    - Syntax: `--use-link-sequence` / `-links`, `ids.py` module only
+    - Syntax: `--use-link-sequence` / `-links`, `nm ids` only
     - Links are extracted from `extra tags` turned into ids
     - Id sequence is used **instead** of id range/sequence, you can't use both
-      - `python ids.py <args>... -links https://... https://...`
+      - `nm ids <args>... -links https://... https://...`
 
 4. File naming
   - File names are generated based on video *title* and *tags*:
@@ -76,15 +86,15 @@ NM is a video downloader with a lot of features, most of which are filters for f
   - If resulting file full path is too long to fit into 240 symbols, first the tags will be gradually dropped; if not enough title will be shrunk to fit; general advice is to not download to folders way too deep down the folder tree
 
 5. Using 'file' mode
-  - Although not required as cmdline argument, there is a default mode app runs in which is a `cmd` mode
-  - `File` mode becomes useful when your cmdline string becomes **really long**. For example: Windows string buffer for console input is about 32767 characters long but standard `cmd.exe` buffer can only fit about 8192 characters, powershell ‒ about 16384. File mode is avalible for both `pages.py` and `ids.py` modules, of course, and can be used with shorter cmdline string as well
-  - `File` mode is activated by providing 'file' as first argument and has a single option which is `-path` to a text file containing actual cmdline arguments for used module's cmd mode:
-    - `python pages.py file -path <FILEPATH>`
+  - `File` mode becomes useful when your cmdline string becomes **really long**. For example: Windows string buffer for console input is about 32767 characters long but standard `cmd.exe` buffer can only fit about 8192 characters, powershell ‒ about 16384. File mode can be used with shorter cmdline string as well
+  - `File` mode is activated by using 'file' subcommand and has a single option which is `-path` to a text file containing actual cmdline arguments:
+    - `nm file -path <FILEPATH>`
   - Target file has to be structured as follows:
     - all arguments and values must be separated: one argument *or* value per line
     - quotes you would normally use in console window to escape argument value must be removed
-    - only current module arguments needed, no python executable or module name needed, `cmd` mode can be omitted
+    - only actual arguments needed
       ```
+      pages
       -start
       1
       -end
@@ -110,21 +120,21 @@ NM is a video downloader with a lot of features, most of which are filters for f
   - Continue file contains cmdline arguments required to resume download, all provided parameters / options / download scenario / extra tags are preserved
   - It is strongly recommended to also include `--continue-mode` and `--keep-unfinished` options when using continue file
   - If download actually finishes without interruption stored continue file is automatically deleted
-  - Continue file has to be used with `ids.py` module, `file` mode (see `using 'file' mode` above)
+  - Continue file has to be used with `nm file` (see `using 'file' mode` above)
 
 #### Examples
 1. Pages
   - All videos by a single tag:
-    - `python pages.py -pages 9999 -search STRING`
+    - `nm pages -pages 9999 -search STRING`
   - Up to 36 recent videos matching 2 words in 1080p, save to a custom location:
-    - `python pages.py -pages 2 -path PATH -quality 1080p -search STRING1+STRING2`
+    - `nm pages -pages 2 -path PATH -quality 1080p -search STRING1+STRING2`
   - All videos from user's playlist:
-    - `python pages.py -pages 9999 -path PATH -quality 1080p -playlist_name USER_NAME`
+    - `nm pages -pages 9999 -path PATH -quality 1080p -playlist_name USER_NAME`
   - All videos uploaded by a user, if tagged with either of 2 desired tags, in best quality, sorted into subfolders by several desired (known) authors, putting remaining videos into a separate folder, setup for interrupt & continue:
-    - `python pages.py -pages 9999 -path PATH --store-continue-cmdfile -quality 1080p -uploader USER_NAME (TAG1~TAG2) -script "name1: AUTHOR1; name2: AUTHOR2; name3: AUTHOR3; rest: * -utp always"`
+    - `nm pages -pages 9999 -path PATH --store-continue-cmdfile -quality 2160p -uploader USER_ID (TAG1~TAG2) -script "name1: AUTHOR1; name2: AUTHOR2; name3: AUTHOR3; rest: * -utp always"`
 
 2. Ids
   - All existing videos in range:
-    - `python ids.py -start 75000 -count 100`
-    - `python ids.py -start 75000 -end 75099`
-  - You can use the majority of arguments from `pages` examples. The only argument that is unique to `ids.py` module is `--use-id-sequence` (`-seq`), see above where it's explained in detail
+    - `nm ids -start 75000 -count 100`
+    - `nm ids -start 75000 -end 75099`
+  - You can use the majority of arguments from `pages` examples. The only argument that is unique to `nm ids` is `--use-id-sequence` (`-seq`), see above where it's explained in detail

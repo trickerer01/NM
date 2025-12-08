@@ -1,14 +1,12 @@
 # Dev
 *venv/
-/.ruff_cache/
-src/__pycache__/
 *.pyc
 *.cfg
 *.lnk
 *.exe
-src/curr.py
-src/images.py
-src/grab_*.py
+nm/curr.py
+nm/images.py
+nm/grab_*.py
 !setup.cfg
 
 # IDE

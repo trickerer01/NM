@@ -11,8 +11,8 @@ import os
 from collections.abc import Collection, Iterable, MutableSequence
 from typing import TypeAlias
 
-from config import Config
-from defs import (
+from .config import Config
+from .defs import (
     FILE_LOC_TAG_ALIASES,
     FILE_LOC_TAG_CONFLICTS,
     HTTPS_PREFIX,
@@ -21,9 +21,9 @@ from defs import (
     TAGS_CONCAT_CHAR,
     UTF8,
 )
-from iinfo import VideoInfo
-from logger import Log
-from rex import (
+from .iinfo import VideoInfo
+from .logger import Log
+from .rex import (
     RAW_TAGS_REPLACEMENTS,
     prepare_regex_fullmatch,
     re_idval,
@@ -37,7 +37,7 @@ from rex import (
     re_uscore_mult,
     re_wtag,
 )
-from util import normalize_path
+from .util import normalize_path
 
 __all__ = (
     'extract_id_or_group',

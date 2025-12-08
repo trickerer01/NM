@@ -1,5 +1,5 @@
 [build-system]
-requires= ['setuptools', 'setuptools-scm']
+requires= ['setuptools']
 build-backend = 'setuptools.build_meta'
 
 [project]
@@ -60,8 +60,10 @@ Documentation = 'https://github.com/trickerer01/NM#readme'
 Tracker = 'https://github.com/trickerer01/NM/issues'
 
 [project.scripts]
-ids = 'ids:main_sync'
-pages = 'pages:main_sync'
+nm = 'nm:main'
+
+[tool.setuptools]
+py-modules = ['nm']
 
 [tool.ruff]
 line-length = 140
