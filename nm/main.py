@@ -44,14 +44,14 @@ async def main(args: Sequence[str]) -> int:
     except HelpPrintExitException:
         return 0
 
-    nm_actions: dict[str, Callable[[], Coroutine[int]]] = {
+    actions: dict[str, Callable[[], Coroutine[int]]] = {
         'ids': process_ids,
         'pages': process_pages,
     }
 
     action_name = Config.get_action_string()
-    assert action_name in nm_actions, f'Unknown action \'{action_name}\'!'
-    proc = nm_actions[action_name]
+    assert action_name in actions, f'Unknown action \'{action_name}\'!'
+    proc = actions[action_name]
     return await proc()
 
 
