@@ -65,6 +65,9 @@ nm = 'nm:main'
 [tool.setuptools]
 py-modules = ['nm']
 
+[tool.setuptools.packages]
+find = {include = ['nm']}
+
 [tool.ruff]
 line-length = 140
 
