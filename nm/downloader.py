@@ -84,7 +84,7 @@ class VideoDownloadWorker:
         self._active_downloads_lock: AsyncLock = AsyncLock()
         self._active_writes_lock: AsyncLock = AsyncLock()
 
-        if self._scn:
+        if self._scn and self.waiting_for_scanner():
             self._scn.register_task_finish_callback(self._at_task_finish)
         else:
             self._seq.extend(sequence)  # form our own container to erase from
