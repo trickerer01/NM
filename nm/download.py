@@ -397,6 +397,10 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 Log.error(f'Got 404 for {vi.sfsname}...!')
                 retries = Config.retries
                 ret = DownloadResult.FAIL_NOT_FOUND
+            if r.status == 522:
+                Log.error(f'Got 522 (cf cookie required) for {vi.sfsname}...!')
+                retries = Config.retries
+                ret = DownloadResult.FAIL_NOT_FOUND
             if r.content_type and 'text' in r.content_type:
                 raise FileNotFoundError(vi.link)
 
