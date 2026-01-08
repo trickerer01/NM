@@ -398,7 +398,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 ret = DownloadResult.FAIL_NOT_FOUND
             if r.status == 522:
                 Log.error(f'Got 522 (cf cookie required) for {vi.sfsname}...!')
-                retries = Config.retries
+                try_num = Config.retries
                 ret = DownloadResult.FAIL_NOT_FOUND
             r.raise_for_status()
             if r.content_type and 'text' in r.content_type:
