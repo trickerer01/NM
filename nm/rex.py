@@ -219,6 +219,7 @@ RAW_TAGS_REPLACEMENTS = {
     re.compile(r'(vam),(guy)'): r'\1 \2',
     re.compile(r'(voice),(act[^,]*?)'): r'\1 \2',
     re.compile(r'(wander),(over),(yonder)'): r'\1 \2 \3',
+    re.compile(r'(wild),(life)'): r'\1 \2',
     re.compile(r'(wonder),(woman)'): r'\1 \2',
     re.compile(r'(yorra),((?:comm?and|\d+)[^,]+)'): r'\1 \2',
     re.compile(r'(yuffie),(kisa[^,]+?)'): r'\1 \2',
