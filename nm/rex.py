@@ -94,6 +94,7 @@ RAW_TAGS_REPLACEMENTS = {
     re.compile(r'([^,]+),(a(?:nd|t)|for|i[ns]|o[fnr]|x|with),([^,]+)'): r'\1 \2 \3',
     re.compile(r'(t(?:hree|wo)|f(?:o(?:re|ur)|ive)|\d+?),(some)(,|$)'): r'\1\2\3',
     re.compile(r'(fore|horse|pony),(girls?|plays?)(,|$)'): r'\1\2\3',
+    re.compile(r'(giver|taker|futa|male),(pov)'): r'\1 \2',
     re.compile(r'(bl(?:ack|ue)|dark|gre(?:en|y)|pale|p(?:ink|urple)|white),(skin)'): r'\1 \2',
     re.compile(r'([^,]+),(job)(,|$)'): r'\1\2\3',
     re.compile(r'([^,]+),(boys?|girls?|m[ae]n)(,|$)'): r'\1 \2\3',
