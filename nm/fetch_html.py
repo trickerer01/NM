@@ -21,7 +21,7 @@ from bs4 import BeautifulSoup
 from fake_useragent import FakeUserAgent
 
 from .config import Config
-from .defs import CONNECT_REQUEST_DELAY, CONNECT_RETRY_DELAY, MAX_SCAN_QUEUE_SIZE, MAX_VIDEOS_QUEUE_SIZE, UTF8, Mem
+from .defs import CONNECT_REQUEST_DELAY, CONNECT_RETRY_DELAY, MAX_SCAN_QUEUE_SIZE, MAX_VIDEOS_QUEUE_SIZE, SITE, UTF8, Mem
 from .logger import Log
 
 __all__ = ('create_session', 'ensure_conn_closed', 'fetch_html', 'wrap_request')
@@ -111,8 +111,7 @@ class ClientSessionWrapper:
         new_useragent = UAManager.select_useragent(Config.proxy if use_proxy else None)
         Log.trace(f'[{"P" if use_proxy else "NP"}] Selected user-agent \'{new_useragent}\'...')
         s.headers.update({'User-Agent': new_useragent})
-        # s.cookie_jar.update_cookies({'kt_rt_popAccess': '1'})
-        s.cookie_jar.update_cookies({})
+        s.cookie_jar.update_cookies({'AVS': '6df575c0469e47debf9e87740dad8226', 'Host': SITE})
         if Config.session_id:
             s.cookie_jar.update_cookies({'PHPSESSID': Config.session_id, 'kt_member': '1'})
         if Config.extra_headers:
