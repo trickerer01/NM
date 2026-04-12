@@ -107,7 +107,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
     gpred.count_existing(vi)
 
     if not vi.title:
-        titlemeta = a_html.find('meta', attrs={'name': 'description'})
+        titlemeta = a_html.find('meta', attrs={'property': 'og:title'})
         vi.title = titlemeta.get('content', '') if titlemeta else ''
     if not vi.duration:
         try:
