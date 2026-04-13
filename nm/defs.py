@@ -134,6 +134,7 @@ class Quality(str):
         return QUALITIES.index(self) <= QUALITIES.index(other)
 
 
+QUALITY_2160p = Quality('2160p')
 QUALITY_1080P = Quality('1080p')
 QUALITY_720P = Quality('720p')
 QUALITY_HI = Quality('hi')
@@ -142,9 +143,9 @@ QUALITY_360P = Quality('360p')
 QUALITY_SD = Quality('SD')
 QUALITY_LOW = Quality('low')
 
-QUALITIES = (QUALITY_1080P, QUALITY_720P, QUALITY_HI, QUALITY_480P, QUALITY_360P, QUALITY_SD, QUALITY_LOW)
-QUALITY_STARTS = ('h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/')
-QUALITY_ENDS = ('_1080p', '_720p', '', '_480p', '_360p', '_SD', '')
+QUALITIES = (QUALITY_2160p, QUALITY_1080P, QUALITY_720P, QUALITY_HI, QUALITY_480P, QUALITY_360P, QUALITY_SD, QUALITY_LOW)
+QUALITY_STARTS = ('h264/', 'h264/', 'h264/', 'hd/', 'h264/', 'h264/', 'h264/', 'iphone/')
+QUALITY_ENDS = ('_4K', '_1080p', '_720p', '', '_480p', '_360p', '_SD', '')
 
 DEFAULT_QUALITY = QUALITY_360P
 

@@ -119,7 +119,7 @@ async def process_pages() -> int:
                 my_utitle = str(aref['href'][aref['href'].rfind('/') + 1:])
                 my_rating = str(rref.find('span').text) if rref else ''
                 my_rating = '' if my_rating in ('0%', '') else my_rating[:-1]  # 0% rating doesn't mean all votes are dislikes necessarily
-                my_duration = get_time_seconds(str(dref.get_text(strip=True).replace('HD', '')))
+                my_duration = get_time_seconds(str(dref.get_text(strip=True).replace('HD', '').replace('4K', '')))
                 use_utitle = has_naming_flag(NamingFlags.USE_URL_TITLE)
                 v_entries.append(VideoInfo(cur_id, my_utitle if use_utitle else my_title, m_rating=my_rating, m_duration=my_duration))
 
