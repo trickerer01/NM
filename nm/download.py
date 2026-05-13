@@ -127,21 +127,24 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
         Log.warn(f'Warning: cannot extract score for {sname}.')
     try:
         try:
-            my_author = str(a_html.find('div', class_='card-sub mt-3').find('span', class_='').text).lower()
+            arts = [str(a_html.find('div', class_='card-sub mt-3').find('span', class_='').text).lower()]
         except Exception:
-            my_author = a_html.find('span', class_='text-danger').find('a').text.lower()
-        vi.uploader = my_author
+            arts = [a_html.find('span', class_='text-danger').find('a').text.lower()]
+        vi.uploader = arts[0]
     except Exception:
         Log.warn(f'Warning: cannot extract author for {sname}.')
-        my_author = ''
+        arts = ['']
     tdiv = a_html.find('meta', attrs={'name': 'keywords'})
     if tdiv is None:
         Log.info(f'Warning: video {sname} has no tags!')
-    tags = unite_separated_tags((str(tdiv.get('content')).replace('\n', ' ') if tdiv else '')
-                                .replace(' ', TAGS_CONCAT_CHAR).replace(2 * TAGS_CONCAT_CHAR, TAGS_CONCAT_CHAR).lower())
-    tags_raw = [tag.replace(' ', '_') for tag in tags.split(TAGS_CONCAT_CHAR) if tag]
-    for calist in ([my_author],):
-        for add_tag in [ca.replace(' ', '_') for ca in calist if ca]:
+    tags_base = unite_separated_tags((str(tdiv.get('content')).replace('\n', ' ') if tdiv else '')
+                                     .replace(' ', TAGS_CONCAT_CHAR).replace(2 * TAGS_CONCAT_CHAR, TAGS_CONCAT_CHAR).lower())
+    tags = [tag.replace(' ', '_') for tag in tags_base.split(TAGS_CONCAT_CHAR) if tag]
+    arts_raw, tags_raw = tuple([_.replace(' ', '_').lower() for _ in actlist] for actlist in (arts, tags))
+    # if Config.check_votes:
+    #     await filter_act_by_votes_count(vi, sname, arts_raw, cats_raw, tags_raw)
+    for calist in (arts_raw,):
+        for add_tag in [ca for ca in calist if ca]:
             if add_tag not in tags_raw:
                 tags_raw.append(add_tag)
     if Config.save_tags:
@@ -161,6 +164,11 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
             vi.comments = ('\n' + '\n\n'.join(comments_list) + '\n') if comments_list else ''
     if Config.check_uploader and vi.uploader and vi.uploader not in tags_raw:
         tags_raw.append(vi.uploader)
+    # va_list = [va for va in arts_raw if any(_ in va for _ in ('audio', '(va)')) or va.endswith('va')]
+    # aucat_count = max(len(arts_raw) - len(va_list), len(cats_raw))
+    # if aucat_count >= 6 and not any(_ in tags_raw for _ in ('compilation', 'pmv')):
+    #     Log.warn(f'{sname} has {len(arts_raw):d} arts ({len(va_list):d} VA) and {len(cats_raw):d} cats! Assuming compilation')
+    #     tags_raw.append('compilation')
     if Config.solve_tag_conflicts:
         solve_tag_conflicts(vi, tags_raw)
     Log.debug(f'{sname} tags: \'{",".join(tags_raw)}\'')

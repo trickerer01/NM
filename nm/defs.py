@@ -379,6 +379,7 @@ HELP_ARG_UPLOADER = 'Uploader username (filters still apply)'
 #     'Disable search results deduplication (by name).'
 #     ' By default exact matches will be dropped except the latest one (highest album id)'
 # )
+# HELP_ARG_CHECK_VOTES = 'Query website voting system for downvoted tags/categories/artists to ignore during filtering'
 
 
 class DownloadResult(IntEnum):
