@@ -255,9 +255,7 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
     if all(_ == DownloadResult.FAIL_NOT_FOUND for _ in ret_vals):
         Log.warn(f'Warning: {vi.sfsname} returned {DownloadResult.FAIL_NOT_FOUND} for all scanned qualities '
                  f'({("public", "private")[vi.private]})!')
-        return DownloadResult.FAIL_NOT_FOUND
-    else:
-        return DownloadResult.FAIL_RETRIES
+    return DownloadResult.FAIL_RETRIES
 
 
 async def download_sceenshot(vi: VideoInfo, scr_num: int) -> DownloadResult:
