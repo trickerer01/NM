@@ -213,7 +213,7 @@ class VideoDownloadWorker:
                 v_ids: list[int] = sorted(
                     vi.id for vi in itertools.chain(
                         self._seq, getattr(self._queue, '_queue'), self._downloads_active, self.get_scanner_workload()))
-                arglist = ['-seq', f'({"~".join(f"id={idi:d}" for idi in v_ids)})'] if len(v_ids) > 1 else ['-start', str(v_ids[0])]
+                arglist = ['ids', '-seq', f'({"~".join(f"id={idi:d}" for idi in v_ids)})'] if len(v_ids) > 1 else ['-start', str(v_ids[0])]
                 arglist.extend(arglist_base)
                 try:
                     Log.trace(f'Storing continue file to \'{continue_file_name}\'...')
