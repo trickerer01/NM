@@ -31,7 +31,7 @@ from .defs import (
 from .dscanner import VideoScanWorker
 from .iinfo import VideoInfo, get_min_max_ids
 from .logger import Log
-from .util import calc_sleep_time, format_time, get_elapsed_time_i, get_elapsed_time_s
+from .util import calc_sleep_time_downloader, format_time, get_elapsed_time_i, get_elapsed_time_s
 
 __all__ = ('VideoDownloadWorker',)
 
@@ -147,7 +147,7 @@ class VideoDownloadWorker:
         force_check_secs = DOWNLOAD_QUEUE_STALL_CHECK_TIMER
         last_check_secs = 0
         while self.get_workload_size() > 0 or self.waiting_for_scanner():
-            await sleep(calc_sleep_time(3.0) if len(self._seq) + self._queue.qsize() > 0 or self.waiting_for_scanner() else 1.0)
+            await sleep(calc_sleep_time_downloader() if len(self._seq) + self._queue.qsize() > 0 or self.waiting_for_scanner() else 1.0)
             queue_size = len(self._seq) + self.get_scanner_workload_size()
             ready_size = self._queue.qsize()
             scan_count = self.get_scanned_count()
@@ -223,7 +223,7 @@ class VideoDownloadWorker:
                         cfile.write('\n'.join(str(e) for e in arglist))
                 except OSError:
                     Log.error(f'Unable to save continue file to \'{continue_file_name}\'!')
-            await sleep(calc_sleep_time(3.0))
+            await sleep(calc_sleep_time_downloader())
         if not Config.aborted and os.path.isfile(continue_file_fullpath):
             Log.trace(f'All files downloaded. Removing continue file \'{continue_file_name}\'...')
             os.remove(continue_file_fullpath)

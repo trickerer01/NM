@@ -7,11 +7,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import datetime
+import random
 import time
 from collections.abc import Iterable, Sequence
 
+from aiohttp import ClientResponse
+
 from .config import Config
-from .defs import CONNECT_REQUEST_DELAY, DEFAULT_EXT, DOWNLOAD_MODE_FULL, SLASH, START_TIME
+from .defs import CONNECT_REQUEST_DELAY, CONNECT_RETRY_DELAYS, DEFAULT_EXT, DOWNLOAD_MODE_FULL, SLASH, START_TIME
 from .rex import re_ext
 
 
@@ -88,9 +91,13 @@ def has_naming_flag(flag: int) -> bool:
     return bool(Config.naming_flags & flag)
 
 
-def calc_sleep_time(base_time: float) -> float:
+def calc_sleep_time_downloader(base_time=3.0) -> float:
     """Returns either base_time for full download or shortened time otherwise"""
     return base_time if Config.download_mode == DOWNLOAD_MODE_FULL else max(1.0, base_time / 3.0)
+
+
+def calc_sleep_time_retry(r: ClientResponse | None) -> float:
+    return random.uniform(*CONNECT_RETRY_DELAYS.get(r.status if (isinstance(r, ClientResponse)) else 0, CONNECT_RETRY_DELAYS[0]))
 
 
 def calculate_eta(container: Sequence) -> int:

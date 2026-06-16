@@ -8,7 +8,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import os
 import pathlib
-import random
 import sys
 import urllib.parse
 from asyncio import Task, as_completed, get_running_loop, sleep
@@ -18,7 +17,6 @@ from aiohttp import ClientConnectorError, ClientPayloadError
 
 from .config import Config
 from .defs import (
-    CONNECT_RETRY_DELAY,
     DOWNLOAD_MODE_SKIP,
     DOWNLOAD_MODE_TOUCH,
     DOWNLOAD_POLICY_ALWAYS,
@@ -48,7 +46,15 @@ from .logger import Log
 from .path_util import file_already_exists, is_file_being_used, register_new_file, try_rename, unregister_unfinished_file
 from .rex import re_media_filename, re_private_video
 from .tagger import filtered_tags, is_filtered_out_by_extra_tags, solve_tag_conflicts, unite_separated_tags
-from .util import calculate_eta, extract_ext, format_time, get_elapsed_time_i, has_naming_flag, normalize_path
+from .util import (
+    calc_sleep_time_retry,
+    calculate_eta,
+    extract_ext,
+    format_time,
+    get_elapsed_time_i,
+    has_naming_flag,
+    normalize_path,
+)
 
 __all__ = ('at_interrupt', 'download')
 
@@ -466,7 +472,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             status_checker.reset()
             if try_num <= Config.retries:
                 vi.set_state(VideoInfo.State.DOWNLOADING)
-                await sleep(random.uniform(*CONNECT_RETRY_DELAY))
+                await sleep(calc_sleep_time_retry(r))
             elif Config.keep_unfinished is False and os.path.isfile(vi.my_fullpath) and vi.has_flag(VideoInfo.Flags.FILE_WAS_CREATED):
                 Log.error(f'Failed to download {vi.sffilename}. Removing unfinished file...')
                 unregister_unfinished_file(vi)
