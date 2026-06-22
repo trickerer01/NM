@@ -42,7 +42,7 @@ def test_prepare(log=False) -> Callable[[], Callable[[], None]]:
         def invoke_test(*args, **kwargs) -> None:
             def set_up_test() -> None:
                 found_filenames_dict.clear()
-                Log._disabled = not log
+                Log._disabled = not log and not RUN_CONN_TESTS
                 Config._reset()
                 RequestQueue._reset()
             set_up_test()
