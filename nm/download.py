@@ -255,6 +255,8 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
         res = await download_video(vi)
         if (1 << res) & DownloadResult.RESULT_MASK_CRITICAL:
             ret_vals.append(res)
+            if res == DownloadResult.FAIL_RETRIES:
+                break
         else:
             return res
     vi.set_state(VideoInfo.State.FAILED)
