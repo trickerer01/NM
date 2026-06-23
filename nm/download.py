@@ -467,8 +467,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             if (r is None or r.status != 403) and not isinstance(e, (ClientPayloadError, ClientConnectorError)):
                 try_num += 1
                 Log.error(f'{vi.sffilename}: error #{try_num:d}...')
-            if r is not None and r.closed is False:
-                r.close()
+            ensure_conn_closed(r)
             # Network error may be thrown before item is added to active downloads
             await dwn.remove_from_writes(vi, True)
             status_checker.reset()
