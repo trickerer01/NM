@@ -143,7 +143,14 @@ def _file_exists_in_folder(base_folder: str, idi: int, quality: Quality, check_f
         for fname in orig_file_names:
             f_id, f_quality = _get_media_file_match(fname)
             if f_id and str(idi) == f_id and (not quality or not f_quality or quality <= f_quality):
-                return f'{normalize_path(base_folder)}{fname}'
+                file_full_path = f'{normalize_path(base_folder)}{fname}'
+                if check_folder:
+                    if not os.path.isfile(file_full_path):
+                        Log.warn(f'Warning: _file_exists_in_folder: file \'{file_full_path}\' was found during initial scan '
+                                 f'but no longer exists! Re-scanning!')
+                        _scan_dest_folder(True)
+                        return _file_exists_in_folder(base_folder, idi, quality, False)
+                return file_full_path
     return ''
 
 
