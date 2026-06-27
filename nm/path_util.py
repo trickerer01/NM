@@ -156,27 +156,33 @@ def _file_exists_in_folder(base_folder: str, idi: int, quality: Quality, check_f
 
 def file_already_exists(idi: int, quality: Quality | None = None, check_folder=True) -> str:
     for fullpath in _found_filenames_dict:
-        fullpath = _file_exists_in_folder(fullpath, idi, quality or Config.quality, check_folder)
-        if len(fullpath) > 0:
-            return fullpath
+        if filepath := _file_exists_in_folder(fullpath, idi, quality or Config.quality, check_folder):
+            return filepath
     return ''
 
 
-def _file_exists_in_folder_arr(base_folder: str, idi: int, quality: Quality) -> list[str]:
+def _file_exists_in_folder_arr(base_folder: str, idi: int, quality: Quality, check_folder: bool) -> list[str]:
     orig_file_names = _found_filenames_dict.get(base_folder)
     folder_files: list[str] = []
     if orig_file_names is not None and os.path.isdir(base_folder):
         for fname in orig_file_names:
             f_id, f_quality = _get_media_file_match(fname)
             if f_id and str(idi) == f_id and (not quality or not f_quality or quality == f_quality):
-                folder_files.append(f'{normalize_path(base_folder)}{fname}')
+                file_full_path = f'{normalize_path(base_folder)}{fname}'
+                if check_folder:
+                    if not os.path.isfile(file_full_path):
+                        Log.warn(f'Warning: _file_exists_in_folder_arr: file \'{file_full_path}\' was found during initial scan '
+                                 f'but no longer exists! Re-scanning!')
+                        _scan_dest_folder(True)
+                        return _file_exists_in_folder_arr(base_folder, idi, quality, False)
+                folder_files.append(file_full_path)
     return folder_files
 
 
-def file_already_exists_arr(idi: int, quality: Quality) -> list[str]:
+def file_already_exists_arr(idi: int, quality: Quality | None = None, check_folder=True) -> list[str]:
     found_files: list[str] = []
     for fullpath in _found_filenames_dict:
-        found_files.extend(_file_exists_in_folder_arr(fullpath, idi, quality or Config.quality))
+        found_files.extend(_file_exists_in_folder_arr(fullpath, idi, quality or Config.quality, check_folder))
     return found_files
 
 
