@@ -164,7 +164,7 @@ def file_already_exists(idi: int, quality: Quality | None = None, check_folder=T
 def _file_exists_in_folder_arr(base_folder: str, idi: int, quality: Quality, check_folder: bool) -> list[str]:
     orig_file_names = _found_filenames_dict.get(base_folder)
     folder_files: list[str] = []
-    if orig_file_names is not None and os.path.isdir(base_folder):
+    if orig_file_names is not None and (not check_folder or os.path.isdir(base_folder)):
         for fname in orig_file_names:
             f_id, f_quality = _get_media_file_match(fname)
             if f_id and str(idi) == f_id and (not quality or not f_quality or quality == f_quality):
