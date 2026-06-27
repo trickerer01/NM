@@ -7,7 +7,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import os
-import pathlib
 import sys
 import urllib.parse
 from asyncio import Task, as_completed, get_running_loop, sleep
@@ -346,7 +345,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                         Log.info(f'{vi.sffilename} {vi.quality} found{loc_str}. Enforcing new name (was \'{curfile}\').')
                         if not try_rename(curfile, vi.my_fullpath):
                             Log.warn(f'Warning: unable to rename file to {vi.sffilename} (already exists?). Old name will be preserved!')
-                            vi.filename = pathlib.Path(curfile).name
+                            vi.filename = curfile_name
                     else:
                         new_subfolder = normalize_path(os.path.relpath(curfile_folder, Config.dest_base))
                         Log.info(f'{vi.sffilename} {vi.quality} found{loc_str}. Enforcing old path + new name '
@@ -354,7 +353,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                         vi.subfolder = new_subfolder
                         if not try_rename(curfile, normalize_path(os.path.abspath(vi.my_fullpath), False)):
                             Log.warn(f'Warning: unable to rename file to {vi.sffilename} (already exists?). Old name will be preserved!')
-                            vi.filename = pathlib.Path(curfile).name
+                            vi.filename = curfile_name
             else:
                 qstr = f'\'{curfile_oquality}\' {"==" if exact_quality else ">=" if curfile_oquality else "<?>"} \'{curfile_quality}\''
                 Log.info(f'{vi.sfsname} already exists ({qstr}). Skipped.\n Location: \'{curfile}\'')

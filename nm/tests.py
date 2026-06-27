@@ -20,7 +20,7 @@ from .defs import DOWNLOAD_MODE_TOUCH, QUALITIES, QUALITY_480P, SITE, Duration
 from .fetch_html import RequestQueue
 from .logger import Log
 from .main import main_sync
-from .path_util import found_filenames_dict
+from .path_util import _found_filenames_dict
 from .rex import prepare_regex_fullmatch
 from .tagger import (
     TAG_ALIASES,
@@ -41,7 +41,7 @@ def test_prepare(log=False) -> Callable[[], Callable[[], None]]:
         @functools.wraps(test_func)
         def invoke_test(*args, **kwargs) -> None:
             def set_up_test() -> None:
-                found_filenames_dict.clear()
+                _found_filenames_dict.clear()
                 Log._disabled = not log and not RUN_CONN_TESTS
                 Config._reset()
                 RequestQueue._reset()
