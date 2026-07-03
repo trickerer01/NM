@@ -85,7 +85,7 @@ class VideoDownloadWorker:
         self._active_writes_lock: AsyncLock = AsyncLock()
 
         if self._scn and self.waiting_for_scanner():
-            self._scn.register_task_finish_callback(self._at_task_finish)
+            self._scn.register_task_finish_callback(self._at_task_finish_result)
         else:
             self._seq.extend(sequence)  # form our own container to erase from
 
@@ -95,11 +95,7 @@ class VideoDownloadWorker:
         vi.set_state(VideoInfo.State.ACTIVE)
         Log.trace(f'[queue] {vi.sname} added to active')
 
-    async def _at_task_finish(self, vi: VideoInfo, result: DownloadResult) -> None:
-        if vi in self._downloads_active and not (Config.watcher_mode and vi in self._writes_active):
-            async with self._active_downloads_lock:
-                self._downloads_active.remove(vi)
-            Log.trace(f'[queue] {vi.sname} removed from active')
+    async def _at_task_finish_result(self, vi: VideoInfo, result: DownloadResult) -> None:
         if result == DownloadResult.FAIL_ALREADY_EXISTS:
             self._already_exist_count += 1
         elif result in (DownloadResult.FAIL_SKIPPED, DownloadResult.FAIL_FILTERED_OUTER):
@@ -110,6 +106,13 @@ class VideoDownloadWorker:
             self._failed_items.append(vi)
         elif result == DownloadResult.SUCCESS:
             self._completed_items.append(vi)
+
+    async def _at_task_finish(self, vi: VideoInfo, result: DownloadResult) -> None:
+        if vi in self._downloads_active:
+            async with self._active_downloads_lock:
+                self._downloads_active.remove(vi)
+            Log.trace(f'[queue] {vi.sname} removed from active')
+        await self._at_task_finish_result(vi, result)
 
     async def _prod(self) -> None:
         while True:
