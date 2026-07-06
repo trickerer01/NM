@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import pathlib
+import sys
 from collections.abc import MutableSequence
 from typing import BinaryIO
 
@@ -31,6 +32,7 @@ __all__ = (
     'unregister_unfinished_file',
 )
 
+_opened_file_nondeletable = sys.platform.startswith('win')
 _found_filenames_dict: dict[str, list[str]] = {}
 _media_matches_cache: dict[str, tuple[str, Quality]] = {}
 
@@ -41,7 +43,7 @@ class FileLockError(Exception):
 
 class FileLock:
     def __init__(self, filepath: os.PathLike | str) -> None:
-        if Config.lock_files:
+        if Config.lock_files and _opened_file_nondeletable:
             fpath = pathlib.Path(filepath)
             assert fpath.parent.is_dir()
             self._lockpath = self.make_lock_path(fpath)
@@ -57,7 +59,7 @@ class FileLock:
         return filepath.with_name(f'{PREFIX}{f_id}{f_quality}.lock')
 
     async def __aenter__(self) -> FileLock:
-        if Config.lock_files:
+        if Config.lock_files and _opened_file_nondeletable:
             try:
                 # try to remove existing lock if previous run had its process forcefully terminated
                 # raises PermissionError if file exists and is busy
@@ -70,7 +72,7 @@ class FileLock:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        if Config.lock_files:
+        if Config.lock_files and _opened_file_nondeletable:
             if self._lockpath.is_file():
                 if self._lockfile and not self._lockfile.closed:
                     self._lockfile.close()

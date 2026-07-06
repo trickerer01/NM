@@ -319,7 +319,9 @@ HELP_ARG_STORE_CONTINUE_CMDFILE = (
     'Store and automatically update cmd file which allows to later continue with unfinished download queue'
     ' (using ids module, file mode, check README for more info)'
 )
-HELP_ARG_LOCK_FILES = 'Guard against concurrent writes to the same file. Use this if more than one instance may run at the same time'
+HELP_ARG_LOCK_FILES = (
+    'Guard against concurrent writes to the same file. Use this if more than one instance may run at the same time. Windows only'
+)
 HELP_ARG_SOLVE_TAG_CONFLICTS = (
     'Detect and remove simple tags that are contradictory to one or more other - more descriptive - tags (if no similar tags were found).'
     ' Mainly to prevent posts being accidently filtered out by extra \'tags\' / \'-tags\'.'
