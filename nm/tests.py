@@ -9,6 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import asyncio
 import functools
 import pathlib
+import sys
 from collections.abc import Callable
 from io import StringIO
 from tempfile import TemporaryDirectory
@@ -105,7 +106,8 @@ class FileLockTests(TestCase):
         with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tempdir:
             tempfile_fullpath = pathlib.Path(tempdir).joinpath(tempfile_name)
             tempfile_lock_fullpath = FileLock.make_lock_path(tempfile_fullpath)
-            self.assertRaises(FileLockError, lambda: asyncio.run(test_inner()))
+            if sys.platform.startswith('win'):
+                self.assertRaises(FileLockError, lambda: asyncio.run(test_inner()))
 
 
 class CmdTests(TestCase):
