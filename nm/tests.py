@@ -6,6 +6,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+import asyncio
 import functools
 import pathlib
 from collections.abc import Callable
@@ -16,11 +17,11 @@ from unittest.mock import patch
 
 from .cmdargs import prepare_arglist
 from .config import Config
-from .defs import DOWNLOAD_MODE_TOUCH, QUALITIES, QUALITY_480P, SITE, Duration
+from .defs import DOWNLOAD_MODE_TOUCH, PREFIX, QUALITIES, QUALITY_480P, SITE, Duration
 from .fetch_html import RequestQueue
 from .logger import Log
 from .main import main_sync
-from .path_util import _found_filenames_dict
+from .path_util import FileLock, FileLockError, _found_filenames_dict
 from .rex import prepare_regex_fullmatch
 from .tagger import (
     TAG_ALIASES,
@@ -52,7 +53,7 @@ def test_prepare(log=False) -> Callable[[], Callable[[], None]]:
 
 
 class FileCheckTests(TestCase):
-    # @test_prepare(log=False)
+    # @test_prepare()
     # def test_filecheck01_tags(self) -> None:
     #     load_tag_nums()
     #     self.assertIsNone(TAG_NUMS.get(''))
@@ -87,6 +88,24 @@ class FileCheckTests(TestCase):
         load_tag_conflicts()
         self.assertIsNone(TAG_CONFLICTS.get(''))
         print(f'{self._testMethodName} passed')
+
+
+class FileLockTests(TestCase):
+    @test_prepare()
+    def test_filelock01(self) -> None:
+        Config.lock_files = True
+
+        async def test_inner() -> None:
+            async with FileLock(tempfile_fullpath):
+                self.assertTrue(tempfile_lock_fullpath.is_file())
+                async with FileLock(tempfile_fullpath):
+                    pass
+
+        tempfile_name = f'{PREFIX}1324_720p.mp4'
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tempdir:
+            tempfile_fullpath = pathlib.Path(tempdir).joinpath(tempfile_name)
+            tempfile_lock_fullpath = FileLock.make_lock_path(tempfile_fullpath)
+            self.assertRaises(FileLockError, lambda: asyncio.run(test_inner()))
 
 
 class CmdTests(TestCase):

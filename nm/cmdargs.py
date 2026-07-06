@@ -42,6 +42,7 @@ from .defs import (
     HELP_ARG_ID_START,
     HELP_ARG_IDSEQUENCE,
     HELP_ARG_LINKSEQUENCE,
+    HELP_ARG_LOCK_FILES,
     HELP_ARG_LOGGING,
     HELP_ARG_LOOKAHEAD,
     HELP_ARG_MERGE_LISTS,
@@ -282,6 +283,7 @@ def add_common_args(par: ArgumentParser) -> None:
     dofi.add_argument('-minrating', '--minimum-rating', metavar='#rating', default=0, help=HELP_ARG_MINRATING, type=valid_rating)
     dofi.add_argument('-minscore', '--minimum-score', metavar='#score', default=None, help=HELP_ARG_MINSCORE, type=valid_int)
     dofi.add_argument('-utp', '--untagged-policy', default=UTP_DEFAULT, help=HELP_ARG_UTPOLICY, choices=UNTAGGED_POLICIES)
+    dofi.add_argument('--lock-files', action=ACTION_STORE_TRUE, help=HELP_ARG_LOCK_FILES)
     dofi.add_argument('--solve-tag-conflicts', action=ACTION_STORE_TRUE, help=HELP_ARG_SOLVE_TAG_CONFLICTS)
     dofi.add_argument('--report-duplicates', action=ACTION_STORE_TRUE, help=HELP_ARG_REPORT_DUPLICATES)
     # dofi.add_argument('--check-uploader', action=ACTION_STORE_TRUE, help=HELP_ARG_CHECK_UPLOADER)

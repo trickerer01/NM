@@ -6,10 +6,12 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-import os
-from collections.abc import MutableSequence
+from __future__ import annotations
 
-import psutil
+import os
+import pathlib
+from collections.abc import MutableSequence
+from typing import BinaryIO
 
 from .config import Config
 from .defs import DEFAULT_EXT, PREFIX, Quality
@@ -19,9 +21,10 @@ from .rex import re_media_filename
 from .util import normalize_path
 
 __all__ = (
+    'FileLock',
+    'FileLockError',
     'file_already_exists',
     'file_already_exists_arr',
-    'is_file_being_used',
     'prefilter_existing_items',
     'register_new_file',
     'try_rename',
@@ -30,6 +33,48 @@ __all__ = (
 
 _found_filenames_dict: dict[str, list[str]] = {}
 _media_matches_cache: dict[str, tuple[str, Quality]] = {}
+
+
+class FileLockError(Exception):
+    pass
+
+
+class FileLock:
+    def __init__(self, filepath: os.PathLike | str) -> None:
+        if Config.lock_files:
+            fpath = pathlib.Path(filepath)
+            assert fpath.parent.is_dir()
+            self._lockpath = self.make_lock_path(fpath)
+        else:
+            self._lockpath = pathlib.Path()
+        self._lockfile: BinaryIO | None = None
+
+    @staticmethod
+    def make_lock_path(filepath: pathlib.Path) -> pathlib.Path:
+        f_match = re_media_filename.fullmatch(filepath.name)
+        f_id = f_match.group(1)
+        f_quality = f'_{Quality(f_match.group(2))}' if f_match.group(2) else ''
+        return filepath.with_name(f'{PREFIX}{f_id}{f_quality}.lock')
+
+    async def __aenter__(self) -> FileLock:
+        if Config.lock_files:
+            try:
+                # try to remove existing lock if previous run had its process forcefully terminated
+                # raises PermissionError if file exists and is busy
+                self._lockpath.unlink(missing_ok=True)
+                # open in exclusive mode (create file)
+                # raises FileExistsError if file already exists
+                self._lockfile = open(self._lockpath, 'bx')
+            except OSError:
+                raise FileLockError
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        if Config.lock_files:
+            if self._lockpath.is_file():
+                if self._lockfile and not self._lockfile.closed:
+                    self._lockfile.close()
+                self._lockpath.unlink(missing_ok=True)
 
 
 def _report_duplicates() -> None:
@@ -203,43 +248,15 @@ def prefilter_existing_items(vi_list: MutableSequence[VideoInfo]) -> None:
             del vi_list[i]
 
 
-def is_file_being_used(filepath: str) -> str:
-    """
-    :param filepath: Path the to file in question
-    :return: Formatted string containing short process identity info or an empty string
+async def try_rename(oldpath: str, newpath: str) -> bool:
+    if oldpath == newpath:
+        return True
 
-    Can only check processes owned by current user unless launched with admin/superuser privileges
-    """
-    mypid = os.getpid()
-    for p in psutil.process_iter():
-        try:
-            with p.oneshot():
-                if p.pid == mypid:
-                    continue
-                if not (p.name().startswith('python') or os.path.basename(p.exe()).startswith('python')):
-                    continue
-                user_name = p.username()
-                opened_files = p.open_files()
-                for fpath in opened_files:
-                    if os.path.samefile(filepath, fpath.path):
-                        return f'{p.exe()} <{user_name}> (pid: {p.pid:d})'
-        except Exception as e:
-            if isinstance(e, psutil.Error):
-                pass
-            else:
-                import traceback
-                Log.error(f'is_file_being_used(): Error: {traceback.format_exc()}')
-    return ''
-
-
-def try_rename(oldpath: str, newpath: str) -> bool:
     try:
-        if oldpath == newpath:
-            return True
         newpath_folder = os.path.split(newpath.strip('/'))[0]
-        if not os.path.isdir(newpath_folder):
-            os.makedirs(newpath_folder)
-        os.rename(oldpath, newpath)
+        async with FileLock(oldpath):
+            os.makedirs(newpath_folder, exist_ok=True)
+            os.rename(oldpath, newpath)
         return True
     except Exception:
         return False

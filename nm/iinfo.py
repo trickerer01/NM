@@ -19,29 +19,31 @@ from .logger import Log
 from .rex import re_infolist_filename
 from .util import format_time, normalize_filename, normalize_path
 
-__all__ = ('VideoInfo', 'export_video_info', 'get_min_max_ids')
+__all__ = ('IIFlags', 'IIState', 'VideoInfo', 'export_video_info', 'get_min_max_ids')
+
+
+class IIState(IntEnum):
+    NEW = 0
+    QUEUED = 1
+    ACTIVE = 2
+    SCANNING = 3
+    SCANNED = 4
+    DOWNLOAD_PENDING = 5
+    DOWNLOADING = 6
+    WRITING = 7
+    DONE = 8
+    FAILED = 9
+
+
+class IIFlags(IntEnum):
+    NONE = 0x0
+    ALREADY_EXISTED_EXACT = 0x1
+    ALREADY_EXISTED_SIMILAR = 0x2
+    FILE_WAS_CREATED = 0x4
+    RETURNED_404 = 0x8
 
 
 class VideoInfo:  # up to ~3 Kb (when all info is filled, asizeof)
-    class State(IntEnum):
-        NEW = 0
-        QUEUED = 1
-        ACTIVE = 2
-        SCANNING = 3
-        SCANNED = 4
-        DOWNLOAD_PENDING = 5
-        DOWNLOADING = 6
-        WRITING = 7
-        DONE = 8
-        FAILED = 9
-
-    class Flags(IntEnum):
-        NONE = 0x0
-        ALREADY_EXISTED_EXACT = 0x1
-        ALREADY_EXISTED_SIMILAR = 0x2
-        FILE_WAS_CREATED = 0x4
-        RETURNED_404 = 0x8
-
     def __init__(self, m_id: int, m_title='', m_link='', m_subfolder='', m_filename='', m_rating='', m_duration=0) -> None:
         self._id = m_id or 0
 
@@ -65,16 +67,16 @@ class VideoInfo:  # up to ~3 Kb (when all info is filled, asizeof)
         self.last_check_size: int = 0
         self.last_check_time: int = 0
 
-        self._state = VideoInfo.State.NEW
-        self._flags = VideoInfo.Flags.NONE
+        self._state = IIState.NEW
+        self._flags = IIFlags.NONE
 
-    def set_state(self, state: VideoInfo.State) -> None:
+    def set_state(self, state: IIState) -> None:
         self._state = state
 
-    def set_flag(self, flag: VideoInfo.Flags) -> None:
+    def set_flag(self, flag: IIFlags) -> None:
         self._flags |= flag
 
-    def has_flag(self, flag: int | VideoInfo.Flags) -> bool:
+    def has_flag(self, flag: int | IIFlags) -> bool:
         return bool(self._flags & flag)
 
     def __eq__(self, other: VideoInfo | int) -> bool:
@@ -128,7 +130,7 @@ class VideoInfo:  # up to ~3 Kb (when all info is filled, asizeof)
         return Quality('unk')
 
     @property
-    def state(self) -> VideoInfo.State:
+    def state(self) -> IIState:
         return self._state
 
     @property

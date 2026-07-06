@@ -29,7 +29,7 @@ from .defs import (
     Mem,
 )
 from .dscanner import VideoScanWorker
-from .iinfo import VideoInfo, get_min_max_ids
+from .iinfo import IIFlags, IIState, VideoInfo, get_min_max_ids
 from .logger import Log
 from .util import calc_sleep_time_downloader, format_time, get_elapsed_time_i, get_elapsed_time_s
 
@@ -92,7 +92,7 @@ class VideoDownloadWorker:
     async def _at_task_start(self, vi: VideoInfo) -> None:
         async with self._active_downloads_lock:
             self._downloads_active.append(vi)
-        vi.set_state(VideoInfo.State.ACTIVE)
+        vi.set_state(IIState.ACTIVE)
         Log.trace(f'[queue] {vi.sname} added to active')
 
     async def _at_task_finish_result(self, vi: VideoInfo, result: DownloadResult) -> None:
@@ -123,7 +123,7 @@ class VideoDownloadWorker:
             if qfull is False:
                 vi = await self._try_fetch_next()
                 if vi:
-                    vi.set_state(VideoInfo.State.QUEUED)
+                    vi.set_state(IIState.QUEUED)
                     await self._queue.put(vi)
             else:
                 await sleep(0.2)
@@ -181,13 +181,13 @@ class VideoDownloadWorker:
                         totalsize_str = f'{vi.expected_size / Mem.MB:.2f}' if vi.expected_size else '???'
                         size_pct = f'{cursize * 100 / vi.expected_size:.1f}' if cursize and vi.expected_size else '??.?'
                         dfull_seconds = max(0, elapsed_seconds - vi.start_time)
-                        dfull_size_b = cursize - vi.start_size if vi.has_flag(VideoInfo.Flags.FILE_WAS_CREATED) else 0
+                        dfull_size_b = cursize - vi.start_size if vi.has_flag(IIFlags.FILE_WAS_CREATED) else 0
                         dfull_speed_kb = ((dfull_size_b / Mem.KB) / dfull_seconds) if dfull_seconds and dfull_size_b >= Mem.KB else 0.0
                         dfull_speed_str = f'{dfull_speed_kb:.1f}' if dfull_speed_kb >= 0.1 else '???.?'
                         dfull_time_str = format_time(dfull_seconds) if dfull_speed_kb >= 0.1 else '??:??:??'
                         dfull_str = f'{dfull_size_b / Mem.MB:.2f} Mb in {dfull_time_str}, avg {dfull_speed_str} Kb/s'
                         d_seconds = max(0, elapsed_seconds - vi.last_check_time)
-                        d_size_b = cursize - vi.last_check_size if vi.has_flag(VideoInfo.Flags.FILE_WAS_CREATED) else 0
+                        d_size_b = cursize - vi.last_check_size if vi.has_flag(IIFlags.FILE_WAS_CREATED) else 0
                         d_speed_kb = ((d_size_b / Mem.KB) / d_seconds) if d_seconds and d_size_b >= Mem.KB else 0.0
                         speed_str = f'{d_speed_kb:.1f}' if d_speed_kb >= 0.1 else '???.?'
                         eta_str = (format_time(0) if cursize and vi.expected_size == cursize else
@@ -257,7 +257,7 @@ class VideoDownloadWorker:
     def at_interrupt(self) -> None:
         if len(self._downloads_active) > 0:
             active_items = sorted([vi for vi in self._downloads_active if os.path.isfile(vi.my_fullpath)
-                                   and vi.has_flag(VideoInfo.Flags.FILE_WAS_CREATED)], key=lambda vi: vi.id)
+                                   and vi.has_flag(IIFlags.FILE_WAS_CREATED)], key=lambda vi: vi.id)
             if Config.keep_unfinished:
                 unfinished_str = '\n '.join(f'{i + 1:d}) {vi.my_fullpath}' for i, vi in enumerate(active_items))
                 Log.debug(f'at_interrupt: keeping {len(active_items):d} unfinished file(s):\n {unfinished_str}')

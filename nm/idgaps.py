@@ -13,7 +13,7 @@ import itertools
 from .config import Config
 from .defs import IDGAP_PREDICTION_AUTO, IDGAP_PREDICTION_OFF, PREDICTION_REENABLE_THRESHOLD, IntPair
 from .dscanner import VideoScanWorker
-from .iinfo import VideoInfo
+from .iinfo import IIFlags, VideoInfo
 from .logger import Log
 
 __all__ = ('IdGapsPredictor',)
@@ -50,7 +50,7 @@ class IdGapsPredictor:
     def need_skip(self, vi: VideoInfo) -> int:
         if num_skip := (self._get_skip_num(vi) if self._enabled else 0):
             prevs = tuple(VideoScanWorker.get().find_vinfo_last(vi.id - (_ + 1)) for _ in range(num_skip - 1))
-            prev_stats = tuple((bool(prevs[i]), prevs[i] and prevs[i].has_flag(VideoInfo.Flags.RETURNED_404)) for i in range(num_skip - 1))
+            prev_stats = tuple((bool(prevs[i]), prevs[i] and prevs[i].has_flag(IIFlags.RETURNED_404)) for i in range(num_skip - 1))
             f_404s: tuple[bool, ...] = ()
             for i in range(1, num_skip):
                 if all(prev_stats[_][0] for _ in range(num_skip - i)):

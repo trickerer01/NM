@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'NM'
-version = '1.8.586'
+version = '1.8.587'
 authors = [
     {name = 'trickerer01'},
 ]
@@ -46,7 +46,6 @@ dependencies = [
     'beautifulsoup4>=4.9.3',
     'colorama>=0.4.6',
     'fake-useragent>=2.0.3',
-    'psutil>=6.0.0',
 ]
 [project.optional-dependencies]
 default = []

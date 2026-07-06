@@ -24,7 +24,7 @@ from .defs import (
     SCAN_CANCEL_KEYSTROKE,
     DownloadResult,
 )
-from .iinfo import VideoInfo, get_min_max_ids
+from .iinfo import IIFlags, VideoInfo, get_min_max_ids
 from .input import wait_for_key
 from .logger import Log
 from .path_util import file_already_exists_arr
@@ -132,7 +132,7 @@ class VideoScanWorker:
             self._scanned_items.append(vi)
         else:
             if result == DownloadResult.FAIL_NOT_FOUND:
-                vi.set_flag(VideoInfo.Flags.RETURNED_404)
+                vi.set_flag(IIFlags.RETURNED_404)
             assert self._task_finish_callback
             await self._task_finish_callback(vi, result)
 

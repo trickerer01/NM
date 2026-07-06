@@ -94,6 +94,7 @@ class BaseConfig:
         self.retries: int = 0
         self.throttle: int | None = None
         self.throttle_auto: bool | None = None
+        self.lock_files: bool | None = None
         self.store_continue_cmdfile: bool | None = None
         self.solve_tag_conflicts: bool | None = None
         self.report_duplicates: bool | None = None
@@ -136,6 +137,7 @@ class BaseConfig:
             *(('-quality', self.quality) if self.quality != DEFAULT_QUALITY and not self.scenario else ()),
             *(('-duration', str(self.duration)) if self.duration and not self.scenario else ()),
             *(('--predict-id-gaps', str(self.predict_id_gaps)) if self.predict_id_gaps != IDGAP_PREDICTION_DEFAULT else ()),
+            *(('--lock-files',) if self.lock_files else ()),
             *(('--solve-tag-conflicts',) if self.solve_tag_conflicts else ()),
             *(('--report-duplicates',) if self.report_duplicates else ()),
             *(('--check-title-pos',) if self.check_title_pos else ()),
