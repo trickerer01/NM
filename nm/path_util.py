@@ -45,7 +45,6 @@ class FileLock:
     def __init__(self, filepath: os.PathLike | str) -> None:
         if Config.lock_files and _opened_file_nondeletable:
             fpath = pathlib.Path(filepath)
-            assert fpath.parent.is_dir()
             self._lockpath = self.make_lock_path(fpath)
         else:
             self._lockpath = pathlib.Path()
@@ -64,6 +63,7 @@ class FileLock:
                 # try to remove existing lock if previous run had its process forcefully terminated
                 # raises PermissionError if file exists and is busy
                 self._lockpath.unlink(missing_ok=True)
+                self._lockpath.parent.mkdir(parents=True, exist_ok=True)
                 # open in exclusive mode (create file)
                 # raises FileExistsError if file already exists
                 self._lockfile = open(self._lockpath, 'bx')
