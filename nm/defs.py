@@ -320,7 +320,8 @@ HELP_ARG_STORE_CONTINUE_CMDFILE = (
     ' (using ids module, file mode, check README for more info)'
 )
 HELP_ARG_LOCK_FILES = (
-    'Guard against concurrent writes to the same file. Use this if more than one instance may run at the same time. Windows only'
+    'Guard against concurrent writes to the same file. Use this if more than one instance may run at the same time.'
+    ' Implies \'--no-rename-move\' flag. Windows only'
 )
 HELP_ARG_SOLVE_TAG_CONFLICTS = (
     'Detect and remove simple tags that are contradictory to one or more other - more descriptive - tags (if no similar tags were found).'

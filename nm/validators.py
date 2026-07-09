@@ -90,6 +90,11 @@ def find_and_resolve_config_conflicts() -> bool:
     #     Config.check_votes = False
     #     delay_for_message = True
 
+    if Config.lock_files is True and not Config.no_rename_move:
+        Log.info('\nInfo: file locks require \'--no-rename-move\' flag will be set!')
+        Config.no_rename_move = True
+        delay_for_message = True
+
     if Config.scenario is not None:
         if Config.utp != DOWNLOAD_POLICY_DEFAULT:
             Log.info('Info: running download script, outer untagged policy will be ignored')
