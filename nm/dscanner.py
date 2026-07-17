@@ -25,9 +25,9 @@ from .defs import (
     DownloadResult,
 )
 from .iinfo import IIFlags, VideoInfo, get_min_max_ids
+from .indexer import file_already_exists_arr
 from .input import wait_for_key
 from .logger import Log
-from .path_util import file_already_exists_arr
 from .util import get_local_time_s
 
 __all__ = ('VideoScanWorker',)
@@ -123,7 +123,7 @@ class VideoScanWorker:
         self._seq.popleft()
         if result in (DownloadResult.FAIL_NOT_FOUND, DownloadResult.FAIL_RETRIES,
                       DownloadResult.FAIL_DELETED, DownloadResult.FAIL_FILTERED_OUTER, DownloadResult.FAIL_SKIPPED):
-            founditems = list(filter(None, (file_already_exists_arr(vi.id, q) for q in QUALITIES)))
+            founditems = list(filter(None, [await file_already_exists_arr(vi.id, q) for q in QUALITIES]))
             if any(ffs for ffs in founditems):
                 newline = '\n'
                 Log.info(f'{vi.sname} scan returned {result!s} but it was already downloaded:'

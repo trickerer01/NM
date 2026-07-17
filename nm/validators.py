@@ -7,6 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import os
+import sys
 from argparse import ArgumentError
 from ipaddress import IPv4Address
 
@@ -28,8 +29,10 @@ from .defs import (
     NamingFlags,
 )
 from .logger import Log
+from .path_util import FileLock
 from .rex import re_non_search_symbols, re_session_id
 from .util import normalize_path
+from .version import APP_NAME
 
 
 def find_and_resolve_config_conflicts() -> bool:
@@ -90,9 +93,19 @@ def find_and_resolve_config_conflicts() -> bool:
     #     Config.check_votes = False
     #     delay_for_message = True
 
-    if Config.lock_files is True and not Config.no_rename_move:
-        Log.info('\nInfo: file locks require \'--no-rename-move\' flag will be set!')
-        Config.no_rename_move = True
+    if Config.lock_files is True:
+        if not FileLock.is_available():
+            Log.info(f'\nInfo: \'--lock-files\' flag was set but {APP_NAME} doesn\'t support file locking on {sys.platform}, ignored')
+            Config.lock_files = False
+            delay_for_message = True
+        elif not Config.no_rename_move:
+            Log.info('\nInfo: \'--lock-files\' flag was set, \'--no-rename-move\' flag will be forced!')
+            Config.no_rename_move = True
+            delay_for_message = True
+
+    if Config.master_instance is True and not Config.lock_files:
+        Log.info('\nInfo: \'--master-instance\' cannot be used without \'--lock-files\' flag, ignored')
+        Config.master_instance = False
         delay_for_message = True
 
     if Config.scenario is not None:

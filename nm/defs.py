@@ -51,6 +51,8 @@ TAGS_CONCAT_CHAR = ','
 EXTENSIONS_V = ('mp4', 'webm', 'jpg', 'jpeg')
 DEFAULT_EXT = EXTENSIONS_V[0]
 HTTPS_PREFIX = 'https://'
+FOLDER_INDEX_FILENAME = f'{PREFIX}!index.json'
+FOLDER_INDEX_INDENT = 1
 START_TIME = datetime.datetime.now()
 
 SITE = base64.b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
@@ -386,6 +388,7 @@ HELP_ARG_UPLOADER = 'Uploader username (filters still apply)'
 #     ' By default exact matches will be dropped except the latest one (highest album id)'
 # )
 # HELP_ARG_CHECK_VOTES = 'Query website voting system for downvoted tags/categories/artists to ignore during filtering'
+HELP_ARG_MASTER_INSTANCE = 'Run as a master instance, cleaning existing folder index files'
 
 
 class DownloadResult(IntEnum):

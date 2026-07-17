@@ -13,8 +13,8 @@ from .config import Config
 from .download import download
 from .fetch_html import create_session
 from .iinfo import VideoInfo
+from .indexer import FolderIndexer, prefilter_existing_items
 from .logger import Log
-from .path_util import prefilter_existing_items
 from .tagger import extract_id_or_group, extract_ids_from_links
 from .validators import find_and_resolve_config_conflicts
 
@@ -50,20 +50,21 @@ async def process_ids() -> int:
     v_entries = [VideoInfo(idi) for idi in Config.id_sequence]
     orig_count = len(v_entries)
 
-    if orig_count > 0:
-        prefilter_existing_items(v_entries)
-
-    removed_count = orig_count - len(v_entries)
-
-    if orig_count == removed_count:
+    async with FolderIndexer():
         if orig_count > 0:
-            Log.fatal(f'\nAll {orig_count:d} videos already exist. Aborted.')
-        else:
-            Log.fatal('\nNo videos found. Aborted.')
-        return -1
+            await prefilter_existing_items(v_entries)
 
-    async with create_session():
-        await download(v_entries, True, removed_count)
+        removed_count = orig_count - len(v_entries)
+
+        if orig_count == removed_count:
+            if orig_count > 0:
+                Log.fatal(f'\nAll {orig_count:d} videos already exist. Aborted.')
+            else:
+                Log.fatal('\nNo videos found. Aborted.')
+            return -1
+
+        async with create_session():
+            await download(v_entries, True, removed_count)
 
     return 0
 

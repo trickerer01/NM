@@ -18,11 +18,12 @@ from unittest.mock import patch
 
 from .cmdargs import prepare_arglist
 from .config import Config
-from .defs import DOWNLOAD_MODE_TOUCH, PREFIX, QUALITIES, QUALITY_480P, SITE, Duration
+from .defs import DOWNLOAD_MODE_TOUCH, FOLDER_INDEX_FILENAME, PREFIX, QUALITIES, QUALITY_480P, SITE, Duration
 from .fetch_html import RequestQueue
+from .indexer import _found_filenames_dict
 from .logger import Log
 from .main import main_sync
-from .path_util import FileLock, FileLockError, _found_filenames_dict
+from .path_util import FileLock, FileLockError
 from .rex import prepare_regex_fullmatch
 from .tagger import (
     TAG_ALIASES,
@@ -93,7 +94,7 @@ class FileCheckTests(TestCase):
 
 class FileLockTests(TestCase):
     @test_prepare()
-    def test_filelock01(self) -> None:
+    def test_filelock01_media(self) -> None:
         Config.lock_files = True
 
         async def test_inner() -> None:
@@ -103,6 +104,23 @@ class FileLockTests(TestCase):
                     pass
 
         tempfile_name = f'{PREFIX}1324_720p.mp4'
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tempdir:
+            tempfile_fullpath = pathlib.Path(tempdir).joinpath(tempfile_name)
+            tempfile_lock_fullpath = FileLock.make_lock_path(tempfile_fullpath)
+            if sys.platform.startswith('win'):
+                self.assertRaises(FileLockError, lambda: asyncio.run(test_inner()))
+
+    @test_prepare()
+    def test_filelock02_index(self) -> None:
+        Config.lock_files = True
+
+        async def test_inner() -> None:
+            async with FileLock(tempfile_fullpath):
+                self.assertTrue(tempfile_lock_fullpath.is_file())
+                async with FileLock(tempfile_fullpath):
+                    pass
+
+        tempfile_name = FOLDER_INDEX_FILENAME
         with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tempdir:
             tempfile_fullpath = pathlib.Path(tempdir).joinpath(tempfile_name)
             tempfile_lock_fullpath = FileLock.make_lock_path(tempfile_fullpath)
@@ -291,7 +309,7 @@ class CmdTests(TestCase):
 
 class DownloadTests(TestCase):
     @test_prepare(True)
-    def test_ids_touch(self):
+    def test_ids_touch_lock(self):
         if not RUN_CONN_TESTS:
             return
         with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tempdir:
@@ -300,6 +318,7 @@ class DownloadTests(TestCase):
             tempfile_fullpath = pathlib.Path(tempdir).joinpath(tempfile_id).with_suffix(tempfile_ext)
             arglist1 = [
                 'ids', '-path', tempdir, '-start', tempfile_id, '-dmode', 'touch', '-naming', 'none', '-quality', '360p', '-log', 'trace',
+                '--lock-files',
             ]
             main_sync(arglist1)
             self.assertTrue(tempfile_fullpath.is_file())
@@ -307,7 +326,7 @@ class DownloadTests(TestCase):
         print(f'{self._testMethodName} passed')
 
     @test_prepare(True)
-    def test_pages_touch(self):
+    def test_pages_touch_nonlock(self):
         if not RUN_CONN_TESTS:
             return
         with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tempdir:

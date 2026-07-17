@@ -45,6 +45,7 @@ from .defs import (
     HELP_ARG_LOCK_FILES,
     HELP_ARG_LOGGING,
     HELP_ARG_LOOKAHEAD,
+    HELP_ARG_MASTER_INSTANCE,
     HELP_ARG_MERGE_LISTS,
     HELP_ARG_MINRATING,
     HELP_ARG_MINSCORE,
@@ -291,6 +292,8 @@ def add_common_args(par: ArgumentParser) -> None:
     dofi.add_argument('--check-title-neg', action=ACTION_STORE_TRUE, help='')
     dofi.add_argument('--check-description-pos', action=ACTION_STORE_TRUE, help='')
     dofi.add_argument('--check-description-neg', action=ACTION_STORE_TRUE, help=HELP_ARG_CHECK_TITLEDESC)
+    ico = par.add_argument_group(title='interprocess communication options')
+    ico.add_argument('--master-instance', action=ACTION_STORE_TRUE, help=HELP_ARG_MASTER_INSTANCE)
 
 
 def add_logging_args(par: ArgumentParser) -> None:

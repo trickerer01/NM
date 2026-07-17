@@ -19,8 +19,8 @@ from .defs import (
 from .download import download
 from .fetch_html import create_session, fetch_html
 from .iinfo import VideoInfo
+from .indexer import FolderIndexer, prefilter_existing_items
 from .logger import Log
-from .path_util import prefilter_existing_items
 from .rex import re_page_entry
 from .util import get_time_seconds, has_naming_flag
 from .validators import find_and_resolve_config_conflicts
@@ -131,19 +131,20 @@ async def process_pages() -> int:
         v_entries.reverse()
         orig_count = len(v_entries)
 
-        if orig_count > 0:
-            prefilter_existing_items(v_entries)
-
-        removed_count = orig_count - len(v_entries)
-
-        if orig_count == removed_count:
+        async with FolderIndexer():
             if orig_count > 0:
-                Log.fatal(f'\nAll {orig_count:d} videos already exist. Aborted.')
-            else:
-                Log.fatal('\nNo videos found. Aborted.')
-            return -1
+                await prefilter_existing_items(v_entries)
 
-        await download(v_entries, full_download, removed_count)
+            removed_count = orig_count - len(v_entries)
+
+            if orig_count == removed_count:
+                if orig_count > 0:
+                    Log.fatal(f'\nAll {orig_count:d} videos already exist. Aborted.')
+                else:
+                    Log.fatal('\nNo videos found. Aborted.')
+                return -1
+
+            await download(v_entries, full_download, removed_count)
 
     return 0
 

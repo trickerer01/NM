@@ -41,15 +41,14 @@ from .dthrottler import ThrottleChecker
 from .fetch_html import ensure_conn_closed, fetch_html, wrap_request
 from .idgaps import IdGapsPredictor
 from .iinfo import IIFlags, IIState, VideoInfo, export_video_info, get_min_max_ids
-from .logger import Log
-from .path_util import (
-    FileLock,
-    FileLockError,
+from .indexer import (
     file_already_exists,
+    register_finished_file,
     register_new_file,
-    try_rename,
     unregister_unfinished_file,
 )
+from .logger import Log
+from .path_util import FileLock, FileLockError, try_rename
 from .rex import re_media_filename, re_private_video
 from .tagger import filtered_tags, is_filtered_out_by_extra_tags, solve_tag_conflicts, unite_separated_tags
 from .util import (
@@ -341,8 +340,9 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
         vi.set_state(IIState.DOWNLOADING)
         curfile_match = re_media_filename.match(vi.filename)
         curfile_quality = Quality(curfile_match.group(2) or vi.quality)
-        curfile = file_already_exists(vi.id, curfile_quality)
-        if curfile:
+        # here this id isn't locked, but could be processed already by a different instance
+        if curfile_path := await file_already_exists(vi.id, curfile_quality):
+            curfile = curfile_path.as_posix()
             curfile_folder, curfile_name = os.path.split(curfile)
             curfile_omatch = re_media_filename.match(curfile_name)
             curfile_oquality = Quality(curfile_omatch.group(2) or '')
@@ -467,6 +467,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                      f'({(vi.bytes_written / total_time) / Mem.KB:.1f} Kb/s)')
 
             vi.set_state(IIState.DONE)
+            await register_finished_file(vi)
             break
         except Exception as e:
             Log.error(f'{vi.sname}: {sys.exc_info()[0]}: {sys.exc_info()[1]}')

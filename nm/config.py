@@ -57,6 +57,8 @@ class BaseConfig:
         # states
         self.is_pages: bool = False
         self.aborted: bool = False
+        # ipc
+        self.master_instance: bool | None = None
         # common
         self.dest_base: str | None = None
         self.proxy: str | None = None
