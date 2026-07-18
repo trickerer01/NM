@@ -10,10 +10,8 @@ import itertools
 from asyncio import sleep
 
 from .config import Config
-from .download import download
-from .fetch_html import create_session
+from .download import launch
 from .iinfo import VideoInfo
-from .indexer import FolderIndexer, prefilter_existing_items
 from .logger import Log
 from .tagger import extract_id_or_group, extract_ids_from_links
 from .validators import find_and_resolve_config_conflicts
@@ -48,25 +46,8 @@ async def process_ids() -> int:
         Log.warn(f'Removed {removed_count:d} known to be non-existent ids!')
 
     v_entries = [VideoInfo(idi) for idi in Config.id_sequence]
-    orig_count = len(v_entries)
 
-    async with FolderIndexer():
-        if orig_count > 0:
-            await prefilter_existing_items(v_entries)
-
-        removed_count = orig_count - len(v_entries)
-
-        if orig_count == removed_count:
-            if orig_count > 0:
-                Log.fatal(f'\nAll {orig_count:d} videos already exist. Aborted.')
-            else:
-                Log.fatal('\nNo videos found. Aborted.')
-            return -1
-
-        async with create_session():
-            await download(v_entries, True, removed_count)
-
-    return 0
+    return await launch(v_entries, True, False, True)
 
 #
 #

@@ -18,6 +18,7 @@ from .defs import (
     CONNECT_TIMEOUT_BASE,
     CONNECT_TIMEOUT_SOCKET_READ,
     DEFAULT_QUALITY,
+    DOWNLOAD_MODE_SKIP,
     DOWNLOAD_POLICY_DEFAULT,
     DURATION_MAX,
     IDGAP_PREDICTION_OFF,
@@ -98,10 +99,15 @@ def find_and_resolve_config_conflicts() -> bool:
             Log.info(f'\nInfo: \'--lock-files\' flag was set but {APP_NAME} doesn\'t support file locking on {sys.platform}, ignored')
             Config.lock_files = False
             delay_for_message = True
-        elif not Config.no_rename_move:
-            Log.info('\nInfo: \'--lock-files\' flag was set, \'--no-rename-move\' flag will be forced!')
-            Config.no_rename_move = True
+        if Config.download_mode == DOWNLOAD_MODE_SKIP:
+            Log.info(f'\nInfo: \'--lock-files\' was set but download mode is \'{DOWNLOAD_MODE_SKIP}\' lock flag will be ignored!')
+            Config.lock_files = False
             delay_for_message = True
+
+    if Config.lock_files is True and not Config.no_rename_move:
+        Log.info('\nInfo: \'--lock-files\' flag was set, \'--no-rename-move\' flag will be forced!')
+        Config.no_rename_move = True
+        delay_for_message = True
 
     if Config.master_instance is True and not Config.lock_files:
         Log.info('\nInfo: \'--master-instance\' cannot be used without \'--lock-files\' flag, ignored')

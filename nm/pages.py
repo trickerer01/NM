@@ -16,10 +16,9 @@ from .defs import (
     SITE_ITEM_REQUEST_UPLOADER_PAGE,
     NamingFlags,
 )
-from .download import download
+from .download import launch
 from .fetch_html import create_session, fetch_html
 from .iinfo import VideoInfo
-from .indexer import FolderIndexer, prefilter_existing_items
 from .logger import Log
 from .rex import re_page_entry
 from .util import get_time_seconds, has_naming_flag
@@ -128,25 +127,7 @@ async def process_pages() -> int:
                     Log.info(f'Page {pi - 1:d} has all post ids below lower bound. Pages scan stopped!')
                 break
 
-        v_entries.reverse()
-        orig_count = len(v_entries)
-
-        async with FolderIndexer():
-            if orig_count > 0:
-                await prefilter_existing_items(v_entries)
-
-            removed_count = orig_count - len(v_entries)
-
-            if orig_count == removed_count:
-                if orig_count > 0:
-                    Log.fatal(f'\nAll {orig_count:d} videos already exist. Aborted.')
-                else:
-                    Log.fatal('\nNo videos found. Aborted.')
-                return -1
-
-            await download(v_entries, full_download, removed_count)
-
-    return 0
+        return await launch(v_entries, full_download, True, False)
 
 #
 #

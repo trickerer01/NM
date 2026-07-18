@@ -28,9 +28,9 @@ from .util import calc_sleep_time_retry
 __all__ = ('create_session', 'ensure_conn_closed', 'fetch_html', 'fetch_html_raw', 'wrap_request')
 
 USER_AGENT_DEFAULT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.7 Firefox/102.0 PaleMoon/33.3.1'
-ua_generator = FakeUserAgent(browsers=('Firefox',), platforms=('desktop',), fallback=USER_AGENT_DEFAULT)
+_ua_generator = FakeUserAgent(browsers=('Firefox',), platforms=('desktop',), fallback=USER_AGENT_DEFAULT)
 
-sessionw: ClientSessionWrapper | None = None
+_sessionw: ClientSessionWrapper | None = None
 
 
 class UAManager:
@@ -38,7 +38,7 @@ class UAManager:
     UAManager
     """
     # noinspection PyProtectedMember
-    user_agents = list(set(_['useragent'] for _ in ua_generator._filter_useragents()))
+    user_agents = list(set(_['useragent'] for _ in _ua_generator._filter_useragents()))
     seed_base = int(random.uniform(0, len(user_agents) + 1))
 
     @staticmethod
@@ -73,31 +73,26 @@ class ClientSessionWrapper:
         get_running_loop().set_exception_handler(self.ignore_unclosed_session_exc_handler)
 
     async def __aenter__(self) -> ClientSessionWrapper:
-        global sessionw
-        assert sessionw is None
-        sessionw = self
+        global _sessionw
+        assert _sessionw is None
+        _sessionw = self
         [await self._exitstack.enter_async_context(s) for s in self._sessions]
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        global sessionw
-        assert sessionw is self
-        sessionw = None
+        global _sessionw
+        assert _sessionw is self
+        _sessionw = None
         await self._exitstack.aclose()
 
-    @property
-    def psession(self) -> ClientSession:
-        return self._sessions[ClientSessionWrapper.PSESSION_INDEX]
-
-    @property
-    def npsession(self) -> ClientSession:
-        return self._sessions[ClientSessionWrapper.NPSESSION_INDEX]
+    def session(self, no_proxy: bool):
+        return self._sessions[no_proxy]
 
     @staticmethod
     def ignore_unclosed_session_exc_handler(selfloop: AbstractEventLoop, context: dict) -> None:
         message = context.get('message')
-        if message not in ('Event loop is closed',) and sessionw is not None and sessionw.default_exc_handler is not None:
-            sessionw.default_exc_handler(selfloop, context)
+        if message not in ('Event loop is closed',) and _sessionw is not None and _sessionw.default_exc_handler is not None:
+            _sessionw.default_exc_handler(selfloop, context)
         else:
             Log.trace(f'{message} exception ignored...')
 
@@ -171,7 +166,7 @@ async def wrap_request(method: str, url: str, **kwargs) -> ClientResponse:
     if 'timeout' not in kwargs:
         kwargs.update(timeout=Config.timeout)
     noproxy = kwargs.pop('noproxy', False)
-    r = await (sessionw.npsession if noproxy else sessionw.psession).request(method, url, **kwargs)
+    r = await _sessionw.session(noproxy).request(method, url, **kwargs)
     return r
 
 

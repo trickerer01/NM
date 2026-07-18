@@ -6,6 +6,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+import contextlib
 import os
 import sys
 import urllib.parse
@@ -38,11 +39,13 @@ from .defs import (
 from .downloader import VideoDownloadWorker
 from .dscanner import VideoScanWorker
 from .dthrottler import ThrottleChecker
-from .fetch_html import ensure_conn_closed, fetch_html, wrap_request
+from .fetch_html import create_session, ensure_conn_closed, fetch_html, wrap_request
 from .idgaps import IdGapsPredictor
 from .iinfo import IIFlags, IIState, VideoInfo, export_video_info, get_min_max_ids
 from .indexer import (
+    FolderIndexer,
     file_already_exists,
+    prefilter_existing_items,
     register_finished_file,
     register_new_file,
     unregister_unfinished_file,
@@ -61,7 +64,36 @@ from .util import (
     normalize_path,
 )
 
-__all__ = ('at_interrupt', 'download')
+__all__ = ('at_interrupt', 'launch')
+
+
+async def launch(sequence: list[VideoInfo], by_id: bool, reverse: bool, new_session: bool) -> int:
+    orig_count = len(sequence)
+
+    async with contextlib.AsyncExitStack() as lauch_context:
+        if orig_count > 0:
+            if reverse:
+                sequence.reverse()
+            await lauch_context.enter_async_context(FolderIndexer())
+            await prefilter_existing_items(sequence)
+
+        filtered_count = orig_count - len(sequence)
+
+        if orig_count == filtered_count:
+            if orig_count > 0:
+                Log.fatal(f'\nAll {orig_count:d} videos already exist. Aborted.')
+            else:
+                Log.fatal('\nNo videos found. Aborted.')
+            return -1
+
+        download_callback = download(sequence, by_id, filtered_count)
+
+        if new_session:
+            async with create_session():
+                await download_callback
+        else:
+            await download_callback
+    return 0
 
 
 async def download(sequence: list[VideoInfo], by_id: bool, filtered_count: int) -> None:
