@@ -67,6 +67,7 @@ from .defs import (
     HELP_ARG_SEARCH_STR,
     HELP_ARG_SKIP_EMPTY_LISTS,
     HELP_ARG_SOLVE_TAG_CONFLICTS,
+    HELP_ARG_SPEEDLIMIT,
     HELP_ARG_STORE_CONTINUE_CMDFILE,
     HELP_ARG_THROTTLE,
     HELP_ARG_THROTTLE_AUTO,
@@ -256,6 +257,7 @@ def add_common_args(par: ArgumentParser) -> None:
     co.add_argument('-retries', metavar='#number', default=CONNECT_RETRIES_BASE, help=HELP_ARG_RETRIES, type=positive_int)
     co.add_argument('-throttle', metavar='#rate', default=0, help=HELP_ARG_THROTTLE, type=positive_nonzero_int)
     co.add_argument('-athrottle', '--throttle-auto', action=ACTION_STORE_TRUE, help=HELP_ARG_THROTTLE_AUTO)
+    co.add_argument('-maxspeed', '--download-speed-limit', default=0, help=HELP_ARG_SPEEDLIMIT, type=positive_nonzero_int)
     co.add_argument('-header', metavar='#name=value', action=ACTION_APPEND, help=HELP_ARG_HEADER, type=valid_kwarg)
     co.add_argument('-cookie', metavar='#name=value', action=ACTION_APPEND, help=HELP_ARG_COOKIE, type=valid_kwarg)
     # co.add_argument('-session_id', default=None, help=HELP_ARG_SESSION_ID, type=valid_session_id)

@@ -380,6 +380,7 @@ HELP_ARG_TIMEOUT = f'Connection timeout (in seconds). Default is \'{CONNECT_TIME
 HELP_ARG_RETRIES = f'Connection retries count. Default is \'{CONNECT_RETRIES_BASE:d}\''
 HELP_ARG_THROTTLE = 'Download speed threshold (in KB/s) to assume throttling, drop connection and retry'
 HELP_ARG_THROTTLE_AUTO = 'Enable automatic throttle threshold adjustment when crossed too many times in a row'
+HELP_ARG_SPEEDLIMIT = 'Limit download (write) speed, per file'
 HELP_ARG_FAVORITES = 'Username (filters still apply)'
 HELP_ARG_UPLOADER = 'Uploader username (filters still apply)'
 # HELP_ARG_MODEL = 'Artist name (download directly from artist\'s page)'

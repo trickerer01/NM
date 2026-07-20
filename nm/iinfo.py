@@ -17,7 +17,7 @@ from .config import Config
 from .defs import DEFAULT_EXT, DEFAULT_QUALITY, PREFIX, QUALITIES, QUALITY_ENDS, QUALITY_STARTS, UTF8, Quality
 from .logger import Log
 from .rex import re_infolist_filename
-from .util import format_time, normalize_filename, normalize_path
+from .util import format_time, get_elapsed_time_i, normalize_filename, normalize_path
 
 __all__ = ('IIFlags', 'IIState', 'VideoInfo', 'export_video_info', 'get_min_max_ids')
 
@@ -61,7 +61,7 @@ class VideoInfo:  # up to ~3 Kb (when all info is filled, asizeof)
         self.private: bool = False
         self.expected_size: int = 0
         self.bytes_written: int = 0
-        self.dstart_time: int = 0
+        self.start_time_write: int = 0
         self.start_size: int = 0
         self.start_time: int = 0
         self.last_check_size: int = 0
@@ -136,6 +136,16 @@ class VideoInfo:  # up to ~3 Kb (when all info is filled, asizeof)
     @property
     def state_str(self) -> str:
         return self._state.name
+
+    @property
+    def time_spent_writing(self) -> int:
+        """in seconds"""
+        return max(1, get_elapsed_time_i() - self.start_time_write)
+
+    @property
+    def average_write_speed(self) -> float:
+        """in bytes"""
+        return self.bytes_written / self.time_spent_writing
 
     __repr__ = __str__
 

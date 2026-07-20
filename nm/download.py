@@ -478,7 +478,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             async with async_open(vi.my_fullpath, 'ab') as outf:
                 register_new_file(vi)
                 vi.set_flag(IIFlags.FILE_WAS_CREATED)
-                vi.dstart_time = vi.dstart_time or get_elapsed_time_i()
+                vi.start_time_write = vi.start_time_write or get_elapsed_time_i()
                 bytes_written_this_try = 0
                 async for chunk in r.content.iter_chunked(128 * Mem.KB):
                     await outf.write(chunk)
@@ -486,6 +486,9 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                     bytes_written_this_try += len(chunk)
                     if try_num > 0 and bytes_written_this_try >= 256 * Mem.KB:
                         try_num = 0
+                    if Config.download_speed_limit:
+                        while vi.average_write_speed > Config.download_speed_limit * Mem.KB:
+                            await sleep(0.5)
             status_checker.reset()
             await dwn.remove_from_writes(vi)
 
@@ -494,9 +497,8 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 Log.error(f'Error: file size mismatch for {vi.sfsname}: {file_size:d} / {vi.expected_size:d}')
                 raise OSError(vi.link)
 
-            total_time = (get_elapsed_time_i() - vi.dstart_time) or 1
-            Log.info(f'[download] {vi.sfsname} ({vi.link_quality}) completed in {format_time(total_time)} '
-                     f'({(vi.bytes_written / total_time) / Mem.KB:.1f} Kb/s)')
+            Log.info(f'[download] {vi.sfsname} ({vi.link_quality}) completed in {format_time(vi.time_spent_writing)} '
+                     f'({vi.average_write_speed / Mem.KB:.1f} Kb/s)')
 
             vi.set_state(IIState.DONE)
             await register_finished_file(vi)

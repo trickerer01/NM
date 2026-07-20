@@ -96,6 +96,7 @@ class BaseConfig:
         self.retries: int = 0
         self.throttle: int | None = None
         self.throttle_auto: bool | None = None
+        self.download_speed_limit: int | None = None
         self.lock_files: bool | None = None
         self.store_continue_cmdfile: bool | None = None
         self.solve_tag_conflicts: bool | None = None
@@ -159,6 +160,7 @@ class BaseConfig:
             *(('--html-without-proxy',) if self.html_without_proxy else ()),
             *(('-throttle', self.throttle) if self.throttle else ()),
             *(('-athrottle',) if self.throttle_auto else ()),
+            *(('-maxspeed', self.download_speed_limit) if self.download_speed_limit else ()),
             *(('-timeout', int(self.timeout.connect)) if self.timeout and self.timeout.connect else ()),
             *(('-retries', self.retries) if self.retries != CONNECT_RETRIES_BASE else ()),
             *(('-unfinish',) if self.keep_unfinished else ()),

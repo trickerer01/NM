@@ -67,6 +67,9 @@ def find_and_resolve_config_conflicts() -> bool:
         if Config.lookahead:
             Log.fatal('\nError: link sequence argument cannot be used together with lookahead!')
             raise ValueError
+    if Config.throttle and Config.download_speed_limit and Config.download_speed_limit < Config.throttle * 2:
+        Log.fatal('\nError: download speed limit vs throttling rate is too low, must be at least 2 to 1!')
+        raise ValueError
 
     if Config.get_maxid:
         Config.logging_flags = LoggingFlags.FATAL
