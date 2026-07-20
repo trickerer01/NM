@@ -33,8 +33,6 @@ MAX_SCAN_QUEUE_SIZE = 1
 DOWNLOAD_STATUS_CHECK_TIMER = 60
 DOWNLOAD_QUEUE_STALL_CHECK_TIMER = 30
 DOWNLOAD_CONTINUE_FILE_CHECK_TIMER = 30
-SCAN_CANCEL_KEYSTROKE = 'q'
-SCAN_CANCEL_KEYCOUNT = 2
 LOOKAHEAD_WATCH_RESCAN_DELAY_MIN = 300
 LOOKAHEAD_WATCH_RESCAN_DELAY_MAX = 1800
 RESCAN_DELAY_EMPTY = 1
@@ -54,6 +52,8 @@ HTTPS_PREFIX = 'https://'
 FOLDER_INDEX_FILENAME = f'{PREFIX}!index.json'
 FOLDER_INDEX_INDENT = 1
 START_TIME = datetime.datetime.now()
+
+SCAN_CANCEL_KEY_SEQUENCE = f'q{PREFIX[1]}'
 
 SITE = base64.b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
 SITE_V = base64.b64decode('aHR0cHM6Ly92aWRlb3MubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
@@ -241,7 +241,7 @@ HELP_ARG_LOOKAHEAD = (
     f'-200..-1, 1..200. Continue scanning indefinitely after reaching end id until number of non-existing videos encountered in a row'
     f' reaches this number.'
     f' Furthermore, negative value enables watcher mode, periodically re-scanning trailing non-existing videos, this process never finishes'
-    f' on its own but can be interrupted safely by pressing \'{SCAN_CANCEL_KEYSTROKE}\' twice'
+    f' on its own but can be interrupted safely by tapping \'{SCAN_CANCEL_KEY_SEQUENCE}\' quickly'
 )
 HELP_ARG_PREDICT_ID_GAPS = (
     'Enable ids known to be non-existent prediction. When video is uploaded to the website post id usually gets incremented more than once.'

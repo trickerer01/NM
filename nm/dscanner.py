@@ -20,8 +20,7 @@ from .defs import (
     LOOKAHEAD_WATCH_RESCAN_DELAY_MIN,
     QUALITIES,
     RESCAN_DELAY_EMPTY,
-    SCAN_CANCEL_KEYCOUNT,
-    SCAN_CANCEL_KEYSTROKE,
+    SCAN_CANCEL_KEY_SEQUENCE,
     DownloadResult,
 )
 from .iinfo import IIFlags, VideoInfo, get_min_max_ids
@@ -149,7 +148,7 @@ class VideoScanWorker:
 
     async def run(self) -> None:
         Log.debug('[queue] scanner thread start')
-        self._abort_waiter = get_running_loop().create_task(wait_for_key(SCAN_CANCEL_KEYSTROKE, SCAN_CANCEL_KEYCOUNT, self._on_abort))
+        self._abort_waiter = get_running_loop().create_task(wait_for_key(SCAN_CANCEL_KEY_SEQUENCE, self._on_abort))
         while self._seq:
             if Config.aborted:
                 self._seq.clear()

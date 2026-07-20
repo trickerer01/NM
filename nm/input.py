@@ -42,21 +42,25 @@ else:
     next_input = functools.partial(sys.stdin.read, 1)
 
 
-async def wait_for_key(key: str, count: int, callback: Callable[[], None]) -> None:
+async def wait_for_key(target_sequence: str, callback: Callable[[], None]) -> None:
     try:
         stroke_sequence: list[str] = []
+        cur_idx = 0
         with set_terminal_raw():
-            while stroke_sequence != [key] * count:
+            while ''.join(stroke_sequence) != target_sequence:
                 await sleep(1.0)
                 if not input_ready():
                     stroke_sequence.clear()
+                    cur_idx = 0
                     continue
-                while input_ready():
+                while cur_idx < len(target_sequence) and input_ready():
                     ch = next_input()
-                    if ch == key:
+                    if ch == target_sequence[cur_idx]:
                         stroke_sequence.append(ch)
+                        cur_idx += 1
                     else:
                         stroke_sequence.clear()
+                        cur_idx = 0
                         while input_ready():
                             next_input()
             callback()
