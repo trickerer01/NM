@@ -41,6 +41,7 @@ class IIFlags(IntEnum):
     ALREADY_EXISTED_SIMILAR = 0x2
     FILE_WAS_CREATED = 0x4
     RETURNED_404 = 0x8
+    MASK_ALREADY_EXISTED = ALREADY_EXISTED_SIMILAR | ALREADY_EXISTED_EXACT
 
 
 class VideoInfo:  # up to ~3 Kb (when all info is filled, asizeof)

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import pathlib
+import shutil
 import sys
 from typing import BinaryIO
 
@@ -77,18 +78,20 @@ async def try_rename(oldpath: str, newpath: str, do_lock=False) -> bool:
         return True
 
     def _do_rename() -> None:
-        os.makedirs(newpath_folder, exist_ok=True)
-        os.rename(oldpath, newpath)
+        shutil.move(oldpath, newpath)
 
     try:
         newpath_folder = os.path.split(newpath.strip('/'))[0]
+        os.makedirs(newpath_folder, exist_ok=True)
         if do_lock:
             async with FileLock(oldpath):
                 _do_rename()
         else:
             _do_rename()
         return True
-    except Exception:
+    except Exception as e:
+        import traceback
+        Log.warn(f'Warning: try_rename: catched {e.args[0]} {traceback.format_exc(1)}!')
         return False
 
 #

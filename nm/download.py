@@ -48,6 +48,7 @@ from .indexer import (
     prefilter_existing_items,
     register_finished_file,
     register_new_file,
+    register_renamed_file,
     unregister_unfinished_file,
 )
 from .logger import Log
@@ -387,7 +388,9 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                     loc_str = f' ({"same" if same_loc else "different"} location)'
                     if Config.no_rename_move is False or same_loc:
                         Log.info(f'{vi.sffilename} {vi.quality} found{loc_str}. Enforcing new name (was \'{curfile}\').')
-                        if not await try_rename(curfile, vi.my_fullpath):
+                        if await try_rename(curfile, vi.my_fullpath):
+                            await register_renamed_file(curfile_path, vi)
+                        else:
                             Log.warn(f'Warning: unable to rename file to {vi.sffilename} (already exists?). Old name will be preserved!')
                             vi.filename = curfile_name
                     else:
@@ -395,7 +398,9 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                         Log.info(f'{vi.sffilename} {vi.quality} found{loc_str}. Enforcing old path + new name '
                                  f'\'{curfile_folder}/{vi.filename}\' due to \'--no-rename-move\' flag (was \'{curfile_name}\').')
                         vi.subfolder = new_subfolder
-                        if not await try_rename(curfile, normalize_path(os.path.abspath(vi.my_fullpath), False)):
+                        if await try_rename(curfile, normalize_path(os.path.abspath(vi.my_fullpath), False)):
+                            await register_renamed_file(curfile_path, vi)
+                        else:
                             Log.warn(f'Warning: unable to rename file to {vi.sffilename} (already exists?). Old name will be preserved!')
                             vi.filename = curfile_name
             else:
@@ -403,7 +408,10 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 Log.info(f'{vi.sfsname} already exists ({qstr}). Skipped.\n Location: \'{curfile}\'')
                 vi.subfolder = normalize_path(os.path.relpath(curfile_folder, Config.dest_base))
                 vi.set_state(IIState.DONE)
-                return DownloadResult.FAIL_ALREADY_EXISTS
+                ret = DownloadResult.FAIL_ALREADY_EXISTS
+                skip = True
+
+    if not skip:
         try:
             os.makedirs(vi.my_folder, exist_ok=True)
         except Exception:
@@ -501,7 +509,8 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                      f'({vi.average_write_speed / Mem.KB:.1f} Kb/s)')
 
             vi.set_state(IIState.DONE)
-            await register_finished_file(vi)
+            if not vi.has_flag(IIFlags.MASK_ALREADY_EXISTED):
+                await register_finished_file(vi)
             break
         except Exception as e:
             Log.error(f'{vi.sname}: {sys.exc_info()[0]}: {sys.exc_info()[1]}')

@@ -34,6 +34,7 @@ __all__ = (
     'prefilter_existing_items',
     'register_finished_file',
     'register_new_file',
+    'register_renamed_file',
     'unregister_unfinished_file',
 )
 
@@ -227,7 +228,7 @@ _indexed_folders: dict[pathlib.Path, list[pathlib.Path]] = {}
 
 class FolderIndex(TypedDict):
     pids: list[str]
-    files: list[tuple[str, str]]
+    files: dict[str, list[str]]
 
 
 class FolderIndexer:
@@ -247,7 +248,7 @@ class FolderIndexer:
 
 
 def _folder_index_default() -> FolderIndex:
-    return FolderIndex(pids=[], files=[])
+    return FolderIndex(pids=[], files={})
 
 
 def _try_read_index_file(indexfile: TextIO) -> FolderIndex:
@@ -302,12 +303,12 @@ def _get_file_path_from_index(index_json: FolderIndex, id_: str | int, quality: 
     if 'files' in index_json:
         bname = _to_index_name(str(id_), '')
         qname = _to_index_name(str(id_), quality) if quality else bname
+        files_dict = index_json['files']
         if qname != bname:
-            for ftup in index_json['files']:
-                if ftup[0] == qname:
-                    return pathlib.Path(ftup[1])
+            if qname in files_dict:
+                return pathlib.Path(files_dict[qname][0])
             return None
-        if bnames := [fpath for fname, fpath in index_json['files'] if fname.startswith(bname)]:
+        if bnames := [files_dict[fname][-1] for fname in files_dict if fname.startswith(bname)]:
             return pathlib.Path(bnames[-1])
     return None
 
@@ -379,7 +380,11 @@ async def _scan_dest_folder(rescan=False) -> None:
                         indexfile.seek(0)
                         fdir_index_json = _try_read_index_file(indexfile)
                         fdir_index_json['pids'] = (fdir_index_json.get('pids') or []) + [pid]
-                        fdir_index_json['files'] = [(pname, _.as_posix()) for _ in fdirfiles if (pname := _index_filename(_.name))]
+                        files: dict[str, list[str]] = {}
+                        for fdirfile in fdirfiles:
+                            if pname := _index_filename(fdirfile.name):
+                                files[pname] = [*files.get(pname, []), fdirfile.as_posix()]
+                        fdir_index_json['files'] = files
                         indexfile.flush()
                         indexfile.seek(0)
                         indexfile.truncate()
@@ -426,6 +431,47 @@ async def _clean_indexer() -> None:
     Log.trace('Done')
 
 
+async def register_renamed_file(oldpath: pathlib.Path, vi: VideoInfo) -> None:
+    if Config.lock_files is False:
+        return
+
+    Log.trace(f'Updating index with a renamed file {vi.sfsname}...')
+    base_folder = pathlib.Path(vi.my_folder)
+    folder_index_file_path = base_folder / FOLDER_INDEX_FILENAME
+    if not folder_index_file_path.is_file():
+        Log.warn(f'Warning: register_renamed_file: index file \'{FOLDER_INDEX_FILENAME}\' was NOT found in {base_folder.as_posix()}! '
+                 f'Re-scanning!')
+        return await _scan_dest_folder(True)
+
+    vi_index_name = _index_filename(vi.filename)
+    while True:
+        try:
+            async with FileLock(folder_index_file_path):
+                with open(folder_index_file_path, 'at+', encoding=UTF8, errors='replace') as indexfile:
+                    indexfile.seek(0)
+                    index_json = _try_read_index_file(indexfile)
+                    files = index_json['files']
+                    if vi_index_name in files:
+                        found = False
+                        for i, index_path in enumerate(files[vi_index_name]):
+                            if oldpath.as_posix() == index_path:
+                                found = True
+                                files[vi_index_name][i] = vi.my_fullpath
+                                indexfile.flush()
+                                indexfile.seek(0)
+                                indexfile.truncate()
+                                json.dump(index_json, indexfile, indent=FOLDER_INDEX_INDENT)
+                                indexfile.write('\n')
+                                break
+                    if not found:
+                        Log.warn(f'Unable to rename \'{oldpath.as_posix()}\' to \'{vi.my_fullpath}\': not found in index!')
+        except FileLockError:
+            Log.warn(f'Warning: register_finished_file: Unable to acquire a lock on {folder_index_file_path}! Waiting...')
+            await sleep(calc_sleep_time_retry(None) * 2)
+            continue
+        break
+
+
 async def register_finished_file(vi: VideoInfo) -> None:
     if Config.lock_files is False:
         return
@@ -438,14 +484,14 @@ async def register_finished_file(vi: VideoInfo) -> None:
                  f'Re-scanning!')
         return await _scan_dest_folder(True)
 
+    vi_index_name = _index_filename(vi.filename)
     while True:
         try:
             async with FileLock(folder_index_file_path):
                 with open(folder_index_file_path, 'at+', encoding=UTF8, errors='replace') as indexfile:
                     indexfile.seek(0)
                     index_json = _try_read_index_file(indexfile)
-                    index_json['files'] = index_json['files'] or []
-                    index_json['files'].append((_index_filename(vi.filename), vi.my_fullpath))
+                    index_json['files'][vi_index_name] = [*index_json['files'].get(vi_index_name, []), vi.my_fullpath]
                     indexfile.flush()
                     indexfile.seek(0)
                     indexfile.truncate()
