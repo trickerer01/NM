@@ -89,6 +89,16 @@ class VideoDownloadWorker:
         else:
             self._seq.extend(sequence)  # form our own container to erase from
 
+    def on_abort_soft(self) -> None:
+        if self._scn:
+            self._scn.on_abort()
+        Log.warn('[queue] downloader thread interrupted, finishing pending tasks...')
+        Config.on_abort_download_soft()
+
+    def on_abort_hard(self) -> None:
+        self.on_abort_soft()
+        Config.on_abort_download_hard()
+
     async def _at_task_start(self, vi: VideoInfo) -> None:
         async with self._active_downloads_lock:
             self._downloads_active.append(vi)
@@ -117,6 +127,8 @@ class VideoDownloadWorker:
     async def _prod(self) -> None:
         while True:
             async with self._sequence_lock:
+                if Config.aborted_download_soft:
+                    self._seq.clear()
                 if self.can_fetch_next() is False:
                     break
                 qfull = self._queue.full()
@@ -227,7 +239,7 @@ class VideoDownloadWorker:
                 except OSError:
                     Log.error(f'Unable to save continue file to \'{continue_file_name}\'!')
             await sleep(calc_sleep_time_downloader())
-        if not Config.aborted and os.path.isfile(continue_file_fullpath):
+        if not Config.aborted_any and os.path.isfile(continue_file_fullpath):
             Log.trace(f'All files downloaded. Removing continue file \'{continue_file_name}\'...')
             os.remove(continue_file_fullpath)
 
@@ -248,9 +260,11 @@ class VideoDownloadWorker:
                 Log.fatal(fmsg)
 
     async def run(self) -> None:
+        Log.debug('[queue] downloader thread start')
         for cv in as_completed([self._prod(), self._state_reporter(), self._continue_file_checker(),
                                *(self._cons() for _ in range(MAX_VIDEOS_QUEUE_SIZE))]):
             await cv
+        Log.debug('[queue] downloader thread stop: download complete')
         await self._after_download()
         await self._queue.join()
 

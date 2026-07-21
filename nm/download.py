@@ -17,6 +17,7 @@ from aiohttp import ClientConnectorError, ClientPayloadError
 
 from .config import Config
 from .defs import (
+    DOWNLOAD_CANCEL_KEY_SEQUENCE,
     DOWNLOAD_MODE_SKIP,
     DOWNLOAD_MODE_TOUCH,
     DOWNLOAD_POLICY_ALWAYS,
@@ -50,6 +51,13 @@ from .indexer import (
     register_new_file,
     register_renamed_file,
     unregister_unfinished_file,
+)
+from .input import (
+    DOWNLOAD_INTERRUPT_SEQUENCE_HARD,
+    DOWNLOAD_INTERRUPT_SEQUENCE_SOFT,
+    SCAN_INTERRUPT_SEQUENCE,
+    KeySequenceAction,
+    wait_any_key_sequence,
 )
 from .logger import Log
 from .path_util import FileLock, FileLockError, try_rename
@@ -100,13 +108,19 @@ async def launch(sequence: list[VideoInfo], by_id: bool, reverse: bool, new_sess
 async def download(sequence: list[VideoInfo], by_id: bool, filtered_count: int) -> None:
     minid, maxid = get_min_max_ids(sequence)
     eta_min = calculate_eta(sequence)
-    interrupt_msg = f'\nTap \'{SCAN_CANCEL_KEY_SEQUENCE}\' to stop' if by_id else ''
+    interrupt_msg = (f'\nTap \'{SCAN_CANCEL_KEY_SEQUENCE}\' to stop, \'{DOWNLOAD_CANCEL_KEY_SEQUENCE}\' to interrupt downloads also'
+                     if by_id else '')
     Log.info(f'\nOk! {len(sequence):d} ids (+{filtered_count:d} filtered out), bound {minid:d} to {maxid:d}.'
              f' Working...{interrupt_msg}\n'
              f'\nThis will take at least {eta_min:d} seconds{f" ({format_time(eta_min)})" if eta_min >= 60 else ""}!\n')
     with (VideoScanWorker(sequence, scan_video, by_id) as scn, VideoDownloadWorker(sequence, process_video, filtered_count) as dwn):
+        abort_waiter = get_running_loop().create_task(wait_any_key_sequence(
+            (KeySequenceAction(SCAN_INTERRUPT_SEQUENCE, scn.on_abort),
+             KeySequenceAction(DOWNLOAD_INTERRUPT_SEQUENCE_SOFT, dwn.on_abort_soft),
+             KeySequenceAction(DOWNLOAD_INTERRUPT_SEQUENCE_HARD, dwn.on_abort_hard))))
         for cv in as_completed([scn.run(), dwn.run()] if by_id else [dwn.run()]):
             await cv
+        abort_waiter.cancel()
     export_video_info(sequence)
 
 
@@ -130,7 +144,7 @@ async def scan_video(vi: VideoInfo) -> DownloadResult:
     if a_html is None:
         Log.error(f'Error: unable to retreive html for {sname}! Aborted!')
         gpred.count_nonexisting()
-        return DownloadResult.FAIL_SKIPPED if Config.aborted else DownloadResult.FAIL_RETRIES
+        return DownloadResult.FAIL_SKIPPED if Config.aborted_scan else DownloadResult.FAIL_RETRIES
 
     if not len(a_html):
         Log.error(f'Got empty HTML page for {sname}! Rescanning...')
@@ -292,6 +306,9 @@ async def process_video(vi: VideoInfo) -> DownloadResult:
         vi.set_state(IIState.DOWNLOAD_PENDING)
 
         while True:
+            if Config.aborted_download_soft:
+                res = DownloadResult.FAIL_SKIPPED
+                break
             try:
                 async with FileLock(vi.my_fullpath):
                     res = await download_video(vi)
@@ -327,6 +344,9 @@ async def download_sceenshot(vi: VideoInfo, scr_num: int) -> DownloadResult:
         except Exception:
             Log.fatal(f'ERROR: Unable to create subfolder \'{my_folder}\'!')
             raise
+
+    if Config.aborted_download_soft:
+        return DownloadResult.FAIL_SKIPPED
 
     try:
         async with await wrap_request('GET', my_link) as r:
@@ -441,6 +461,10 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                         vi.set_state(IIState.DONE)
                 break
 
+            if Config.aborted_download_soft:
+                ret = DownloadResult.FAIL_SKIPPED
+                break
+
             hkwargs: dict[str, dict[str, str]] = {'headers': {'Range': f'bytes={file_size:d}-'} if file_size > 0 else {}}
             ckwargs = {'allow_redirects': not (Config.proxy and (Config.download_without_proxy or Config.html_without_proxy))}
             ckwargs.update({'noproxy': bool(Config.proxy and Config.html_without_proxy)})
@@ -489,6 +513,10 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 vi.start_time_write = vi.start_time_write or get_elapsed_time_i()
                 bytes_written_this_try = 0
                 async for chunk in r.content.iter_chunked(128 * Mem.KB):
+                    if Config.aborted_download_hard:
+                        try_num = Config.retries
+                        ret = DownloadResult.FAIL_SKIPPED
+                        raise OSError(f'Interrupted ({vi.sname})')
                     await outf.write(chunk)
                     vi.bytes_written += len(chunk)
                     bytes_written_this_try += len(chunk)
@@ -521,7 +549,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             # Network error may be thrown before item is added to active downloads
             await dwn.remove_from_writes(vi, True)
             status_checker.reset()
-            if try_num <= Config.retries:
+            if try_num <= Config.retries and not Config.aborted_any:
                 vi.set_state(IIState.DOWNLOADING)
                 await sleep(calc_sleep_time_retry(r))
             elif Config.keep_unfinished is False and os.path.isfile(vi.my_fullpath) and vi.has_flag(IIFlags.FILE_WAS_CREATED):

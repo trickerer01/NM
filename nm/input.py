@@ -7,11 +7,20 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 from asyncio import CancelledError, sleep
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from contextlib import contextmanager, nullcontext
 from platform import system
+from typing import NamedTuple
 
-__all__ = ('wait_for_key',)
+from .defs import DOWNLOAD_CANCEL_KEY_SEQUENCE, DOWNLOAD_INTERRUPT_KEY_SEQUENCE, SCAN_CANCEL_KEY_SEQUENCE
+
+__all__ = (
+    'DOWNLOAD_INTERRUPT_SEQUENCE_HARD',
+    'DOWNLOAD_INTERRUPT_SEQUENCE_SOFT',
+    'SCAN_INTERRUPT_SEQUENCE',
+    'KeySequenceAction',
+    'wait_any_key_sequence',
+)
 
 if system() == 'Windows':
     import msvcrt
@@ -42,28 +51,54 @@ else:
     next_input = functools.partial(sys.stdin.read, 1)
 
 
-async def wait_for_key(target_sequence: str, callback: Callable[[], None]) -> None:
+class Symbol(str):
+    def __init__(self, symbol: str) -> None:
+        assert len(symbol) == 1
+        super().__init__()
+
+
+class KeySequenceAction(NamedTuple):
+    sequence: tuple[Symbol] | tuple[Symbol, Symbol] | tuple[Symbol, Symbol, Symbol]
+    action: Callable[[], None]
+
+
+SCAN_INTERRUPT_SEQUENCE = (Symbol(SCAN_CANCEL_KEY_SEQUENCE[0]), Symbol(SCAN_CANCEL_KEY_SEQUENCE[1]))
+DOWNLOAD_INTERRUPT_SEQUENCE_SOFT = (Symbol(DOWNLOAD_CANCEL_KEY_SEQUENCE[0]), Symbol(DOWNLOAD_CANCEL_KEY_SEQUENCE[1]))
+DOWNLOAD_INTERRUPT_SEQUENCE_HARD = (Symbol(DOWNLOAD_INTERRUPT_KEY_SEQUENCE[0]), Symbol(DOWNLOAD_INTERRUPT_KEY_SEQUENCE[1]))
+
+
+async def wait_any_key_sequence(sequence_actions: Sequence[KeySequenceAction]) -> None:
+    def clear() -> None:
+        pass
+
+    stroke_sequences: list[list[str]] = [[] for _ in sequence_actions]
+    cur_idx = 0
+
     try:
-        stroke_sequence: list[str] = []
-        cur_idx = 0
         with set_terminal_raw():
-            while ''.join(stroke_sequence) != target_sequence:
+            while True:
                 await sleep(1.0)
                 if not input_ready():
-                    stroke_sequence.clear()
-                    cur_idx = 0
+                    clear()
                     continue
-                while cur_idx < len(target_sequence) and input_ready():
+                while any(cur_idx < len(_.sequence) for _ in sequence_actions) and input_ready():
                     ch = next_input()
-                    if ch == target_sequence[cur_idx]:
-                        stroke_sequence.append(ch)
+                    advance = False
+                    for i, ksact in enumerate(sequence_actions):
+                        if cur_idx < len(ksact.sequence) and ch == ksact.sequence[cur_idx]:
+                            stroke_sequences[i].append(ch)
+                            advance = True
+                    if advance:
                         cur_idx += 1
                     else:
-                        stroke_sequence.clear()
-                        cur_idx = 0
+                        clear()
                         while input_ready():
                             next_input()
-            callback()
+                for idx in range(len(sequence_actions)):
+                    if ''.join(stroke_sequences[idx]) == ''.join(sequence_actions[idx].sequence):
+                        sequence_actions[idx].action()
+                        clear()
+                        break
     except CancelledError:
         pass
 

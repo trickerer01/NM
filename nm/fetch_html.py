@@ -201,7 +201,7 @@ async def fetch_html_raw(url: str, *, tries=0, **kwargs) -> bytes | None:
                 retries += 1
             elif r is not None and r.status == 403:
                 retries_403_local += 1
-            if Config.aborted:
+            if Config.aborted_any:
                 break
             if retries <= tries:
                 await sleep(calc_sleep_time_retry(r))

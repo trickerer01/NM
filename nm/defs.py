@@ -54,6 +54,8 @@ FOLDER_INDEX_INDENT = 1
 START_TIME = datetime.datetime.now()
 
 SCAN_CANCEL_KEY_SEQUENCE = f'q{PREFIX[1]}'
+DOWNLOAD_CANCEL_KEY_SEQUENCE = f'd{PREFIX[1]}'
+DOWNLOAD_INTERRUPT_KEY_SEQUENCE = f'c{PREFIX[1]}'
 
 SITE = base64.b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
 SITE_V = base64.b64decode('aHR0cHM6Ly92aWRlb3MubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()

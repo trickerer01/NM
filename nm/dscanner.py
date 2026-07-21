@@ -20,12 +20,10 @@ from .defs import (
     LOOKAHEAD_WATCH_RESCAN_DELAY_MIN,
     QUALITIES,
     RESCAN_DELAY_EMPTY,
-    SCAN_CANCEL_KEY_SEQUENCE,
     DownloadResult,
 )
 from .iinfo import IIFlags, VideoInfo, get_min_max_ids
 from .indexer import file_already_exists_arr
-from .input import wait_for_key
 from .logger import Log
 from .util import get_local_time_s
 
@@ -70,17 +68,15 @@ class VideoScanWorker:
         self._task_finish_callback: Callback_T | None = None
 
         self._sleep_waiter: Task | None = None
-        self._abort_waiter: Task | None = None
 
         self._id_gaps: list[tuple[int, int]] = []
 
-    def _on_abort(self) -> None:
+    def on_abort(self) -> None:
         Log.warn('[queue] scanner thread interrupted, finishing pending tasks...')
-        Config.on_scan_abort()
+        Config.on_abort_scan()
         if self._sleep_waiter:
             self._sleep_waiter.cancel()
             self._sleep_waiter: Task | None = None
-        self._abort_waiter: Task | None = None
 
     @staticmethod
     async def _sleep_task(sleep_time: int) -> None:
@@ -148,9 +144,8 @@ class VideoScanWorker:
 
     async def run(self) -> None:
         Log.debug('[queue] scanner thread start')
-        self._abort_waiter = get_running_loop().create_task(wait_for_key(SCAN_CANCEL_KEY_SEQUENCE, self._on_abort))
         while self._seq:
-            if Config.aborted:
+            if Config.aborted_scan:
                 self._seq.clear()
                 continue
             result = await self._func(self._seq[0])
@@ -159,9 +154,6 @@ class VideoScanWorker:
                 self._sleep_waiter = get_running_loop().create_task(self._sleep_task(sleep_time))
                 await self._sleep_waiter
                 self._sleep_waiter = None
-        if self._abort_waiter:
-            self._abort_waiter.cancel()
-            self._abort_waiter = None
         Log.debug('[queue] scanner thread stop: scan complete')
         if self._id_gaps:
             gap_strings: list[str] = []

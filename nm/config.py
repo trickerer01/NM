@@ -6,6 +6,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+from enum import IntEnum, auto
+
 from .defs import (
     CONNECT_RETRIES_BASE,
     DEFAULT_QUALITY,
@@ -24,6 +26,14 @@ if False is True:  # for hinting only
     from scenario import DownloadScenario
 
 __all__ = ('Config',)
+
+
+# noinspection PyArgumentList
+class InterruptSeverity(IntEnum):
+    NONE = auto()
+    SCAN = auto()
+    DOWNLOAD_SOFT = auto()
+    DOWNLOAD_HARD = auto()
 
 
 class BaseConfig:
@@ -56,7 +66,7 @@ class BaseConfig:
         self.subcommand_1 = ''
         # states
         self.is_pages: bool = False
-        self.aborted: bool = False
+        self._aborted: InterruptSeverity = InterruptSeverity.NONE
         # ipc
         self.master_instance: bool | None = None
         # common
@@ -181,8 +191,30 @@ class BaseConfig:
     def _reset(self) -> None:
         self.__init__()  # noqa: PLC2801
 
-    def on_scan_abort(self) -> None:
-        self.aborted = True
+    def on_abort_scan(self) -> None:
+        self._aborted = max(self._aborted, InterruptSeverity.SCAN)
+
+    def on_abort_download_soft(self) -> None:
+        self._aborted = max(self._aborted, InterruptSeverity.DOWNLOAD_SOFT)
+
+    def on_abort_download_hard(self) -> None:
+        self._aborted = max(self._aborted, InterruptSeverity.DOWNLOAD_HARD)
+
+    @property
+    def aborted_any(self) -> bool:
+        return self._aborted > InterruptSeverity.NONE
+
+    @property
+    def aborted_scan(self) -> bool:
+        return self._aborted >= InterruptSeverity.SCAN
+
+    @property
+    def aborted_download_soft(self) -> bool:
+        return self._aborted >= InterruptSeverity.DOWNLOAD_SOFT
+
+    @property
+    def aborted_download_hard(self) -> bool:
+        return self._aborted >= InterruptSeverity.DOWNLOAD_HARD
 
     @property
     def utp(self) -> str | None:
