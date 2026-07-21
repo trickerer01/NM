@@ -379,7 +379,8 @@ async def _scan_dest_folder(rescan=False) -> None:
                     with open(fdirpath / FOLDER_INDEX_FILENAME, open_mode, encoding=UTF8, errors='replace') as indexfile:
                         indexfile.seek(0)
                         fdir_index_json = _try_read_index_file(indexfile)
-                        fdir_index_json['pids'] = (fdir_index_json.get('pids') or []) + [pid]
+                        if pid not in fdir_index_json['pids']:
+                            fdir_index_json['pids'].append(pid)
                         files: dict[str, list[str]] = {}
                         for fdirfile in fdirfiles:
                             if pname := _index_filename(fdirfile.name):
