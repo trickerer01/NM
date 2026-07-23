@@ -69,7 +69,11 @@ DOWNLOAD_INTERRUPT_SEQUENCE_HARD = (Symbol(DOWNLOAD_INTERRUPT_KEY_SEQUENCE[0]), 
 
 async def wait_any_key_sequence(sequence_actions: Sequence[KeySequenceAction]) -> None:
     def clear() -> None:
-        pass
+        nonlocal cur_idx
+        cur_idx = 0
+        [_.clear() for _ in stroke_sequences]
+        while input_ready():
+            next_input()
 
     stroke_sequences: list[list[str]] = [[] for _ in sequence_actions]
     cur_idx = 0
@@ -92,8 +96,6 @@ async def wait_any_key_sequence(sequence_actions: Sequence[KeySequenceAction]) -
                         cur_idx += 1
                     else:
                         clear()
-                        while input_ready():
-                            next_input()
                 for idx in range(len(sequence_actions)):
                     if ''.join(stroke_sequences[idx]) == ''.join(sequence_actions[idx].sequence):
                         sequence_actions[idx].action()

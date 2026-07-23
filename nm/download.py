@@ -18,6 +18,7 @@ from aiohttp import ClientConnectorError, ClientPayloadError
 from .config import Config
 from .defs import (
     DOWNLOAD_CANCEL_KEY_SEQUENCE,
+    DOWNLOAD_INTERRUPT_KEY_SEQUENCE,
     DOWNLOAD_MODE_SKIP,
     DOWNLOAD_MODE_TOUCH,
     DOWNLOAD_POLICY_ALWAYS,
@@ -108,7 +109,8 @@ async def launch(sequence: list[VideoInfo], by_id: bool, reverse: bool, new_sess
 async def download(sequence: list[VideoInfo], by_id: bool, filtered_count: int) -> None:
     minid, maxid = get_min_max_ids(sequence)
     eta_min = calculate_eta(sequence)
-    interrupt_msg = (f'\nTap \'{SCAN_CANCEL_KEY_SEQUENCE}\' to stop, \'{DOWNLOAD_CANCEL_KEY_SEQUENCE}\' to interrupt downloads also'
+    interrupt_msg = (f'\nTap \'{SCAN_CANCEL_KEY_SEQUENCE}\' to stop, \'{DOWNLOAD_CANCEL_KEY_SEQUENCE}\' to interrupt downloads also,'
+                     f' or \'{DOWNLOAD_INTERRUPT_KEY_SEQUENCE}\' for HARD stop'
                      if by_id else '')
     Log.info(f'\nOk! {len(sequence):d} ids (+{filtered_count:d} filtered out), bound {minid:d} to {maxid:d}.'
              f' Working...{interrupt_msg}\n'
