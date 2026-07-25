@@ -401,15 +401,17 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             curfile_folder, curfile_name = os.path.split(curfile)
             curfile_omatch = re_media_filename.match(curfile_name)
             curfile_oquality = Quality(curfile_omatch.group(2) or '')
-            exact_name = curfile == vi.my_fullpath
+            exact_str_path = curfile == vi.my_fullpath
             exact_quality = curfile_oquality and curfile_quality == curfile_oquality
-            vi.set_flag(IIFlags.ALREADY_EXISTED_EXACT if exact_name else IIFlags.ALREADY_EXISTED_SIMILAR)
+            same_loc = os.path.isdir(vi.my_folder) and os.path.samefile(curfile_folder, vi.my_folder)
+            vi.set_flag(IIFlags.ALREADY_EXISTED_EXACT if exact_str_path and same_loc else IIFlags.ALREADY_EXISTED_SIMILAR)
             if Config.continue_mode and exact_quality:
-                if not exact_name:
-                    same_loc = os.path.isdir(vi.my_folder) and os.path.samefile(curfile_folder, vi.my_folder)
+                if not exact_str_path:
+                    exact_str_filename = curfile_name == vi.filename
                     loc_str = f' ({"same" if same_loc else "different"} location)'
                     if Config.no_rename_move is False or same_loc:
-                        Log.info(f'{vi.sffilename} {vi.quality} found{loc_str}. Enforcing new name (was \'{curfile}\').')
+                        rename_str = '' if exact_str_filename else f' Enforcing new name (was \'{curfile}\').'
+                        Log.info(f'{vi.sffilename} {vi.quality} found{loc_str}.{rename_str}')
                         if await try_rename(curfile, vi.my_fullpath):
                             await register_renamed_file(curfile_path, vi)
                         else:
@@ -417,14 +419,16 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                             vi.filename = curfile_name
                     else:
                         new_subfolder = normalize_path(os.path.relpath(curfile_folder, Config.dest_base))
-                        Log.info(f'{vi.sffilename} {vi.quality} found{loc_str}. Enforcing old path + new name '
-                                 f'\'{curfile_folder}/{vi.filename}\' due to \'--no-rename-move\' flag (was \'{curfile_name}\').')
+                        rename_str = '' if exact_str_filename else (f' Enforcing old path + new name \'{curfile_folder}/{vi.filename}\' '
+                                                                    f'due to \'--no-rename-move\' flag (was \'{curfile_name}\').')
+                        Log.info(f'{vi.sffilename} {vi.quality} found{loc_str}.{rename_str}')
                         vi.subfolder = new_subfolder
-                        if await try_rename(curfile, normalize_path(os.path.abspath(vi.my_fullpath), False)):
-                            await register_renamed_file(curfile_path, vi)
-                        else:
-                            Log.warn(f'Warning: unable to rename file to {vi.sffilename} (already exists?). Old name will be preserved!')
-                            vi.filename = curfile_name
+                        if not exact_str_filename:
+                            if await try_rename(curfile, normalize_path(os.path.abspath(vi.my_fullpath), False)):
+                                await register_renamed_file(curfile_path, vi)
+                            else:
+                                Log.warn(f'Warning: unable to rename file to {vi.sffilename} (already exists?). Old name will be used!')
+                                vi.filename = curfile_name
             else:
                 qstr = f'\'{curfile_oquality}\' {"==" if exact_quality else ">=" if curfile_oquality else "<?>"} \'{curfile_quality}\''
                 Log.info(f'{vi.sfsname} already exists ({qstr}). Skipped.\n Location: \'{curfile}\'')
@@ -481,8 +485,8 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             content_range_s = str(r.headers.get('Content-Range', '/')).split('/', 1)
             content_range = int(content_range_s[1]) if len(content_range_s) > 1 and content_range_s[1].isnumeric() else 1
             if (content_len == 0 or r.status == 416) and file_size >= content_range:  # r.status may be 404 also (Apache mishap)
-                size_str = f'{file_size:d} ({file_size / Mem.MB:.2f} Mb'
-                Log.warn(f'{vi.sfsname} ({vi.quality}) is already completed, size: {size_str})')
+                size_str = f'{file_size:d} ({file_size / Mem.MB:.2f} Mb)'
+                Log.warn(f'{vi.sfsname} ({vi.quality}) is already completed, size: {size_str}')
                 vi.set_state(IIState.DONE)
                 ret = DownloadResult.FAIL_ALREADY_EXISTS
                 break
