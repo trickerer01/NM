@@ -396,7 +396,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
         curfile_match = re_media_filename.match(vi.filename)
         curfile_quality = Quality(curfile_match.group(2) or vi.quality)
         # here this id isn't locked, but could be processed already by a different instance
-        if curfile_path := await file_already_exists(vi.id, curfile_quality):
+        if curfile_path := await file_already_exists(vi.id, curfile_quality, True, True):
             curfile = curfile_path.as_posix()
             curfile_folder, curfile_name = os.path.split(curfile)
             curfile_omatch = re_media_filename.match(curfile_name)

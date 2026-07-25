@@ -569,12 +569,14 @@ async def _file_exists_in_folder(base_folder: pathlib.Path, idi: int, qualities:
     return fpaths
 
 
-async def file_already_exists(idi: int, quality: Quality | None = None, check_folder=True) -> pathlib.Path | None:
+async def file_already_exists(idi: int, quality: Quality | None = None, check_folder=True, include_greater=False) -> pathlib.Path | None:
     if Config.lock_files is False:
         return pathlib.Path(lres) if (lres := _file_already_exists_legacy(idi, quality, check_folder)) else None
+    quality: Quality = quality or Config.quality
+    qualities: tuple[Quality, ...] = QUALITIES[:QUALITIES.index(quality) + 1] if include_greater and quality in QUALITIES else (quality,)
     # container may change during iteration
     for folder_path in list(_indexed_folders.keys()):
-        if filepaths := await _file_exists_in_folder(folder_path, idi, (quality or Config.quality,)):
+        if filepaths := await _file_exists_in_folder(folder_path, idi, qualities):
             return filepaths[-1]
     return None
 
