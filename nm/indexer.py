@@ -374,7 +374,7 @@ async def _scan_dest_folder(rescan=False) -> None:
                     Log.warn(f'Warning: _scan_dest_folder: Unable to acquire a lock on {dest_base} and its subfolders! Waiting...')
                     await sleep(calc_sleep_time_retry(None) * 2)
                     continue
-                open_mode = 'wt+' if Config.master_instance else 'at+'
+                open_mode = 'wt+' if Config.master_instance or rescan else 'at+'
                 for fdirpath, fdirfiles in _indexed_folders.items():
                     with open(fdirpath / FOLDER_INDEX_FILENAME, open_mode, encoding=UTF8, errors='replace') as indexfile:
                         indexfile.seek(0)
