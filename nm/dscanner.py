@@ -72,6 +72,8 @@ class VideoScanWorker:
         self._id_gaps: list[tuple[int, int]] = []
 
     def on_abort(self) -> None:
+        if self.done():
+            return
         Log.warn('[queue] scanner thread interrupted, finishing pending tasks...')
         Config.on_abort_scan()
         if self._sleep_waiter:
