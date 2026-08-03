@@ -46,7 +46,7 @@ def find_and_resolve_config_conflicts() -> bool:
     # if Config.model and Config.search:
     #     Log.fatal('\nError: cannot use search within uploader\'s videos! Please use one or the other, or filter using extra tags')
     #     raise ValueError
-    if Config.proxy and Config.download_without_proxy and Config.html_without_proxy:
+    if Config.proxy and Config.download_without_proxy and Config.html_without_proxy and not Config.defer_proxy:
         Log.fatal('\nError: proxy exists but is disabled for both html and download requests!')
         raise ValueError
     if all(_ in (False, None) for _ in (Config.use_id_sequence, Config.use_link_sequence)):
@@ -77,6 +77,16 @@ def find_and_resolve_config_conflicts() -> bool:
         return False
 
     delay_for_message = False
+
+    if Config.defer_proxy:
+        if not Config.download_without_proxy:
+            Log.info('Info: proxy defer flag is set, \'--download-without-proxy\' flag will be forced!')
+            Config.download_without_proxy = True
+            delay_for_message = True
+        if not Config.html_without_proxy:
+            Log.info('Info: proxy defer flag is set, \'--html-without-proxy\' flag will be forced!')
+            Config.html_without_proxy = True
+            delay_for_message = True
 
     if Config.watcher_mode:
         Log.info('Info: watcher mode enabled, disabling id gaps detection')

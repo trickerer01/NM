@@ -56,6 +56,7 @@ START_TIME = datetime.datetime.now()
 SCAN_CANCEL_KEY_SEQUENCE = f'q{PREFIX[1]}'
 DOWNLOAD_CANCEL_KEY_SEQUENCE = f'd{PREFIX[1]}'
 DOWNLOAD_INTERRUPT_KEY_SEQUENCE = f'c{PREFIX[1]}'
+CONFIG_TOGGLE_PROXY_KEY_SEQUENCE = f'p{PREFIX[1]}'
 
 SITE = base64.b64decode('aHR0cHM6Ly93d3cubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
 SITE_V = base64.b64decode('aHR0cHM6Ly92aWRlb3MubmF1Z2h0eW1hY2hpbmltYS5jb20=').decode()
@@ -296,6 +297,10 @@ HELP_ARG_DURATION = (
     f' Example: \'5-180\' will only allow videos from 5 seconds to 3 minutes'
 )
 HELP_ARG_PROXY = 'Proxy to use, supports basic auth. Example: http://user:pass@127.0.0.1:222'
+HELP_ARG_PROXYDEFER = (
+    f'Start with proxy disabled and the force for all requests on demand (tap \'{CONFIG_TOGGLE_PROXY_KEY_SEQUENCE}\' to toggle).'
+    f' Implies both --html-without-proxy and --download-without-proxy flags'
+)
 HELP_ARG_PROXYNODOWN = '[Deprecated] Don\'t use proxy to connect to file servers if they differ from the main host'
 HELP_ARG_PROXYNOHTML = '[Deprecated] Don\'t use proxy to connect to the main host'
 HELP_ARG_UTPOLICY = (

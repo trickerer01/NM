@@ -19,13 +19,14 @@ from aiohttp import ClientConnectorError, ClientResponse, ClientResponseError, C
 from aiohttp_socks import ProxyConnector
 from bs4 import BeautifulSoup
 from fake_useragent import FakeUserAgent
+from yarl import URL
 
 from .config import Config
 from .defs import CONNECT_REQUEST_DELAY, MAX_SCAN_QUEUE_SIZE, MAX_VIDEOS_QUEUE_SIZE, SITE, UTF8, Mem
 from .logger import Log
 from .util import calc_sleep_time_retry
 
-__all__ = ('create_session', 'ensure_conn_closed', 'fetch_html', 'fetch_html_raw', 'wrap_request')
+__all__ = ('create_session', 'ensure_conn_closed', 'fetch_html', 'fetch_html_raw', 'sync_sessions', 'wrap_request')
 
 USER_AGENT_DEFAULT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.7 Firefox/102.0 PaleMoon/33.3.1'
 _ua_generator = FakeUserAgent(browsers=('Firefox',), platforms=('desktop',), fallback=USER_AGENT_DEFAULT)
@@ -88,6 +89,10 @@ class ClientSessionWrapper:
     def session(self, no_proxy: bool):
         return self._sessions[no_proxy]
 
+    def sync_cookies(self):
+        for i in (0, 1):
+            self._sessions[i].cookie_jar.update_cookies(self._sessions[1 - i].cookie_jar.filter_cookies(URL(SITE)))
+
     @staticmethod
     def ignore_unclosed_session_exc_handler(selfloop: AbstractEventLoop, context: dict) -> None:
         message = context.get('message')
@@ -104,7 +109,7 @@ class ClientSessionWrapper:
         else:
             connector = TCPConnector(limit=MAX_VIDEOS_QUEUE_SIZE + MAX_SCAN_QUEUE_SIZE)
         s = ClientSession(connector=connector, read_bufsize=Mem.MB)
-        new_useragent = UAManager.select_useragent(Config.proxy if use_proxy else None)
+        new_useragent = UAManager.select_useragent(Config.proxy if use_proxy and not Config.defer_proxy else None)
         Log.trace(f'[{"P" if use_proxy else "NP"}] Selected user-agent \'{new_useragent}\'...')
         s.headers.update({'User-Agent': new_useragent})
         s.cookie_jar.update_cookies({'AVS': '6df575c0469e47debf9e87740dad8226', 'Host': SITE})
@@ -159,13 +164,18 @@ def create_session() -> ClientSessionWrapper:
     return ClientSessionWrapper()
 
 
+def sync_sessions() -> None:
+    assert _sessionw
+    return _sessionw.sync_cookies()
+
+
 async def wrap_request(method: str, url: str, **kwargs) -> ClientResponse:
     """Queues request, updating headers/proxies beforehand, and returns the response"""
     if Config.nodelay is False:
         await RequestQueue.until_ready(url)
     if 'timeout' not in kwargs:
         kwargs.update(timeout=Config.timeout)
-    noproxy = kwargs.pop('noproxy', False)
+    noproxy = kwargs.pop('noproxy', False) and not Config.proxy_always
     r = await _sessionw.session(noproxy).request(method, url, **kwargs)
     return r
 
@@ -174,7 +184,7 @@ async def fetch_html_raw(url: str, *, tries=0, **kwargs) -> bytes | None:
     # very basic, minimum validation
     tries = tries or Config.retries
     if 'noproxy' not in kwargs:
-        kwargs.update({'noproxy': bool(Config.proxy and Config.html_without_proxy)})
+        kwargs.update({'noproxy': bool(Config.proxy and Config.html_without_proxy and not Config.proxy_always)})
 
     retries = 0
     retries_403_local = 0

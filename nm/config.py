@@ -65,6 +65,7 @@ class BaseConfig:
         # arguments
         self.subcommand_1 = ''
         # states
+        self._proxy_enabled: bool = False
         self.is_pages: bool = False
         self._aborted: InterruptSeverity = InterruptSeverity.NONE
         # ipc
@@ -72,6 +73,7 @@ class BaseConfig:
         # common
         self.dest_base: str | None = None
         self.proxy: str | None = None
+        self.defer_proxy: bool | None = None
         self.download_without_proxy: bool | None = None
         self.html_without_proxy: bool | None = None
         self.session_id: str | None = None
@@ -200,9 +202,20 @@ class BaseConfig:
     def on_abort_download_hard(self) -> None:
         self._aborted = max(self._aborted, InterruptSeverity.DOWNLOAD_HARD)
 
+    def toggle_proxy(self) -> None:
+        self._proxy_enabled = not self._proxy_enabled
+
     @property
     def aborted_any(self) -> bool:
         return self._aborted > InterruptSeverity.NONE
+
+    @property
+    def proxy_enabled(self) -> bool:
+        return self._proxy_enabled
+
+    @property
+    def proxy_always(self) -> bool:
+        return self.defer_proxy and self._proxy_enabled
 
     @property
     def aborted_scan(self) -> bool:

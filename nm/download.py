@@ -41,7 +41,7 @@ from .defs import (
 from .downloader import VideoDownloadWorker
 from .dscanner import VideoScanWorker
 from .dthrottler import ThrottleChecker
-from .fetch_html import create_session, ensure_conn_closed, fetch_html, wrap_request
+from .fetch_html import create_session, ensure_conn_closed, fetch_html, sync_sessions, wrap_request
 from .idgaps import IdGapsPredictor
 from .iinfo import IIFlags, IIState, VideoInfo, export_video_info, get_min_max_ids
 from .indexer import (
@@ -54,6 +54,7 @@ from .indexer import (
     unregister_unfinished_file,
 )
 from .input import (
+    CONFIG_TOGGLE_PROXY_SEQUENCE,
     DOWNLOAD_INTERRUPT_SEQUENCE_HARD,
     DOWNLOAD_INTERRUPT_SEQUENCE_SOFT,
     SCAN_INTERRUPT_SEQUENCE,
@@ -107,6 +108,13 @@ async def launch(sequence: list[VideoInfo], by_id: bool, reverse: bool, new_sess
 
 
 async def download(sequence: list[VideoInfo], by_id: bool, filtered_count: int) -> None:
+    def on_toggle_proxy() -> None:
+        if Config.proxy:
+            Config.toggle_proxy()
+            if Config.proxy_enabled:
+                sync_sessions()
+            Log.warn(f'Warning: proxy toggled, now \'{Config.proxy if Config.proxy_enabled else "None"}\'')
+
     minid, maxid = get_min_max_ids(sequence)
     eta_min = calculate_eta(sequence)
     interrupt_msg = (f'\nTap \'{SCAN_CANCEL_KEY_SEQUENCE}\' to stop, \'{DOWNLOAD_CANCEL_KEY_SEQUENCE}\' to interrupt downloads also,'
@@ -119,7 +127,8 @@ async def download(sequence: list[VideoInfo], by_id: bool, filtered_count: int) 
         abort_waiter = get_running_loop().create_task(wait_any_key_sequence(
             (KeySequenceAction(SCAN_INTERRUPT_SEQUENCE, scn.on_abort),
              KeySequenceAction(DOWNLOAD_INTERRUPT_SEQUENCE_SOFT, dwn.on_abort_soft),
-             KeySequenceAction(DOWNLOAD_INTERRUPT_SEQUENCE_HARD, dwn.on_abort_hard))))
+             KeySequenceAction(DOWNLOAD_INTERRUPT_SEQUENCE_HARD, dwn.on_abort_hard),
+             KeySequenceAction(CONFIG_TOGGLE_PROXY_SEQUENCE, on_toggle_proxy))))
         for cv in as_completed([scn.run(), dwn.run()] if by_id else [dwn.run()]):
             await cv
         abort_waiter.cancel()
