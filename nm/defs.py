@@ -301,6 +301,7 @@ HELP_ARG_PROXYDEFER = (
     f'Start with proxy disabled and the force for all requests on demand (tap \'{CONFIG_TOGGLE_PROXY_KEY_SEQUENCE}\' to toggle).'
     f' Implies both --html-without-proxy and --download-without-proxy flags'
 )
+HELP_ARG_PROXY_KICKIN_THRESHOLD = 'Connection attempt number to automatically trigger proxy usage.'
 HELP_ARG_PROXYNODOWN = '[Deprecated] Don\'t use proxy to connect to file servers if they differ from the main host'
 HELP_ARG_PROXYNOHTML = '[Deprecated] Don\'t use proxy to connect to the main host'
 HELP_ARG_UTPOLICY = (

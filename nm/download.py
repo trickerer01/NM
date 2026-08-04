@@ -360,7 +360,7 @@ async def download_sceenshot(vi: VideoInfo, scr_num: int) -> DownloadResult:
         return DownloadResult.FAIL_SKIPPED
 
     try:
-        async with await wrap_request('GET', my_link) as r:
+        async with await wrap_request('GET', my_link, 0) as r:
             if r.status == 404:
                 Log.error(f'Got 404 for {sname}...!')
                 ret = DownloadResult.FAIL_NOT_FOUND
@@ -455,12 +455,12 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
 
     dwn = VideoDownloadWorker.get()
     status_checker = ThrottleChecker(vi)
-    try_num = 0
-    while (not skip) and try_num <= Config.retries:
+    retries = 0
+    while (not skip) and retries <= Config.retries:
         r = None
         try:
             file_exists = os.path.isfile(vi.my_fullpath)
-            if file_exists and try_num == 0:
+            if file_exists and retries == 0:
                 vi.set_flag(IIFlags.ALREADY_EXISTED_EXACT)
             file_size = os.stat(vi.my_fullpath).st_size if file_exists else 0
 
@@ -484,12 +484,12 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             ckwargs = {'allow_redirects': not (Config.proxy and (Config.download_without_proxy or Config.html_without_proxy))}
             ckwargs.update({'noproxy': bool(Config.proxy and Config.html_without_proxy)})
             hkwargs['headers'].update({'Referer': SITE_ITEM_REQUEST_VIDEO % vi.id})
-            r = await wrap_request('GET', vi.link, **ckwargs, **hkwargs)
+            r = await wrap_request('GET', vi.link, retries, **ckwargs, **hkwargs)
             while r.status in (301, 302):
                 if urllib.parse.urlparse(r.headers['Location']).hostname != urllib.parse.urlparse(vi.link).hostname:
                     ckwargs.update({'noproxy': Config.download_without_proxy, 'allow_redirects': True})
                 ensure_conn_closed(r)
-                r = await wrap_request('GET', r.headers['Location'], **ckwargs, **hkwargs)
+                r = await wrap_request('GET', r.headers['Location'], retries, **ckwargs, **hkwargs)
             content_len: int = r.content_length or 0
             content_range_s = str(r.headers.get('Content-Range', '/')).split('/', 1)
             content_range = int(content_range_s[1]) if len(content_range_s) > 1 and content_range_s[1].isnumeric() else 1
@@ -501,11 +501,11 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 break
             if r.status == 404:
                 Log.error(f'Got 404 for {vi.sfsname}...!')
-                try_num = Config.retries
+                retries = Config.retries
                 ret = DownloadResult.FAIL_NOT_FOUND
             if r.status == 522:
                 Log.error(f'Got 522 (cf cookie required) for {vi.sfsname}...!')
-                try_num = Config.retries
+                retries = Config.retries
                 ret = DownloadResult.FAIL_NOT_FOUND
             r.raise_for_status()
             if r.content_type and 'text' in r.content_type:
@@ -529,14 +529,14 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
                 bytes_written_this_try = 0
                 async for chunk in r.content.iter_chunked(128 * Mem.KB):
                     if Config.aborted_download_hard:
-                        try_num = Config.retries
+                        retries = Config.retries
                         ret = DownloadResult.FAIL_SKIPPED
                         raise OSError(f'Interrupted ({vi.sname})')
                     await outf.write(chunk)
                     vi.bytes_written += len(chunk)
                     bytes_written_this_try += len(chunk)
-                    if try_num > 0 and bytes_written_this_try >= 256 * Mem.KB:
-                        try_num = 0
+                    if retries > 0 and bytes_written_this_try >= 256 * Mem.KB:
+                        retries = 0
                     if Config.download_speed_limit:
                         while vi.average_write_speed > Config.download_speed_limit * Mem.KB:
                             await sleep(0.5)
@@ -558,13 +558,13 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
         except Exception as e:
             Log.error(f'{vi.sname}: {sys.exc_info()[0]}: {sys.exc_info()[1]}')
             if (r is None or r.status != 403) and not isinstance(e, (ClientPayloadError, ClientConnectorError)):
-                try_num += 1
-                Log.error(f'{vi.sffilename}: error #{try_num:d}...')
+                retries += 1
+                Log.error(f'{vi.sffilename}: error #{retries:d}...')
             ensure_conn_closed(r)
             # Network error may be thrown before item is added to active downloads
             await dwn.remove_from_writes(vi, True)
             status_checker.reset()
-            if try_num <= Config.retries and not Config.aborted_any:
+            if retries <= Config.retries and not Config.aborted_any:
                 vi.set_state(IIState.DOWNLOADING)
                 await sleep(calc_sleep_time_retry(r))
             elif Config.keep_unfinished is False and os.path.isfile(vi.my_fullpath) and vi.has_flag(IIFlags.FILE_WAS_CREATED):
@@ -575,7 +575,7 @@ async def download_video(vi: VideoInfo) -> DownloadResult:
             ensure_conn_closed(r)
 
     ret = (ret if ret in (DownloadResult.FAIL_NOT_FOUND, DownloadResult.FAIL_SKIPPED, DownloadResult.FAIL_ALREADY_EXISTS) else
-           DownloadResult.SUCCESS if try_num <= Config.retries else
+           DownloadResult.SUCCESS if retries <= Config.retries else
            DownloadResult.FAIL_RETRIES)
 
     if Config.save_screenshots:

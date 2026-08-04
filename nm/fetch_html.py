@@ -169,30 +169,35 @@ def sync_sessions() -> None:
     return _sessionw.sync_cookies()
 
 
-async def wrap_request(method: str, url: str, **kwargs) -> ClientResponse:
+async def wrap_request(method: str, url: str, retry_num: int, **kwargs) -> ClientResponse:
     """Queues request, updating headers/proxies beforehand, and returns the response"""
     if Config.nodelay is False:
         await RequestQueue.until_ready(url)
     if 'timeout' not in kwargs:
         kwargs.update(timeout=Config.timeout)
     noproxy = kwargs.pop('noproxy', False) and not Config.proxy_always
+    if noproxy is True and retry_num >= Config.proxy_kickin_threshold > 0 and Config.proxy:
+        noproxy = False
+        if retry_num == Config.proxy_kickin_threshold:
+            Log.warn(f'Warning: Proxy kick-in threshold hit for \'{url}\'!')
+            _sessionw.sync_cookies()
     r = await _sessionw.session(noproxy).request(method, url, **kwargs)
     return r
 
 
-async def fetch_html_raw(url: str, *, tries=0, **kwargs) -> bytes | None:
+async def fetch_html_raw(url: str, *, max_retries=0, **kwargs) -> bytes | None:
     # very basic, minimum validation
-    tries = tries or Config.retries
+    max_retries = max_retries or Config.retries
     if 'noproxy' not in kwargs:
         kwargs.update({'noproxy': bool(Config.proxy and Config.html_without_proxy and not Config.proxy_always)})
 
     retries = 0
     retries_403_local = 0
-    while retries <= tries:
+    while retries <= max_retries:
         r = None
         try:
             async with await wrap_request(
-                    'GET', url,
+                    'GET', url, retries,
                     headers={'Connection': 'keep-alive'}, **kwargs) as r:
                 if r.status not in (404, 500):
                     r.raise_for_status()
@@ -213,11 +218,11 @@ async def fetch_html_raw(url: str, *, tries=0, **kwargs) -> bytes | None:
                 retries_403_local += 1
             if Config.aborted_any:
                 break
-            if retries <= tries:
+            if retries <= max_retries:
                 await sleep(calc_sleep_time_retry(r))
             continue
 
-    if retries > tries:
+    if retries > max_retries:
         errmsg = f'Unable to connect. Aborting {url}'
         Log.error(errmsg)
     elif r is None:
@@ -226,8 +231,8 @@ async def fetch_html_raw(url: str, *, tries=0, **kwargs) -> bytes | None:
     return None
 
 
-async def fetch_html(url: str, *, tries=0, **kwargs) -> BeautifulSoup:
-    raw = await fetch_html_raw(url, tries=tries, **kwargs)
+async def fetch_html(url: str, *, max_retries=0, **kwargs) -> BeautifulSoup:
+    raw = await fetch_html_raw(url, max_retries=max_retries, **kwargs)
     return BeautifulSoup(raw, 'html.parser', from_encoding=UTF8) if raw else BeautifulSoup()
 
 #

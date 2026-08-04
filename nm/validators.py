@@ -78,6 +78,15 @@ def find_and_resolve_config_conflicts() -> bool:
 
     delay_for_message = False
 
+    if Config.proxy_kickin_threshold and not Config.proxy:
+        Log.info('Info: proxy kick-in threshold cannot be used without proxy, ignored')
+        Config.proxy_kickin_threshold = 0
+        delay_for_message = True
+
+    if Config.defer_proxy and not Config.proxy:
+        Log.info('Info: proxy defer flag cannot be used without proxy, ignored')
+        Config.defer_proxy = False
+        delay_for_message = True
     if Config.defer_proxy:
         if not Config.download_without_proxy:
             Log.info('Info: proxy defer flag is set, \'--download-without-proxy\' flag will be forced!')

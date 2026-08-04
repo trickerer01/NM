@@ -59,6 +59,7 @@ from .defs import (
     HELP_ARG_PLAYLIST,
     HELP_ARG_PREDICT_ID_GAPS,
     HELP_ARG_PROXY,
+    HELP_ARG_PROXY_KICKIN_THRESHOLD,
     HELP_ARG_PROXYDEFER,
     HELP_ARG_PROXYNODOWN,
     HELP_ARG_PROXYNOHTML,
@@ -253,6 +254,7 @@ def add_common_args(par: ArgumentParser) -> None:
     co = par.add_argument_group(title='connection options')
     co.add_argument('-proxy', metavar='#type://[u:p@]a.d.d.r:port', default=None, help=HELP_ARG_PROXY, type=valid_proxy)
     co.add_argument('-proxydefer', '--defer-proxy', action=ACTION_STORE_TRUE, help=HELP_ARG_PROXYDEFER)
+    co.add_argument('-proxykickin', '--proxy-kickin-threshold', default=0, help=HELP_ARG_PROXY_KICKIN_THRESHOLD, type=positive_nonzero_int)
     co.add_argument('-proxynodown', '--download-without-proxy', action=ACTION_STORE_TRUE, help=HELP_ARG_PROXYNODOWN)
     co.add_argument('-proxynohtml', '--html-without-proxy', action=ACTION_STORE_TRUE, help=HELP_ARG_PROXYNOHTML)
     co.add_argument('-timeout', metavar='#seconds', default=valid_timeout(''), help=HELP_ARG_TIMEOUT, type=valid_timeout)

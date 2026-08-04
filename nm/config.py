@@ -74,6 +74,7 @@ class BaseConfig:
         self.dest_base: str | None = None
         self.proxy: str | None = None
         self.defer_proxy: bool | None = None
+        self.proxy_kickin_threshold: int | None = None
         self.download_without_proxy: bool | None = None
         self.html_without_proxy: bool | None = None
         self.session_id: str | None = None
@@ -168,6 +169,8 @@ class BaseConfig:
             *(('-fsdepth', self.folder_scan_depth) if self.folder_scan_depth != MAX_DEST_SCAN_SUB_DEPTH_DEFAULT else ()),
             *(('-fslevel', self.folder_scan_levelup) if self.folder_scan_levelup != MAX_DEST_SCAN_UPLEVELS_DEFAULT else ()),
             *(('-proxy', self.proxy) if self.proxy else ()),
+            *(('--defer-proxy',) if self.defer_proxy else ()),
+            *(('--proxy-kickin-threshold', self.proxy_kickin_threshold) if self.proxy_kickin_threshold else ()),
             *(('--download-without-proxy',) if self.download_without_proxy else ()),
             *(('--html-without-proxy',) if self.html_without_proxy else ()),
             *(('-throttle', self.throttle) if self.throttle else ()),
