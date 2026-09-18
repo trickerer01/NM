@@ -4,7 +4,7 @@
 NM is a video downloader with a lot of features, most of which are filters for fine-tuning your search
 
 ### How to use
-##### Python 3.10 or greater required
+##### Python 3.11 or greater required
 - NM is a cmdline tool, no GUI
 - See `requirements.txt` for additional dependencies. Install with:
   - `python -m pip install -r requirements.txt`
